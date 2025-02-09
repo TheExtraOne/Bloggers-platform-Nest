@@ -8,8 +8,8 @@ import { ObjectId } from 'mongodb';
 export class UsersRepository {
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
-  async save(user: UserDocument): Promise<UserDocument> {
-    return this.UserModel.create(user);
+  async save(user: UserDocument): Promise<void> {
+    await user.save();
   }
 
   async findUserById(id: string): Promise<UserDocument> {

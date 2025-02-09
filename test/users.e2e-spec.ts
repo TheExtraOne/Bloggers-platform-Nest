@@ -6,23 +6,26 @@ import { CreateUserInputDto } from '../src/features/user-accounts/api/input-dto/
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { PATHS } from '../src/settings';
+import { UserViewDto } from '../src/features/user-accounts/api/view-dto/users.view-dto';
+import { PaginatedViewDto } from '../src/core/dto/base.paginated-view.dto';
+import { App } from 'supertest/types';
 
 describe('UsersController (e2e)', () => {
-  let app: INestApplication;
+  let app: INestApplication<App>;
   let mongoServer: MongoMemoryServer;
-  let httpServer: any;
+  let httpServer: App;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
       new ValidationPipe({
         transform: true,
       }),
     );
+
     await app.init();
 
     httpServer = app.getHttpServer();
@@ -49,45 +52,32 @@ describe('UsersController (e2e)', () => {
         password: 'password123',
       };
 
-      const { body } = await request(httpServer)
+      const response = await request(httpServer)
         .post(`/${PATHS.USERS}`)
         .send(createUserDto)
         .expect(201);
 
-      expect(body.login).toBe(createUserDto.login);
-      expect(body.email).toBe(createUserDto.email);
-      expect(body.id).toBeDefined();
-      expect(body.createdAt).toBeDefined();
+      const userView = response.body as UserViewDto;
+      expect(userView.login).toBe(createUserDto.login);
+      expect(userView.email).toBe(createUserDto.email);
+      expect(userView.id).toBeDefined();
+      expect(userView.createdAt).toBeDefined();
 
-      expect(body.password).toBeUndefined();
-      expect(body.passwordHash).toBeUndefined();
+      // Check that sensitive fields are not returned
+      expect(userView).not.toHaveProperty('password');
+      expect(userView).not.toHaveProperty('passwordHash');
     });
-
-    // it('should not create user with invalid data', async () => {
-    //   const invalidUserDto = {
-    //     email: 'invalid-email',
-    //     password: '123',
-    //   };
-
-    //   const response = await request(app.getHttpServer())
-    //     .post(`/api/${PATHS.USERS}`)
-    //     .send(invalidUserDto)
-    //     .expect(400);
-
-    //   expect(response.body).toBeDefined();
-    //   expect(response.body.errorsMessages).toBeDefined();
-    //   expect(response.body.errorsMessages.length).toBeGreaterThan(0);
-    // });
   });
 
   describe('GET /users', () => {
     it('should return empty paginated list when no users exist', async () => {
-      const { body } = await request(httpServer)
+      const response = await request(httpServer)
         .get(`/${PATHS.USERS}`)
         .query({ pageSize: 10, pageNumber: 1 })
         .expect(200);
 
-      expect(body).toEqual({
+      const paginatedView = response.body as PaginatedViewDto<UserViewDto[]>;
+      expect(paginatedView).toEqual({
         items: [],
         totalCount: 0,
         pagesCount: 0,
@@ -109,12 +99,13 @@ describe('UsersController (e2e)', () => {
         .send(createUserDto)
         .expect(201);
 
-      const { body } = await request(httpServer)
+      const response = await request(httpServer)
         .get(`/${PATHS.USERS}`)
         .query({ pageSize: 10, pageNumber: 1 })
         .expect(200);
 
-      expect(body).toMatchObject({
+      const paginatedView = response.body as PaginatedViewDto<UserViewDto[]>;
+      expect(paginatedView).toMatchObject({
         items: [
           {
             email: createUserDto.email,
@@ -143,7 +134,7 @@ describe('UsersController (e2e)', () => {
         .send(createUserDto)
         .expect(201);
 
-      const userId = createResponse.body.id;
+      const userId = (createResponse.body as UserViewDto).id;
       expect(userId).toBeDefined();
 
       // Delete the user
@@ -155,7 +146,8 @@ describe('UsersController (e2e)', () => {
         .query({ pageSize: 10, pageNumber: 1 })
         .expect(200);
 
-      expect(response.body.items).toHaveLength(0);
+      const paginatedView = response.body as PaginatedViewDto<UserViewDto[]>;
+      expect(paginatedView.items).toHaveLength(0);
     });
 
     it('should return 404 when deleting non-existing user', async () => {

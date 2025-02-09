@@ -5,10 +5,12 @@ export const SETTINGS = {
 };
 
 export const PATHS = {
+  BLOGS: 'blogs',
   USERS: 'users',
   TESTING: 'testing',
 };
 
 export const ERRORS = {
   USER_NOT_FOUND: 'User not found',
+  BLOG_NOT_FOUND: 'Blog not found',
 };

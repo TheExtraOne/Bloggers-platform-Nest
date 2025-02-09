@@ -5,12 +5,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserAccountsModule } from './features/user-accounts/user-accounts.module';
 import { SETTINGS } from './settings';
 import { TestingModule } from './testing/testing.module';
+import { BloggersPlatformModule } from './features/bloggers-platform/bloggers-platform.module';
 
 @Module({
   imports: [
     MongooseModule.forRoot(SETTINGS.MONGODB_URI),
     UserAccountsModule,
     TestingModule,
+    BloggersPlatformModule,
   ],
   controllers: [AppController],
   providers: [AppService],
