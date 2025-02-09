@@ -6,13 +6,20 @@ import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
 import { UserViewDto } from '../../api/view-dto/users.view-dto';
 import { FilterQuery } from 'mongoose';
 import { ERRORS } from 'src/settings';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class UsersQueryRepository {
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
   async findUserById(id: string): Promise<UserViewDto> {
-    const user = await this.UserModel.findById(id);
+    if (!ObjectId.isValid(id))
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+
+    const user = await this.UserModel.findOne({
+      _id: new ObjectId(id),
+      deletedAt: null,
+    });
 
     if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
 
@@ -47,7 +54,7 @@ export class UsersQueryRepository {
 
     const totalCount = await this.UserModel.countDocuments(filter);
 
-    const items = users.map(UserViewDto.mapToView);
+    const items = users.map((user) => UserViewDto.mapToView(user));
 
     return PaginatedViewDto.mapToView({
       items,

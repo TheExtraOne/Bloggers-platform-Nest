@@ -6,6 +6,7 @@ export const SETTINGS = {
 
 export const PATHS = {
   USERS: 'users',
+  TESTING: 'testing',
 };
 
 export const ERRORS = {

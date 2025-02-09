@@ -17,7 +17,6 @@ import { UserViewDto } from './view-dto/users.view-dto';
 import { UserService } from '../app/users.service';
 import { PATHS } from 'src/settings';
 
-// TODO: add types of return values
 @Controller(PATHS.USERS)
 export class UserController {
   constructor(
@@ -35,7 +34,9 @@ export class UserController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createUser(@Body() createUserDto: CreateUserInputDto) {
+  async createUser(
+    @Body() createUserDto: CreateUserInputDto,
+  ): Promise<UserViewDto> {
     const userId: string = await this.userService.createUser(createUserDto);
 
     return await this.usersQueryRepository.findUserById(userId);
@@ -43,7 +44,7 @@ export class UserController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteUser(@Param('id') id: string) {
+  async deleteUser(@Param('id') id: string): Promise<void> {
     await this.userService.deleteUser(id);
   }
 }
