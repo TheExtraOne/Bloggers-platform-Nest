@@ -6,11 +6,11 @@ import { UserAccountsModule } from './features/user-accounts/user-accounts.modul
 import { SETTINGS } from './settings';
 import { TestingModule } from './testing/testing.module';
 import { BloggersPlatformModule } from './features/bloggers-platform/bloggers-platform.module';
-// import { ConfigModule } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    // ConfigModule.forRoot(),
+    ConfigModule.forRoot(),
     MongooseModule.forRoot(SETTINGS.MONGODB_URI),
     UserAccountsModule,
     TestingModule,
