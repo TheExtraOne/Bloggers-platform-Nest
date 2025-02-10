@@ -7,7 +7,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { PATHS } from '../src/settings';
 import { UserViewDto } from '../src/features/user-accounts/api/view-dto/users.view-dto';
-import { PaginatedViewDto } from '../src/core/dto/base.paginated-view.dto';
+import { PaginatedViewDto } from '../src/features/dto/base.paginated-view.dto';
 import { App } from 'supertest/types';
 
 describe('UsersController (e2e)', () => {
