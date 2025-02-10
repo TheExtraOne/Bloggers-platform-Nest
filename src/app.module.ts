@@ -7,6 +7,7 @@ import { SETTINGS } from './settings';
 import { TestingModule } from './testing/testing.module';
 import { BloggersPlatformModule } from './features/bloggers-platform/bloggers-platform.module';
 import { ConfigModule } from '@nestjs/config';
+import { CoreModule } from './core/core-module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ConfigModule } from '@nestjs/config';
     UserAccountsModule,
     TestingModule,
     BloggersPlatformModule,
+    CoreModule,
   ],
   controllers: [AppController],
   providers: [AppService],

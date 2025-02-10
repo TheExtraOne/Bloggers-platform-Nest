@@ -7,8 +7,32 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { PATHS } from '../src/settings';
 import { UserViewDto } from '../src/features/user-accounts/api/view-dto/users.view-dto';
-import { PaginatedViewDto } from '../src/features/dto/base.paginated-view.dto';
+// import { PaginatedViewDto } from '../src/features/dto/base.paginated-view.dto';
 import { App } from 'supertest/types';
+
+export abstract class PaginatedViewDto<T> {
+  abstract items: T;
+  totalCount: number;
+  pagesCount: number;
+  page: number;
+  pageSize: number;
+
+  // Static method for mapping
+  public static mapToView<T>(data: {
+    items: T;
+    page: number;
+    size: number;
+    totalCount: number;
+  }): PaginatedViewDto<T> {
+    return {
+      totalCount: data.totalCount,
+      pagesCount: Math.ceil(data.totalCount / data.size),
+      page: data.page,
+      pageSize: data.size,
+      items: data.items,
+    };
+  }
+}
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication<App>;
