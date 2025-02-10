@@ -1,6 +1,9 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
-import { CreateBlogInputDto } from '../api/input-dto/blogs.input-dto';
+import {
+  CreateBlogInputDto,
+  UpdateBlogInputDto,
+} from '../api/input-dto/blogs.input-dto';
 
 // Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
@@ -77,11 +80,21 @@ export class Blog {
    * @throws {Error} If the entity is already deleted
    */
   makeDeleted() {
-    console.log('this.deletedAt', this.deletedAt);
     if (this.deletedAt !== null) {
       throw new Error('Entity already deleted');
     }
     this.deletedAt = new Date();
+  }
+
+  /**
+   * Updates the blog instance with new data
+   * Updating name, description and websiteUrl
+   * @param {UpdateBlogInputDto} dto - The data transfer object for blog updates
+   */
+  update(dto: UpdateBlogInputDto) {
+    this.name = dto.name;
+    this.description = dto.description;
+    this.websiteUrl = dto.websiteUrl;
   }
 }
 

@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -12,7 +14,10 @@ import { PATHS } from 'src/settings';
 import { BlogsService } from '../app/blogs.service';
 import { GetBlogsQueryParams } from './input-dto/get-blogs.query-params.input-dto';
 import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
-import { CreateBlogInputDto } from './input-dto/blogs.input-dto';
+import {
+  CreateBlogInputDto,
+  UpdateBlogInputDto,
+} from './input-dto/blogs.input-dto';
 import { BlogsViewDto } from './view-dto/blogs.view-dto';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
 
@@ -41,6 +46,7 @@ export class BlogsController {
   }
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async createBlog(
     @Body() createBlogDto: CreateBlogInputDto,
   ): Promise<BlogsViewDto> {
@@ -54,12 +60,16 @@ export class BlogsController {
   }
 
   @Put(':id')
-  async updateBlogById(@Param('id') id: string) {
-    return Promise.resolve({});
+  async updateBlogById(
+    @Param('id') id: string,
+    @Body() updateBlogDto: UpdateBlogInputDto,
+  ) {
+    return this.blogsService.updateBlogById(id, updateBlogDto);
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlogById(@Param('id') id: string) {
-    return Promise.resolve({});
+    return this.blogsService.deleteBlogById(id);
   }
 }
