@@ -6,6 +6,7 @@ export const SETTINGS = {
 
 export const PATHS = {
   BLOGS: 'blogs',
+  POSTS: 'posts',
   USERS: 'users',
   TESTING: 'testing',
 };
@@ -13,4 +14,5 @@ export const PATHS = {
 export const ERRORS = {
   USER_NOT_FOUND: 'User not found',
   BLOG_NOT_FOUND: 'Blog not found',
+  POST_NOT_FOUND: 'Post not found',
 };

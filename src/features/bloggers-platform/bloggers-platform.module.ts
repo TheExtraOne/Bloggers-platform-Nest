@@ -5,6 +5,11 @@ import { BlogsQueryRepository } from './infrastructure/query/blogs.query-reposit
 import { MongooseModule } from '@nestjs/mongoose';
 import { Blog, BlogSchema } from './domain/blog.entity';
 import { BlogsRepository } from './infrastructure/blogs.repository';
+import { Post, PostSchema } from './domain/post.entity';
+import { PostsController } from './api/posts.controller';
+import { PostsQueryRepository } from './infrastructure/query/posts.query-repository';
+import { PostsService } from './app/posts.service';
+import { PostsRepository } from './infrastructure/posts.repository';
 
 @Module({
   imports: [
@@ -13,9 +18,20 @@ import { BlogsRepository } from './infrastructure/blogs.repository';
         name: Blog.name,
         schema: BlogSchema,
       },
+      {
+        name: Post.name,
+        schema: PostSchema,
+      },
     ]),
   ],
-  controllers: [BlogsController],
-  providers: [BlogsService, BlogsQueryRepository, BlogsRepository],
+  controllers: [BlogsController, PostsController],
+  providers: [
+    BlogsService,
+    BlogsQueryRepository,
+    BlogsRepository,
+    PostsService,
+    PostsRepository,
+    PostsQueryRepository,
+  ],
 })
 export class BloggersPlatformModule {}
