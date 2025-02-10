@@ -94,7 +94,6 @@ export class User {
    * @throws {Error} If the entity is already deleted
    */
   makeDeleted() {
-    console.log('this.deletedAt', this.deletedAt);
     if (this.deletedAt !== null) {
       throw new Error('Entity already deleted');
     }

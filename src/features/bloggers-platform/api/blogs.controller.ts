@@ -60,6 +60,7 @@ export class BlogsController {
   }
 
   @Put(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async updateBlogById(
     @Param('id') id: string,
     @Body() updateBlogDto: UpdateBlogInputDto,
