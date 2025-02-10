@@ -1,5 +1,11 @@
 import { PostDocument } from '../../domain/post.entity';
 
+type TExtendedLikesInfo = {
+  likesCount: number;
+  dislikesCount: number;
+  myStatus: 'Like' | 'Dislike' | 'None';
+  newestLikes: { addedAt: Date; userId: string; login: string }[];
+};
 export class PostsViewDto {
   id: string;
   title: string;
@@ -8,6 +14,7 @@ export class PostsViewDto {
   blogId: string;
   blogName: string;
   createdAt: Date;
+  extendedLikesInfo: TExtendedLikesInfo;
 
   static mapToView(post: PostDocument): PostsViewDto {
     const dto = new PostsViewDto();
@@ -19,6 +26,12 @@ export class PostsViewDto {
     dto.createdAt = post.createdAt;
     dto.blogId = post.blogId;
     dto.blogName = post.blogName;
+    dto.extendedLikesInfo = {
+      likesCount: 0,
+      dislikesCount: 0,
+      myStatus: 'None',
+      newestLikes: [],
+    };
 
     return dto;
   }
