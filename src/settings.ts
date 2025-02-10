@@ -1,3 +1,6 @@
+import { config } from 'dotenv';
+config();
+
 export const SETTINGS = {
   GLOBAL_PREFIX: 'api',
   PORT: process.env.PORT || 3000,
