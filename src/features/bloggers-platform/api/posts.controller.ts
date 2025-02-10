@@ -53,14 +53,13 @@ export class PostsController {
   async updatePostById(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostInputDto,
-  ) {
+  ): Promise<void> {
     return await this.postsService.updatePostById(id, updatePostDto);
   }
 
-  // @Delete(':id')
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // async deletePostById(@Param('id') id: string) {
-  //   // TODO
-  //   return await Promise.resolve({});
-  // }
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePostById(@Param('id') id: string): Promise<void> {
+    return await this.postsService.deletePostById(id);
+  }
 }

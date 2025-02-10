@@ -1,6 +1,7 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 // Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
@@ -91,16 +92,17 @@ export class Post {
     this.deletedAt = new Date();
   }
 
-  // /**
-  //  * Updates the blog instance with new data
-  //  * Updating name, description and websiteUrl
-  //  * @param {UpdateBlogInputDto} dto - The data transfer object for blog updates
-  //  */
-  // update(dto: UpdateBlogInputDto) {
-  //   this.name = dto.name;
-  //   this.description = dto.description;
-  //   this.websiteUrl = dto.websiteUrl;
-  // }
+  /**
+   * Updates the post instance with new data
+   * @param {UpdatePostDto} dto - The data transfer object for post updates
+   */
+  update(dto: UpdatePostDto) {
+    this.title = dto.title;
+    this.shortDescription = dto.shortDescription;
+    this.content = dto.content;
+    this.blogId = dto.blogId;
+    this.blogName = dto.blogName;
+  }
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

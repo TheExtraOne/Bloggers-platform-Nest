@@ -34,20 +34,24 @@ export class PostsService {
   }
 
   async updatePostById(id: string, dto: UpdatePostInputDto): Promise<void> {
-    // TODO do not forget to update blog name after blogId was changed
-    // const blog = await this.blogsRepository.findBlogById(id);
-    // blog.update({
-    //   name: dto.name,
-    //   description: dto.description,
-    //   websiteUrl: dto.websiteUrl,
-    // });
-    // await this.blogsRepository.save(blog);
+    const post = await this.postsRepository.findPostById(id);
+    const blog = await this.blogsService.getBlogById(dto.blogId);
+
+    post.update({
+      blogId: dto.blogId,
+      blogName: blog.name,
+      title: dto.title,
+      content: dto.content,
+      shortDescription: dto.shortDescription,
+    });
+
+    await this.postsRepository.save(post);
   }
 
-  // async deleteBlogById(id: string): Promise<void> {
-  //   const blog = await this.blogsRepository.findBlogById(id);
-  //   blog.makeDeleted();
+  async deletePostById(id: string): Promise<void> {
+    const post = await this.postsRepository.findPostById(id);
+    post.makeDeleted();
 
-  //   await this.blogsRepository.save(blog);
-  // }
+    await this.postsRepository.save(post);
+  }
 }
