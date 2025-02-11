@@ -14,6 +14,8 @@ import { PATHS } from 'src/settings';
 import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
 import { GetPostsQueryParams } from './input-dto/get-posts.query-params.input-dto';
 // import { PaginatedViewDto } from 'src/features/dto/base.paginated-view.dto';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
+
 import { PostsViewDto } from './view-dto/posts.view-dto';
 import {
   CreatePostInputDto,
@@ -21,29 +23,29 @@ import {
 } from './input-dto/posts.input-dto';
 import { PostsService } from '../app/posts.service';
 
-export abstract class PaginatedViewDto<T> {
-  abstract items: T;
-  totalCount: number;
-  pagesCount: number;
-  page: number;
-  pageSize: number;
+// export abstract class PaginatedViewDto<T> {
+//   abstract items: T;
+//   totalCount: number;
+//   pagesCount: number;
+//   page: number;
+//   pageSize: number;
 
-  // Static method for mapping
-  public static mapToView<T>(data: {
-    items: T;
-    page: number;
-    size: number;
-    totalCount: number;
-  }): PaginatedViewDto<T> {
-    return {
-      totalCount: data.totalCount,
-      pagesCount: Math.ceil(data.totalCount / data.size),
-      page: data.page,
-      pageSize: data.size,
-      items: data.items,
-    };
-  }
-}
+//   // Static method for mapping
+//   public static mapToView<T>(data: {
+//     items: T;
+//     page: number;
+//     size: number;
+//     totalCount: number;
+//   }): PaginatedViewDto<T> {
+//     return {
+//       totalCount: data.totalCount,
+//       pagesCount: Math.ceil(data.totalCount / data.size),
+//       page: data.page,
+//       pageSize: data.size,
+//       items: data.items,
+//     };
+//   }
+// }
 
 @Controller(PATHS.POSTS)
 export class PostsController {

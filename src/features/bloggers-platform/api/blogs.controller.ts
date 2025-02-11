@@ -18,37 +18,37 @@ import {
   UpdateBlogInputDto,
 } from './input-dto/blogs.input-dto';
 import { BlogsViewDto } from './view-dto/blogs.view-dto';
-// import { PaginatedViewDto } from 'src/features/dto/base.paginated-view.dto';
 import { GetBlogsQueryParams } from './input-dto/get-blogs.query-params.input-dto';
 import { GetPostsQueryParams } from './input-dto/get-posts.query-params.input-dto';
 import { PostsViewDto } from './view-dto/posts.view-dto';
 import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
 import { CreatePostInputDto } from './input-dto/posts.input-dto';
 import { PostsService } from '../app/posts.service';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
 
-export abstract class PaginatedViewDto<T> {
-  abstract items: T;
-  totalCount: number;
-  pagesCount: number;
-  page: number;
-  pageSize: number;
+// export abstract class PaginatedViewDto<T> {
+//   abstract items: T;
+//   totalCount: number;
+//   pagesCount: number;
+//   page: number;
+//   pageSize: number;
 
-  // Static method for mapping
-  public static mapToView<T>(data: {
-    items: T;
-    page: number;
-    size: number;
-    totalCount: number;
-  }): PaginatedViewDto<T> {
-    return {
-      totalCount: data.totalCount,
-      pagesCount: Math.ceil(data.totalCount / data.size),
-      page: data.page,
-      pageSize: data.size,
-      items: data.items,
-    };
-  }
-}
+//   // Static method for mapping
+//   public static mapToView<T>(data: {
+//     items: T;
+//     page: number;
+//     size: number;
+//     totalCount: number;
+//   }): PaginatedViewDto<T> {
+//     return {
+//       totalCount: data.totalCount,
+//       pagesCount: Math.ceil(data.totalCount / data.size),
+//       page: data.page,
+//       pageSize: data.size,
+//       items: data.items,
+//     };
+//   }
+// }
 @Controller(PATHS.BLOGS)
 export class BlogsController {
   constructor(

@@ -3,34 +3,35 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostModelType } from '../../domain/post.entity';
 import { GetPostsQueryParams } from '../../api/input-dto/get-posts.query-params.input-dto';
 // import { PaginatedViewDto } from 'src/features/dto/base.paginated-view.dto';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
 import { PostsViewDto } from '../../api/view-dto/posts.view-dto';
 import { FilterQuery } from 'mongoose';
 import { ERRORS } from 'src/settings';
 import { ObjectId } from 'mongodb';
 
-export abstract class PaginatedViewDto<T> {
-  abstract items: T;
-  totalCount: number;
-  pagesCount: number;
-  page: number;
-  pageSize: number;
+// export abstract class PaginatedViewDto<T> {
+//   abstract items: T;
+//   totalCount: number;
+//   pagesCount: number;
+//   page: number;
+//   pageSize: number;
 
-  // Static method for mapping
-  public static mapToView<T>(data: {
-    items: T;
-    page: number;
-    size: number;
-    totalCount: number;
-  }): PaginatedViewDto<T> {
-    return {
-      totalCount: data.totalCount,
-      pagesCount: Math.ceil(data.totalCount / data.size),
-      page: data.page,
-      pageSize: data.size,
-      items: data.items,
-    };
-  }
-}
+//   // Static method for mapping
+//   public static mapToView<T>(data: {
+//     items: T;
+//     page: number;
+//     size: number;
+//     totalCount: number;
+//   }): PaginatedViewDto<T> {
+//     return {
+//       totalCount: data.totalCount,
+//       pagesCount: Math.ceil(data.totalCount / data.size),
+//       page: data.page,
+//       pageSize: data.size,
+//       items: data.items,
+//     };
+//   }
+// }
 
 @Injectable()
 export class PostsQueryRepository {
