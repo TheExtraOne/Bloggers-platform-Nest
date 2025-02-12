@@ -5,9 +5,11 @@ export const SETTINGS = {
   GLOBAL_PREFIX: 'api',
   PORT: process.env.PORT || 3000,
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017',
+  MAIL_PASSWORD: process.env.MAIL_PASSWORD as string,
 };
 
 export const PATHS = {
+  AUTH: 'auth',
   BLOGS: 'blogs',
   POSTS: 'posts',
   USERS: 'users',

@@ -1,8 +1,12 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
-// import { UpdateUserDto } from '../dto/create-user.dto';
 import { CreateUserDomainDto } from './dto/create-user.domain.dto';
-// import { Name, NameSchema } from './name.schema';
+import {
+  EmailConfirmationSchema,
+  EmailConfirmation,
+  EmailConfirmationStatus,
+} from './email-confirmation.schema';
+import { add } from 'date-fns';
 
 // Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
@@ -36,17 +40,10 @@ export class User {
   email: string;
 
   // TODO: delete after 2 days?
-  /**
-   * Email confirmation status (if not confirmed in 2 days account will be deleted)
-   * @type {boolean}
-   * @default false
-   */
-  @Prop({ type: Boolean, required: true, default: false })
-  isEmailConfirmed: boolean;
 
-  // @Prop(NameSchema) this variant from doc doesn't make validation for inner object
-  //   @Prop({ type: NameSchema })
-  //   name: Name;
+  // @Prop(EmailConfirmationSchema) contains confirmation code, date of expire and confirmation status
+  @Prop({ type: EmailConfirmationSchema })
+  emailConfirmation: EmailConfirmation;
 
   /**
    * Creation timestamp
@@ -65,15 +62,6 @@ export class User {
   deletedAt: Date | null;
 
   /**
-   * Virtual property to get the stringified ObjectId
-   * @returns {string} The string representation of the ID
-   */
-  //   get id() {
-  //     // @ts-ignore
-  //     return this._id.toString();
-  //   }
-
-  /**
    * Factory method to create a User instance
    * @param {CreateUserDto} dto - The data transfer object for user creation
    * @returns {UserDocument} The created user document
@@ -83,7 +71,11 @@ export class User {
     user.email = dto.email;
     user.passwordHash = dto.passwordHash;
     user.login = dto.login;
-    // user.isEmailConfirmed = false;
+    user.emailConfirmation = {
+      confirmationCode: dto.confirmationCode,
+      expirationDate: add(new Date(), { hours: 1, minutes: 30 }),
+      confirmationStatus: EmailConfirmationStatus.Pending,
+    };
 
     return user as UserDocument;
   }

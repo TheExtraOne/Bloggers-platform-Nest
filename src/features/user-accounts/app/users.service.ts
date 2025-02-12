@@ -4,6 +4,8 @@ import { CreateUserInputDto } from '../api/input-dto/users.input-dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument, UserModelType } from '../domain/user.entity';
 import { BcryptService } from './bcrypt.service';
+import { ObjectId } from 'mongodb';
+import { EmailService } from './email.service';
 
 type TExtension = {
   field: string | null;
@@ -16,6 +18,7 @@ export class UserService {
     @InjectModel(User.name) private UserModel: UserModelType,
     private readonly usersRepository: UsersRepository,
     private readonly bcryptService: BcryptService,
+    private readonly emailService: EmailService,
   ) {}
 
   async createUser(dto: CreateUserInputDto): Promise<string> {
@@ -29,6 +32,7 @@ export class UserService {
       throw new BadRequestException(isUnique);
     }
 
+    // Hash the password
     const passwordHash = await this.bcryptService.hashPassword(
       dto.password,
       10,
@@ -38,8 +42,15 @@ export class UserService {
       email: dto.email,
       login: dto.login,
       passwordHash: passwordHash,
+      confirmationCode: new ObjectId().toString(),
     });
     await this.usersRepository.save(newUser);
+
+    // Sending confirmation letter
+    this.emailService.sendRegistrationMail({
+      email: dto.email,
+      confirmationCode: newUser.emailConfirmation.confirmationCode,
+    });
 
     return newUser._id.toString();
   }
@@ -56,8 +67,8 @@ export class UserService {
     email,
     login,
   }: {
-    email: string | null;
-    login: string | null;
+    email?: string;
+    login?: string;
   }): Promise<TExtension[] | []> {
     const errors: TExtension[] = [];
     if (login) {
@@ -73,6 +84,7 @@ export class UserService {
         });
       }
     }
+
     if (email) {
       const isEmailUnique: boolean =
         await this.usersRepository.isUniqueInDatabase({

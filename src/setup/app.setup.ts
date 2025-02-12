@@ -2,7 +2,7 @@ import { pipesSetup } from './pipes.setup';
 import { INestApplication } from '@nestjs/common';
 // import { globalPrefixSetup } from './global-prefix.setup';
 import { swaggerSetup } from './swagger.setup';
-import { HttpExceptionFilter } from 'src/exception.filter';
+import { HttpExceptionFilter } from '../exception.filter';
 
 // TODO: refactor
 export function appSetup(app: INestApplication) {
