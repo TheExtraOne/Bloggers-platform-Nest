@@ -1,14 +1,28 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  INestApplication,
+  ValidationError,
+  ValidationPipe,
+} from '@nestjs/common';
 
 export function pipesSetup(app: INestApplication) {
-  //Глобальный пайп для валидации и трансформации входящих данных.
-  //На следующем занятии рассмотрим подробнее
+  // A global pipe for validation and incoming data transformation.
   app.useGlobalPipes(
     new ValidationPipe({
-      //class-transformer создает экземпляр dto
-      //соответственно применятся значения по-умолчанию
-      //и методы классов dto
+      // class-transformer creates an instance dto, applies default values and class methods.
       transform: true,
+      stopAtFirstError: true,
+      exceptionFactory: (errors: ValidationError[]) => {
+        // Mapping errors to the desired format
+        const errorsMessages = errors.map((error: ValidationError) => {
+          const field = error.property.toLowerCase();
+          return {
+            message: error.constraints?.[Object.keys(error.constraints)[0]],
+            field,
+          };
+        });
+        throw new BadRequestException(errorsMessages);
+      },
     }),
   );
 }

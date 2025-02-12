@@ -25,4 +25,28 @@ export class UsersRepository {
 
     return user;
   }
+
+  async findUserByLoginOrEmail(
+    loginOrEmail: string,
+  ): Promise<UserDocument | null> {
+    return this.UserModel.findOne({
+      $or: [{ login: loginOrEmail }, { email: loginOrEmail }],
+      deletedAt: null,
+    });
+  }
+
+  async isUniqueInDatabase({
+    fieldName,
+    fieldValue,
+  }: {
+    fieldName: string;
+    fieldValue: string;
+  }): Promise<boolean> {
+    const user = await this.UserModel.findOne({
+      [fieldName]: fieldValue,
+      deletedAt: null,
+    });
+
+    return !user;
+  }
 }
