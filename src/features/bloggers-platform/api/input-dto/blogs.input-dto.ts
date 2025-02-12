@@ -1,33 +1,48 @@
-// import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsNotEmpty, IsString, Matches, MaxLength } from 'class-validator';
 
 export class CreateBlogInputDto {
-  // @IsString()
-  // @IsNotEmpty()
-  // @Length(3, 30)
+  @IsString()
+  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @IsNotEmpty()
+  @MaxLength(15)
   name: string;
 
-  // @IsString()
-  // @IsNotEmpty()
-  // @Length(6, 20)
+  @IsString()
+  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @IsNotEmpty()
+  @MaxLength(500)
   description: string;
 
-  // @IsEmail()
-  // @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @IsNotEmpty()
+  @MaxLength(100)
+  @Matches(
+    /^(http|https):\/\/[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/,
+  )
   websiteUrl: string;
 }
 
 export class UpdateBlogInputDto {
-  // @IsString()
-  // @IsNotEmpty()
-  // @Length(3, 30)
+  @IsString()
+  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @IsNotEmpty()
+  @MaxLength(15)
   name: string;
 
-  // @IsString()
-  // @IsNotEmpty()
-  // @Length(6, 20)
+  @IsString()
+  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @IsNotEmpty()
+  @MaxLength(500)
   description: string;
 
-  // @IsEmail()
-  // @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @IsNotEmpty()
+  @MaxLength(100)
+  @Matches(
+    /^(http|https):\/\/[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/,
+  )
   websiteUrl: string;
 }
