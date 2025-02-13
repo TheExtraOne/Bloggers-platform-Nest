@@ -19,7 +19,7 @@ export class CreateUserInputDto {
   )
   @IsNotEmpty()
   @Length(3, 30)
-  @Matches(/^[a-zA-Z0-9_-]+$/)
+  @Matches(/^[a-zA-Z0-9_-]*$/)
   login: string;
 
   @IsString()
@@ -32,6 +32,6 @@ export class CreateUserInputDto {
 
   @IsEmail()
   @IsNotEmpty()
-  @Matches(/^[\w-\\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+  @Matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
   email: string;
 }
