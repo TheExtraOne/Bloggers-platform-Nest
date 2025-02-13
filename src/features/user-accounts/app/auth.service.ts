@@ -84,7 +84,10 @@ export class AuthService {
     const user: UserDocument | null =
       await this.usersRepository.findUserByConfirmationCode(dto.code);
     // Check if user with such confirmationCode exist
-    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    if (!user)
+      throw new BadRequestException([
+        { field: 'code', message: 'already confirmed' },
+      ]);
 
     // Check if confirmationCode has already been applied
     if (
@@ -111,7 +114,10 @@ export class AuthService {
     const user: UserDocument | null =
       await this.usersRepository.findUserByLoginOrEmail(dto.email);
     // Check if user with such email exists
-    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    if (!user)
+      throw new BadRequestException([
+        { field: 'email', message: 'already confirmed' },
+      ]);
     // Check if confirmationCode has already been applied
     if (
       user.emailConfirmation.confirmationStatus ===
