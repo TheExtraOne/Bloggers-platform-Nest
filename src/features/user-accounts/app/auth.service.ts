@@ -10,12 +10,17 @@ import { UsersRepository } from '../infrastructure/users.repository';
 import { UserDocument } from '../domain/user.entity';
 import { ERRORS } from 'src/settings';
 import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
+import { ResendRegistrationInputDto } from '../api/input-dto/resend-registration.inout-dto';
+import { ObjectId } from 'mongodb';
+import { add } from 'date-fns';
+import { EmailService } from './email.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly usersRepository: UsersRepository,
+    private readonly emailService: EmailService,
   ) {}
 
   async createUser(dto: CreateUserInputDto): Promise<string> {
@@ -47,5 +52,36 @@ export class AuthService {
     user.emailConfirmation.confirmationStatus =
       EmailConfirmationStatus.Confirmed;
     await this.usersRepository.save(user);
+  }
+
+  async resendRegistration(dto: ResendRegistrationInputDto): Promise<void> {
+    const user: UserDocument | null =
+      await this.usersRepository.findUserByLoginOrEmail(dto.email);
+    // Check if user with such email exists
+    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    // Check if confirmationCode has already been applied
+    if (
+      user.emailConfirmation.confirmationStatus ===
+      EmailConfirmationStatus.Confirmed
+    )
+      throw new BadRequestException([
+        { field: 'code', message: 'already confirmed' },
+      ]);
+
+    // Update user confirmationCode and expirationDate
+    const newConfirmationCode = new ObjectId().toString();
+    user.emailConfirmation.confirmationCode = newConfirmationCode;
+    user.emailConfirmation.expirationDate = add(new Date(), {
+      hours: 1,
+      minutes: 30,
+    });
+
+    await this.usersRepository.save(user);
+
+    // Send confirmation letter
+    this.emailService.sendRegistrationMail({
+      email: dto.email,
+      confirmationCode: newConfirmationCode,
+    });
   }
 }

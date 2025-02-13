@@ -3,6 +3,7 @@ import { PATHS } from 'src/settings';
 import { CreateUserInputDto } from './input-dto/users.input-dto';
 import { AuthService } from '../app/auth.service';
 import { ConfirmRegistrationInputDto } from './input-dto/confirm-registration.input-dto';
+import { ResendRegistrationInputDto } from './input-dto/resend-registration.inout-dto';
 
 @Controller(PATHS.AUTH)
 export class AuthController {
@@ -21,5 +22,14 @@ export class AuthController {
     @Body() dto: ConfirmRegistrationInputDto,
   ): Promise<void> {
     await this.authService.confirmRegistration(dto);
+  }
+
+  // TODO: add rate limiting
+  @Post('registration-email-resending')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registrationEmailResending(
+    @Body() dto: ResendRegistrationInputDto,
+  ): Promise<void> {
+    await this.authService.resendRegistration(dto);
   }
 }
