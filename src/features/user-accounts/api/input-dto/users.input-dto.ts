@@ -18,7 +18,7 @@ export class CreateUserInputDto {
     typeof value === 'string' ? value?.trim() : value,
   )
   @IsNotEmpty()
-  @Length(3, 30)
+  @Length(3, 10)
   @Matches(/^[a-zA-Z0-9_-]*$/)
   login: string;
 
