@@ -10,6 +10,7 @@ import { AuthController } from './api/auth.controller';
 import { AuthService } from './app/auth.service';
 import { EmailService } from './app/email.service';
 import { JwtService } from './app/jwt.service';
+import { BasicAuthGuard } from './guards/basic.guard';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { JwtService } from './app/jwt.service';
     AuthService,
     EmailService,
     JwtService,
+    BasicAuthGuard,
   ],
   //   exports: [UsersRepository],
 })
