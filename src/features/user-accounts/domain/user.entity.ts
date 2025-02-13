@@ -7,6 +7,10 @@ import {
   EmailConfirmationStatus,
 } from './email-confirmation.schema';
 import { add } from 'date-fns';
+import {
+  PasswordRecovery,
+  PasswordRecoverySchema,
+} from './password-recovery.schema';
 
 // Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
@@ -40,10 +44,13 @@ export class User {
   email: string;
 
   // TODO: delete after 2 days?
-
   // @Prop(EmailConfirmationSchema) contains confirmation code, date of expire and confirmation status
   @Prop({ type: EmailConfirmationSchema })
   emailConfirmation: EmailConfirmation;
+
+  // @Prop(PasswordRecoverySchema) contains recovery code, date of expire and recovery status
+  @Prop({ type: PasswordRecoverySchema })
+  passwordRecovery: PasswordRecovery;
 
   /**
    * Creation timestamp
@@ -75,6 +82,11 @@ export class User {
       confirmationCode: dto.confirmationCode,
       expirationDate: add(new Date(), { hours: 1, minutes: 30 }),
       confirmationStatus: EmailConfirmationStatus.Pending,
+    };
+    user.passwordRecovery = {
+      recoveryCode: null,
+      expirationDate: null,
+      recoveryStatus: null,
     };
 
     return user as UserDocument;

@@ -4,6 +4,7 @@ import { CreateUserInputDto } from './input-dto/users.input-dto';
 import { AuthService } from '../app/auth.service';
 import { ConfirmRegistrationInputDto } from './input-dto/confirm-registration.input-dto';
 import { ResendRegistrationInputDto } from './input-dto/resend-registration.inout-dto';
+import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
 
 @Controller(PATHS.AUTH)
 export class AuthController {
@@ -31,5 +32,12 @@ export class AuthController {
     @Body() dto: ResendRegistrationInputDto,
   ): Promise<void> {
     await this.authService.resendRegistration(dto);
+  }
+
+  // TODO: add rate limiting
+  @Post('password-recovery')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async passwordRecovery(@Body() dto: PasswordRecoveryInputDto): Promise<void> {
+    await this.authService.recoverPassword(dto);
   }
 }

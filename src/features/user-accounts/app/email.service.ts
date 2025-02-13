@@ -24,6 +24,26 @@ export class EmailService {
     });
   }
 
+  sendRecoveryPasswordMail({
+    userEmail,
+    recoveryCode,
+  }: {
+    recoveryCode: string;
+    userEmail: string;
+  }): void {
+    this.sendEmail({
+      userEmail,
+      subject: 'Blogs&Posts platform',
+      message: `<h1>Password recovery</h1>
+                    <p>To recover your password please follow the link below:
+                       <a href='https://somesite.com/password-recovery?recoveryCode=${recoveryCode}'>recovery password</a>
+                    </p>
+                    <p>Or use the link below:
+                      <a href='https://somesite.com/password-recovery?recoveryCode=${recoveryCode}'>https://somesite.com/password-recovery?recoveryCode=${recoveryCode}</a>
+                    </p>`,
+    });
+  }
+
   sendEmail({
     userEmail,
     subject,
@@ -52,6 +72,6 @@ export class EmailService {
         html: message,
       })
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      .catch((e) => console.log(e));
+      .catch((e: Error) => console.log(e));
   }
 }
