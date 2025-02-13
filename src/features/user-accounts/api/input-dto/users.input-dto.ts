@@ -12,14 +12,20 @@ export class CreateUserInputDto {
   //   @IsUserAlreadyExist({
   //     message: "User $value already exists. Choose another name."
   //  })
+  // TODO: move is_string,trim and check for empty to a custom pipe
   @IsString()
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @Length(3, 30)
   @Matches(/^[a-zA-Z0-9_-]+$/)
   login: string;
 
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @Length(6, 20)
   password: string;

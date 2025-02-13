@@ -8,7 +8,9 @@ export class GetUsersQueryParams extends BaseSortablePaginationParams<UsersSortB
     (o: Record<string, string | undefined>) => typeof o.sortBy !== 'undefined',
   )
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @IsIn(Object.values(UsersSortBy))
   sortBy = UsersSortBy.CreatedAt;
@@ -18,7 +20,9 @@ export class GetUsersQueryParams extends BaseSortablePaginationParams<UsersSortB
       typeof o.searchLoginTerm !== 'undefined' && o.searchLoginTerm !== null,
   )
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   searchLoginTerm: string | null = null;
 
@@ -27,7 +31,9 @@ export class GetUsersQueryParams extends BaseSortablePaginationParams<UsersSortB
       typeof o.searchEmailTerm !== 'undefined' && o.searchEmailTerm !== null,
   )
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   searchEmailTerm: string | null = null;
 }

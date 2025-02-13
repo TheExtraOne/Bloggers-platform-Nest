@@ -115,7 +115,7 @@ export class AuthService {
       EmailConfirmationStatus.Confirmed
     )
       throw new BadRequestException([
-        { field: 'code', message: 'already confirmed' },
+        { field: 'email', message: 'already confirmed' },
       ]);
 
     // Update user confirmationCode and expirationDate

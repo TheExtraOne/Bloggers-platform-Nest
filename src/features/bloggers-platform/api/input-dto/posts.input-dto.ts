@@ -3,50 +3,66 @@ import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
 
 export class CreatePostInputDto {
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(30)
   title: string;
 
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(100)
   shortDescription: string;
 
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(1000)
   content: string;
 
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   blogId: string;
 }
 
 export class UpdatePostInputDto {
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(30)
   title: string;
 
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(100)
   shortDescription: string;
 
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(1000)
   content: string;
 
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   blogId: string;
 }

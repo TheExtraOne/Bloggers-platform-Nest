@@ -44,7 +44,9 @@ export abstract class BaseSortablePaginationParams<T> extends PaginationParams {
     (o: Record<string, string>) => typeof o.sortDirection !== 'undefined',
   )
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @IsIn(Object.values(SortDirection))
   sortDirection: SortDirection = SortDirection.Desc;

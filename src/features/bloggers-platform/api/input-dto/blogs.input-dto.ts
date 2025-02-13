@@ -3,19 +3,25 @@ import { IsNotEmpty, IsString, Matches, MaxLength } from 'class-validator';
 
 export class CreateBlogInputDto {
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(15)
   name: string;
 
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(500)
   description: string;
 
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(100)
   @Matches(
@@ -26,19 +32,25 @@ export class CreateBlogInputDto {
 
 export class UpdateBlogInputDto {
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(15)
   name: string;
 
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(500)
   description: string;
 
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @MaxLength(100)
   @Matches(

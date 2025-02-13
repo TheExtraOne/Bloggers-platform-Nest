@@ -8,7 +8,9 @@ export class GetBlogsQueryParams extends BaseSortablePaginationParams<BlogsSortB
     (o: Record<string, string | undefined>) => typeof o.sortBy !== 'undefined',
   )
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @IsIn(Object.values(BlogsSortBy))
   sortBy = BlogsSortBy.CreatedAt;
@@ -18,7 +20,9 @@ export class GetBlogsQueryParams extends BaseSortablePaginationParams<BlogsSortB
       typeof o.searchNameTerm !== 'undefined' && o.searchNameTerm !== null,
   )
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   searchNameTerm: string | null = null;
 }

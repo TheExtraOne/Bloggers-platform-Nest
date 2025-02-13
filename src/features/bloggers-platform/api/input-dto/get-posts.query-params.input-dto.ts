@@ -8,7 +8,9 @@ export class GetPostsQueryParams extends BaseSortablePaginationParams<PostsSortB
     (o: Record<string, string | undefined>) => typeof o.sortBy !== 'undefined',
   )
   @IsString()
-  @Transform(({ value }: { value?: string | null }) => value?.trim())
+  @Transform(({ value }: { value?: string | null }) =>
+    typeof value === 'string' ? value?.trim() : value,
+  )
   @IsNotEmpty()
   @IsIn(Object.values(PostsSortBy))
   sortBy = PostsSortBy.CreatedAt;
