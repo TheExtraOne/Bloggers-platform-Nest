@@ -73,7 +73,10 @@ export class AuthService {
     return { accessToken };
   }
 
-  async createUser(dto: CreateUserInputDto): Promise<string> {
+  async createUser(dto: CreateUserInputDto): Promise<{
+    userId: string;
+    confirmationCode: string;
+  }> {
     return await this.userService.createUser(dto);
   }
 

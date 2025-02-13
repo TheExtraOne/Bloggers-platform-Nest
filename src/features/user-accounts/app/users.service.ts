@@ -21,7 +21,9 @@ export class UserService {
     private readonly emailService: EmailService,
   ) {}
 
-  async createUser(dto: CreateUserInputDto): Promise<string> {
+  async createUser(
+    dto: CreateUserInputDto,
+  ): Promise<{ userId: string; confirmationCode: string }> {
     // Check if user with such email and login exists
     const isUnique = await this.checkIfFieldIsUnique({
       email: dto.email,
@@ -38,21 +40,25 @@ export class UserService {
       10,
     );
 
+    const confirmationCode = new ObjectId().toString();
     const newUser = this.UserModel.createInstance({
       email: dto.email,
       login: dto.login,
       passwordHash: passwordHash,
-      confirmationCode: new ObjectId().toString(),
+      confirmationCode: confirmationCode,
     });
     await this.usersRepository.save(newUser);
 
     // Send confirmation letter
     this.emailService.sendRegistrationMail({
       email: dto.email,
-      confirmationCode: newUser.emailConfirmation.confirmationCode,
+      confirmationCode: confirmationCode,
     });
 
-    return newUser._id.toString();
+    return {
+      userId: newUser._id.toString(),
+      confirmationCode: confirmationCode,
+    };
   }
 
   async deleteUser(id: string): Promise<void> {

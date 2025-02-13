@@ -18,12 +18,14 @@ import { UserViewDto } from './view-dto/users.view-dto';
 import { UserService } from '../app/users.service';
 import { PATHS } from 'src/settings';
 import { BasicAuthGuard } from '../guards/basic.guard';
+import { AuthService } from '../app/auth.service';
 
 @UseGuards(BasicAuthGuard)
 @Controller(PATHS.USERS)
 export class UserController {
   constructor(
     private readonly userService: UserService,
+    private readonly authService: AuthService,
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
@@ -40,7 +42,11 @@ export class UserController {
   async createUser(
     @Body() createUserDto: CreateUserInputDto,
   ): Promise<UserViewDto> {
-    const userId: string = await this.userService.createUser(createUserDto);
+    const { userId, confirmationCode } =
+      await this.userService.createUser(createUserDto);
+
+    // Confirm email if user was created manually
+    await this.authService.confirmRegistration({ code: confirmationCode });
 
     return await this.usersQueryRepository.findUserById(userId);
   }
