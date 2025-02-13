@@ -1,4 +1,12 @@
-import { Controller, Post, HttpCode, HttpStatus, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  Body,
+} from '@nestjs/common';
 import { PATHS } from 'src/settings';
 import { CreateUserInputDto } from './input-dto/users.input-dto';
 import { AuthService } from '../app/auth.service';
@@ -7,10 +15,35 @@ import { ResendRegistrationInputDto } from './input-dto/resend-registration.inou
 import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
 import { NewPasswordInputDto } from './input-dto/new-password.input-dto';
 import { LoginInputDto } from './input-dto/login.input-dto';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { ExtractUserFromRequest } from '../guards/decorators/extract.userId-from-request';
+import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 
 @Controller(PATHS.AUTH)
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersQueryRepository: UsersQueryRepository,
+  ) {}
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getUserInformation(
+    @ExtractUserFromRequest() user: { userId: string },
+  ): Promise<{
+    email: string;
+    login: string;
+    userId: string;
+  }> {
+    // TODO: refactor
+    const result = await this.usersQueryRepository.findUserById(user.userId);
+    const mappedUser = {
+      email: result.email,
+      login: result.login,
+      userId: result.id,
+    };
+    return mappedUser;
+  }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)

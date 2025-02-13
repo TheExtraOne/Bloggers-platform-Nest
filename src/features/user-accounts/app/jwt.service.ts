@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
 import { SETTINGS } from 'src/settings';
 
@@ -40,5 +40,26 @@ export class JwtService {
     }
 
     return token;
+  }
+
+  verifyToken({ token, type }: { token: string; type?: TOKEN_TYPE }): string {
+    try {
+      let secret = SETTINGS.JWT_SECRET;
+      if (type)
+        secret =
+          type === TOKEN_TYPE.AC_TOKEN
+            ? SETTINGS.AC_SECRET
+            : SETTINGS.RT_SECRET;
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const result: Record<string, string> | string = jwt.verify(token, secret);
+
+      if (typeof result === 'string') throw new UnauthorizedException();
+
+      return result.userId;
+    } catch (error) {
+      console.log('error', error);
+      throw new UnauthorizedException();
+    }
   }
 }

@@ -11,6 +11,7 @@ import { AuthService } from './app/auth.service';
 import { EmailService } from './app/email.service';
 import { JwtService } from './app/jwt.service';
 import { BasicAuthGuard } from './guards/basic.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { BasicAuthGuard } from './guards/basic.guard';
     EmailService,
     JwtService,
     BasicAuthGuard,
+    JwtAuthGuard,
   ],
   //   exports: [UsersRepository],
 })
