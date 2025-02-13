@@ -9,6 +9,7 @@ import { BcryptService } from './app/bcrypt.service';
 import { AuthController } from './api/auth.controller';
 import { AuthService } from './app/auth.service';
 import { EmailService } from './app/email.service';
+import { JwtService } from './app/jwt.service';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { EmailService } from './app/email.service';
     BcryptService,
     AuthService,
     EmailService,
+    JwtService,
   ],
   //   exports: [UsersRepository],
 })

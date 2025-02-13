@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from './users.service';
 import { CreateUserInputDto } from '../api/input-dto/users.input-dto';
@@ -18,6 +19,8 @@ import { PasswordRecoveryInputDto } from '../api/input-dto/password-recovery.inp
 import { PasswordRecoveryStatus } from '../domain/password-recovery.schema';
 import { NewPasswordInputDto } from '../api/input-dto/new-password.input-dto';
 import { BcryptService } from './bcrypt.service';
+import { LoginInputDto } from '../api/input-dto/login.input-dto';
+import { JwtService, TOKEN_TYPE } from './jwt.service';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +29,49 @@ export class AuthService {
     private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
     private readonly bcryptService: BcryptService,
+    private readonly jwtService: JwtService,
   ) {}
+
+  async login(dto: LoginInputDto): Promise<{ accessToken: string }> {
+    const user = await this.usersRepository.findUserByLoginOrEmail(
+      dto.loginOrEmail,
+    );
+    // Check that such user exists
+    if (!user) throw new UnauthorizedException();
+    // Check that user confirmed his email
+    if (
+      user.emailConfirmation.confirmationStatus !==
+      EmailConfirmationStatus.Confirmed
+    )
+      throw new UnauthorizedException();
+    // Check that user password is correct
+    const isPasswordCorrect = await this.bcryptService.comparePasswords(
+      dto.password,
+      user.passwordHash,
+    );
+    if (!isPasswordCorrect) throw new UnauthorizedException();
+
+    const userId = user._id.toString();
+    // const deviceId = new ObjectId();
+    const accessToken: string = this.jwtService.createToken({
+      payload: { userId },
+      type: TOKEN_TYPE.AC_TOKEN,
+    });
+    // const refreshToken: string = await this.jwtService.createToken({
+    //   payload: { userId, deviceId: deviceId.toString() },
+    //   type: TOKEN_TYPE.R_TOKEN,
+    // });
+
+    // await this.securityService.createRefreshTokenMeta({
+    //   refreshToken,
+    //   title: req.headers['user-agent'] || 'Unknown device',
+    //   ip: req.ip || '::1',
+    //   deviceId,
+    // });
+
+    // res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
+    return { accessToken };
+  }
 
   async createUser(dto: CreateUserInputDto): Promise<string> {
     return await this.userService.createUser(dto);

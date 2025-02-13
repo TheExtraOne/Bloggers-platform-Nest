@@ -6,10 +6,18 @@ import { ConfirmRegistrationInputDto } from './input-dto/confirm-registration.in
 import { ResendRegistrationInputDto } from './input-dto/resend-registration.inout-dto';
 import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
 import { NewPasswordInputDto } from './input-dto/new-password.input-dto';
+import { LoginInputDto } from './input-dto/login.input-dto';
 
 @Controller(PATHS.AUTH)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() dto: LoginInputDto): Promise<{ accessToken: string }> {
+    return await this.authService.login(dto);
+  }
+
   // TODO: add rate limiting
   @Post('registration')
   @HttpCode(HttpStatus.CREATED)

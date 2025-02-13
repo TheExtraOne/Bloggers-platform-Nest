@@ -21,10 +21,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         errorsMessages: responseBody.message,
       };
-
       response.status(status).json(errors);
     } else if (status === 404) {
       response.sendStatus(404);
+    } else if (status === 401) {
+      response.sendStatus(401);
     } else {
       response.status(status).json({
         statusCode: status,
