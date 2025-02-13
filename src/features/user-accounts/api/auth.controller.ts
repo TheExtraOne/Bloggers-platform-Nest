@@ -53,7 +53,7 @@ export class AuthController {
 
   // TODO: add rate limiting
   @Post('registration')
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async createUser(@Body() dto: CreateUserInputDto): Promise<void> {
     await this.authService.createUser(dto);
   }
