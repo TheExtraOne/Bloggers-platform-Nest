@@ -35,6 +35,13 @@ export class UsersRepository {
     });
   }
 
+  async findUserByConfirmationCode(code: string): Promise<UserDocument | null> {
+    return this.UserModel.findOne({
+      'emailConfirmation.confirmationCode': code,
+      deletedAt: null,
+    });
+  }
+
   async isUniqueInDatabase({
     fieldName,
     fieldValue,

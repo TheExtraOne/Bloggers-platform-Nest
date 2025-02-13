@@ -46,7 +46,7 @@ export class UserService {
     });
     await this.usersRepository.save(newUser);
 
-    // Sending confirmation letter
+    // Send confirmation letter
     this.emailService.sendRegistrationMail({
       email: dto.email,
       confirmationCode: newUser.emailConfirmation.confirmationCode,
