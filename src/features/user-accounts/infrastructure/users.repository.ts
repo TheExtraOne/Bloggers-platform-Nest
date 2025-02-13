@@ -42,6 +42,15 @@ export class UsersRepository {
     });
   }
 
+  async findUserByPasswordRecoveryCode(
+    recoveryCode: string,
+  ): Promise<UserDocument | null> {
+    return this.UserModel.findOne({
+      'passwordRecovery.recoveryCode': recoveryCode,
+      deletedAt: null,
+    });
+  }
+
   async isUniqueInDatabase({
     fieldName,
     fieldValue,
