@@ -118,7 +118,7 @@ export class AuthService {
     // Check if user with such email exists
     if (!user)
       throw new BadRequestException([
-        { field: 'email', message: 'already confirmed' },
+        { field: 'email', message: 'incorrect email' },
       ]);
 
     // Check if confirmationCode has already been applied

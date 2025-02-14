@@ -54,7 +54,6 @@ export class EmailService {
     subject: string;
     message: string;
   }): void {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const transporter = nodemailer.createTransport({
       service: 'Mail.ru',
       auth: {
@@ -63,16 +62,13 @@ export class EmailService {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     transporter
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       .sendMail({
         from: 'Ekaterina <kate_blogs_posts_it_incubator@mail.ru>',
         to: userEmail,
         subject,
         html: message,
       })
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       .catch((e: Error) => console.log(e));
   }
 }

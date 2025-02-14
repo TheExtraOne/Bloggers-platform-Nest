@@ -15,7 +15,7 @@ import { ConfirmRegistrationInputDto } from './input-dto/confirm-registration.in
 import { ResendRegistrationInputDto } from './input-dto/resend-registration.inout-dto';
 import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
 import { NewPasswordInputDto } from './input-dto/new-password.input-dto';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../guards/jwt/jwt-auth.guard';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 
@@ -26,6 +26,7 @@ export class AuthController {
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
+  // TODO: add userId extraction
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getUserInformation(
@@ -37,15 +38,16 @@ export class AuthController {
   }> {
     const { userId } = req.user;
     const result = await this.usersQueryRepository.findUserById(userId);
-    // TODO: refactor
+
     const mappedUser = {
       email: result.email,
       login: result.login,
       userId: result.id,
     };
+
     return mappedUser;
   }
-
+  // TODO: add userId extraction
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)

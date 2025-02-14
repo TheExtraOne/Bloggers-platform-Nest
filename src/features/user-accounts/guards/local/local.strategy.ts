@@ -17,7 +17,10 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   // Validate method returns data that will be stored in req.user later
-  async validate(loginOrEmail: string, password: string): Promise<string> {
+  async validate(
+    loginOrEmail: string,
+    password: string,
+  ): Promise<{ userId: string }> {
     // Validating incoming parameters
     const loginDto = plainToInstance(LoginInputDto, { loginOrEmail, password });
     const errors = await validate(loginDto);
@@ -34,6 +37,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     const userId = await this.authService.validateUser(loginOrEmail, password);
     if (!userId) throw new UnauthorizedException();
 
-    return userId;
+    return { userId };
   }
 }

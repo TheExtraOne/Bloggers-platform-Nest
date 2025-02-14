@@ -11,9 +11,9 @@ import { AuthService } from './app/auth.service';
 import { EmailService } from './app/email.service';
 import { CustomJwtService } from './app/custom-jwt.service';
 import { BasicAuthGuard } from './guards/basic.guard';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './guards/local/local.strategy';
+import { JwtStrategy } from './guards/jwt/jwt.strategy';
 
 @Module({
   imports: [
@@ -34,7 +34,7 @@ import { LocalStrategy } from './guards/local/local.strategy';
     EmailService,
     CustomJwtService,
     BasicAuthGuard,
-    JwtAuthGuard,
+    JwtStrategy,
     LocalStrategy,
   ],
   //   exports: [UsersRepository],

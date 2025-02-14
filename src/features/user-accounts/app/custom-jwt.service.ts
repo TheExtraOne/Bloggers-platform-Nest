@@ -43,29 +43,29 @@ export class CustomJwtService {
 
     return token;
   }
+  // TODO: delete?
+  // async verifyToken({
+  //   token,
+  //   type,
+  // }: {
+  //   token: string;
+  //   type?: TOKEN_TYPE;
+  // }): Promise<{ userId: string }> {
+  //   let payload: { userId: string } = { userId: '' };
+  //   let secret = SETTINGS.JWT_SECRET;
+  //   if (type)
+  //     secret =
+  //       type === TOKEN_TYPE.AC_TOKEN ? SETTINGS.AC_SECRET : SETTINGS.RT_SECRET;
 
-  async verifyToken({
-    token,
-    type,
-  }: {
-    token: string;
-    type?: TOKEN_TYPE;
-  }): Promise<{ userId: string }> {
-    let payload: { userId: string } = { userId: '' };
-    let secret = SETTINGS.JWT_SECRET;
-    if (type)
-      secret =
-        type === TOKEN_TYPE.AC_TOKEN ? SETTINGS.AC_SECRET : SETTINGS.RT_SECRET;
+  //   try {
+  //     payload = await this.jwtService.verifyAsync(token, {
+  //       secret,
+  //     });
+  //   } catch (error) {
+  //     console.log('error', error);
+  //     throw new UnauthorizedException();
+  //   }
 
-    try {
-      payload = await this.jwtService.verifyAsync(token, {
-        secret,
-      });
-    } catch (error) {
-      console.log('error', error);
-      throw new UnauthorizedException();
-    }
-
-    return payload;
-  }
+  //   return payload;
+  // }
 }

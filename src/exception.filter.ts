@@ -15,10 +15,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     const responseBody: any = exception.getResponse();
 
-    // TODO: add another status codes
     if (status === 400) {
       const errors = {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         errorsMessages: responseBody.message,
       };
       response.status(status).json(errors);
