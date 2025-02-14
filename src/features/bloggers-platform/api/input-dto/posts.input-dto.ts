@@ -1,68 +1,36 @@
-import { Transform } from 'class-transformer';
-import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
+import { MaxLength } from 'class-validator';
+import { IsStringWithTrim } from '../../../../core/decorators/is-not-empty-string';
 
 export class CreatePostInputDto {
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   @MaxLength(30)
   title: string;
 
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   @MaxLength(100)
   shortDescription: string;
 
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   @MaxLength(1000)
   content: string;
 
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   blogId: string;
 }
 
 export class UpdatePostInputDto {
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   @MaxLength(30)
   title: string;
 
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   @MaxLength(100)
   shortDescription: string;
 
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   @MaxLength(1000)
   content: string;
 
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   blogId: string;
 }

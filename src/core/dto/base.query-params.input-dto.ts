@@ -1,14 +1,8 @@
 // Basic class for query params with pagination
 // Default values are set automatically in global ValidationPipe in main.ts
-import { Transform, Type } from 'class-transformer';
-import {
-  IsIn,
-  IsInt,
-  IsNotEmpty,
-  IsString,
-  Min,
-  ValidateIf,
-} from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsInt, Min, ValidateIf } from 'class-validator';
+import { IsStringWithTrim } from '../decorators/is-not-empty-string';
 
 class PaginationParams {
   @ValidateIf(
@@ -43,12 +37,8 @@ export abstract class BaseSortablePaginationParams<T> extends PaginationParams {
   @ValidateIf(
     (o: Record<string, string>) => typeof o.sortDirection !== 'undefined',
   )
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
-  @IsIn(Object.values(SortDirection))
+  @IsStringWithTrim()
+  @IsEnum(SortDirection)
   sortDirection: SortDirection = SortDirection.Desc;
 
   abstract sortBy: T;

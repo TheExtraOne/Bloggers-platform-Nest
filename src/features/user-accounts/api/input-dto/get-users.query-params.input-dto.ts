@@ -1,39 +1,27 @@
-import { IsIn, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { IsEnum, ValidateIf } from 'class-validator';
 import { BaseSortablePaginationParams } from '../../../../core/dto/base.query-params.input-dto';
 import { UsersSortBy } from './users-sort-by';
-import { Transform } from 'class-transformer';
+import { IsStringWithTrim } from '../../../../core/decorators/is-not-empty-string';
 
 export class GetUsersQueryParams extends BaseSortablePaginationParams<UsersSortBy> {
   @ValidateIf(
     (o: Record<string, string | undefined>) => typeof o.sortBy !== 'undefined',
   )
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
-  @IsIn(Object.values(UsersSortBy))
+  @IsStringWithTrim()
+  @IsEnum(UsersSortBy)
   sortBy = UsersSortBy.CreatedAt;
 
   @ValidateIf(
     (o: Record<string, string | undefined>) =>
       typeof o.searchLoginTerm !== 'undefined' && o.searchLoginTerm !== null,
   )
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   searchLoginTerm: string | null = null;
 
   @ValidateIf(
     (o: Record<string, string | undefined>) =>
       typeof o.searchEmailTerm !== 'undefined' && o.searchEmailTerm !== null,
   )
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   searchEmailTerm: string | null = null;
 }

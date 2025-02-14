@@ -1,18 +1,9 @@
-import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsStringWithTrim } from '../../../../core/decorators/is-not-empty-string';
 
 export class LoginInputDto {
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   loginOrEmail: string;
 
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   password: string;
 }

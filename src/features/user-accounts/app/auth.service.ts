@@ -31,7 +31,6 @@ export class AuthService {
     private readonly customJwtService: CustomJwtService,
   ) {}
 
-  // TODO: delete and use jwt servise?
   async login(userId: string): Promise<{ accessToken: string }> {
     const accessToken: string = await this.customJwtService.createToken({
       payload: { userId },

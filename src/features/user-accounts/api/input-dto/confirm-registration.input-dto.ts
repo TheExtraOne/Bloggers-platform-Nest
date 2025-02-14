@@ -1,11 +1,6 @@
-import { IsNotEmpty, IsString } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { IsStringWithTrim } from '../../../../core/decorators/is-not-empty-string';
 
 export class ConfirmRegistrationInputDto {
-  @IsString()
-  @Transform(({ value }: { value?: string | null }) =>
-    typeof value === 'string' ? value?.trim() : value,
-  )
-  @IsNotEmpty()
+  @IsStringWithTrim()
   code: string;
 }

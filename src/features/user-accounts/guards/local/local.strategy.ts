@@ -6,6 +6,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from '../../app/auth.service';
+import { LoginInputDto } from '../../api/input-dto/login.input-dto';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -15,25 +18,22 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
 
   // Validate method returns data that will be stored in req.user later
   async validate(loginOrEmail: string, password: string): Promise<string> {
-    // TODO: normal validation
-    this.validateField(loginOrEmail, 'loginOrEmail');
-    this.validateField(password, 'password');
+    // Validating incoming parameters
+    const loginDto = plainToInstance(LoginInputDto, { loginOrEmail, password });
+    const errors = await validate(loginDto);
+
+    if (errors.length > 0) {
+      throw new BadRequestException(
+        errors.map((error) => ({
+          field: error.property,
+          message: Object.values(error.constraints || {}).join(', '),
+        })),
+      );
+    }
 
     const userId = await this.authService.validateUser(loginOrEmail, password);
     if (!userId) throw new UnauthorizedException();
 
     return userId;
-  }
-
-  private validateField(field: string, filedName: string) {
-    if (
-      !field ||
-      typeof field !== 'string' ||
-      (typeof field === 'string' && !field.trim().length)
-    ) {
-      throw new BadRequestException([
-        { field: filedName, message: 'should be not empty' },
-      ]);
-    }
   }
 }
