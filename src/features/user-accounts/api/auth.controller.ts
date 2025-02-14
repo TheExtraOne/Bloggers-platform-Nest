@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Body,
+  Request,
 } from '@nestjs/common';
 import { PATHS } from 'src/settings';
 import { CreateUserInputDto } from './input-dto/users.input-dto';
@@ -16,7 +17,6 @@ import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dt
 import { NewPasswordInputDto } from './input-dto/new-password.input-dto';
 import { LoginInputDto } from './input-dto/login.input-dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { ExtractUserFromHeader } from '../guards/decorators/extract.userId-from-request';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 
 @Controller(PATHS.AUTH)
@@ -29,14 +29,15 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getUserInformation(
-    @ExtractUserFromHeader() user: { userId: string },
+    @Request() req: { user: { userId: string } },
   ): Promise<{
     email: string;
     login: string;
     userId: string;
   }> {
+    const { userId } = req.user;
+    const result = await this.usersQueryRepository.findUserById(userId);
     // TODO: refactor
-    const result = await this.usersQueryRepository.findUserById(user.userId);
     const mappedUser = {
       email: result.email,
       login: result.login,

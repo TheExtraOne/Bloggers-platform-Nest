@@ -20,7 +20,7 @@ import { PasswordRecoveryStatus } from '../domain/password-recovery.schema';
 import { NewPasswordInputDto } from '../api/input-dto/new-password.input-dto';
 import { BcryptService } from './bcrypt.service';
 import { LoginInputDto } from '../api/input-dto/login.input-dto';
-import { JwtService, TOKEN_TYPE } from './jwt.service';
+import { CustomJwtService, TOKEN_TYPE } from './custom-jwt.service';
 
 @Injectable()
 export class AuthService {
@@ -29,7 +29,7 @@ export class AuthService {
     private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
     private readonly bcryptService: BcryptService,
-    private readonly jwtService: JwtService,
+    private readonly customJwtService: CustomJwtService,
   ) {}
 
   async login(dto: LoginInputDto): Promise<{ accessToken: string }> {
@@ -55,7 +55,7 @@ export class AuthService {
 
     const userId = user._id.toString();
     // const deviceId = new ObjectId();
-    const accessToken: string = this.jwtService.createToken({
+    const accessToken: string = await this.customJwtService.createToken({
       payload: { userId },
       type: TOKEN_TYPE.AC_TOKEN,
     });
