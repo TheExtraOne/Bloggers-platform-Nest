@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import nodemailer from 'nodemailer';
 import { SETTINGS } from 'src/settings';
 
+// TODO: "@nestjs-modules/mailer"?
 @Injectable()
 export class EmailService {
   sendRegistrationMail({

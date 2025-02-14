@@ -19,7 +19,6 @@ import { PasswordRecoveryInputDto } from '../api/input-dto/password-recovery.inp
 import { PasswordRecoveryStatus } from '../domain/password-recovery.schema';
 import { NewPasswordInputDto } from '../api/input-dto/new-password.input-dto';
 import { BcryptService } from './bcrypt.service';
-import { LoginInputDto } from '../api/input-dto/login.input-dto';
 import { CustomJwtService, TOKEN_TYPE } from './custom-jwt.service';
 
 @Injectable()
@@ -32,29 +31,8 @@ export class AuthService {
     private readonly customJwtService: CustomJwtService,
   ) {}
 
-  async login(dto: LoginInputDto): Promise<{ accessToken: string }> {
-    const user = await this.usersRepository.findUserByLoginOrEmail(
-      dto.loginOrEmail,
-    );
-    // Check that such user exists
-    if (!user) throw new UnauthorizedException();
-
-    // Check that user confirmed his email
-    if (
-      user.emailConfirmation.confirmationStatus !==
-      EmailConfirmationStatus.Confirmed
-    )
-      throw new UnauthorizedException();
-
-    // Check that user password is correct
-    const isPasswordCorrect = await this.bcryptService.comparePasswords(
-      dto.password,
-      user.passwordHash,
-    );
-    if (!isPasswordCorrect) throw new UnauthorizedException();
-
-    const userId = user._id.toString();
-    // const deviceId = new ObjectId();
+  // TODO: delete and use jwt servise?
+  async login(userId: string): Promise<{ accessToken: string }> {
     const accessToken: string = await this.customJwtService.createToken({
       payload: { userId },
       type: TOKEN_TYPE.AC_TOKEN,
@@ -73,6 +51,29 @@ export class AuthService {
 
     // res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
     return { accessToken };
+  }
+
+  async validateUser(loginOrEmail: string, password: string): Promise<string> {
+    const user =
+      await this.usersRepository.findUserByLoginOrEmail(loginOrEmail);
+    // Check that such user exists
+    if (!user) throw new UnauthorizedException();
+
+    // Check that user confirmed his email
+    if (
+      user.emailConfirmation.confirmationStatus !==
+      EmailConfirmationStatus.Confirmed
+    )
+      throw new UnauthorizedException();
+
+    // Check that user password is correct
+    const isPasswordCorrect = await this.bcryptService.comparePasswords(
+      password,
+      user.passwordHash,
+    );
+    if (!isPasswordCorrect) throw new UnauthorizedException();
+
+    return user._id.toString();
   }
 
   async createUser(dto: CreateUserInputDto): Promise<{

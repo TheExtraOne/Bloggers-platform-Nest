@@ -15,9 +15,9 @@ import { ConfirmRegistrationInputDto } from './input-dto/confirm-registration.in
 import { ResendRegistrationInputDto } from './input-dto/resend-registration.inout-dto';
 import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
 import { NewPasswordInputDto } from './input-dto/new-password.input-dto';
-import { LoginInputDto } from './input-dto/login.input-dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
+import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 
 @Controller(PATHS.AUTH)
 export class AuthController {
@@ -47,9 +47,10 @@ export class AuthController {
   }
 
   @Post('login')
+  @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginInputDto): Promise<{ accessToken: string }> {
-    return await this.authService.login(dto);
+  async login(@Request() req: { user: { userId: string } }) {
+    return await this.authService.login(req.user.userId);
   }
 
   // TODO: add rate limiting

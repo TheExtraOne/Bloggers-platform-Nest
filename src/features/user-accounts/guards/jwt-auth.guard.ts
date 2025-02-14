@@ -28,7 +28,7 @@ export class JwtAuthGuard implements CanActivate {
         type: TOKEN_TYPE.AC_TOKEN,
       });
 
-      // TODO: refactor, should not take check from repository?
+      // TODO: refactor, should not check from repository?
       // Check that such user exists
       const user = await this.usersQueryRepository.findUserById(
         payload?.userId,
