@@ -10,6 +10,7 @@ import { add } from 'date-fns';
 import {
   PasswordRecovery,
   PasswordRecoverySchema,
+  PasswordRecoveryStatus,
 } from './password-recovery.schema';
 
 // Flags for timestamps automatically will add createdAt and updatedAt fields
@@ -107,14 +108,53 @@ export class User {
   /**
    * Updates the user instance with new data
    * Resets email confirmation if email is updated
-   * @param {UpdateUserDto} dto - The data transfer object for user updates
+   * @param {EmailConfirmationStatus} status - Status of the confirmation
+   * @param {string} confirmationCode - Code for confirmation
+   * @param {Date} expirationDate - Date when the confirmation code expires
    */
-  //   update(dto: UpdateUserDto) {
-  //     if (dto.email !== this.email) {
-  //       this.isEmailConfirmed = false;
-  //     }
-  //     this.email = dto.email;
-  //   }
+  updateEmailConfirmation({
+    status,
+    confirmationCode,
+    expirationDate,
+  }: {
+    status?: EmailConfirmationStatus;
+    confirmationCode?: string;
+    expirationDate?: Date;
+  }) {
+    if (status) this.emailConfirmation.confirmationStatus = status;
+    if (confirmationCode)
+      this.emailConfirmation.confirmationCode = confirmationCode;
+    if (expirationDate) this.emailConfirmation.expirationDate = expirationDate;
+  }
+
+  /**
+   * Updates the user instance with new data
+   * Resets password recovery confirmation if email is updated
+   * @param {PasswordRecoveryStatus} recoveryStatus - Status of the password recovery
+   * @param {string} recoveryCode - Code for password recovery
+   * @param {Date} expirationDate - Date when the recovery code expires
+   */
+  updateRecoveryPassword({
+    recoveryStatus,
+    recoveryCode,
+    expirationDate,
+  }: {
+    recoveryStatus?: PasswordRecoveryStatus | null;
+    recoveryCode?: string | null;
+    expirationDate?: Date | null;
+  }) {
+    if (recoveryStatus) this.passwordRecovery.recoveryStatus = recoveryStatus;
+    if (recoveryCode) this.passwordRecovery.recoveryCode = recoveryCode;
+    if (expirationDate) this.passwordRecovery.expirationDate = expirationDate;
+  }
+
+  /**
+   * Updates the user instance with new data
+   * @param {string} passwordHash - Hashed password of the user
+   */
+  updateLoginPassword({ passwordHash }: { passwordHash: string }) {
+    this.passwordHash = passwordHash;
+  }
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

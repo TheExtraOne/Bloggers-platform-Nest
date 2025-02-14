@@ -6,16 +6,16 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 // import { UnauthorizedDomainException } from '../../../../core/exceptions/domain-exceptions';
-import { Reflector } from '@nestjs/core';
+// import { Reflector } from '@nestjs/core';
 // import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
+// TODO: refactor
 @Injectable()
 export class BasicAuthGuard implements CanActivate {
-  // TODO: move to .env
-  private readonly validUsername = 'admin';
-  private readonly validPassword = 'qwerty';
+  private readonly validUsername = process.env.LOGIN || 'admin';
+  private readonly validPassword = process.env.PASSWORD || 'qwerty';
 
-  constructor(private reflector: Reflector) {}
+  //   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
@@ -30,9 +30,8 @@ export class BasicAuthGuard implements CanActivate {
     //   return true;
     // }
 
-    if (!authHeader || !authHeader.startsWith('Basic ')) {
+    if (!authHeader || !authHeader.startsWith('Basic '))
       throw new UnauthorizedException();
-    }
 
     const base64Credentials = authHeader.split(' ')[1];
     const credentials = Buffer.from(base64Credentials, 'base64').toString(

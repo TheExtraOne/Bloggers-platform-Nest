@@ -38,12 +38,14 @@ export class AuthService {
     );
     // Check that such user exists
     if (!user) throw new UnauthorizedException();
+
     // Check that user confirmed his email
     if (
       user.emailConfirmation.confirmationStatus !==
       EmailConfirmationStatus.Confirmed
     )
       throw new UnauthorizedException();
+
     // Check that user password is correct
     const isPasswordCorrect = await this.bcryptService.comparePasswords(
       dto.password,
@@ -105,8 +107,8 @@ export class AuthService {
       ]);
 
     // If ok, then updating user flag
-    user.emailConfirmation.confirmationStatus =
-      EmailConfirmationStatus.Confirmed;
+    user.updateEmailConfirmation({ status: EmailConfirmationStatus.Confirmed });
+
     await this.usersRepository.save(user);
   }
 
@@ -118,6 +120,7 @@ export class AuthService {
       throw new BadRequestException([
         { field: 'email', message: 'already confirmed' },
       ]);
+
     // Check if confirmationCode has already been applied
     if (
       user.emailConfirmation.confirmationStatus ===
@@ -129,10 +132,13 @@ export class AuthService {
 
     // Update user confirmationCode and expirationDate
     const newConfirmationCode = new ObjectId().toString();
-    user.emailConfirmation.confirmationCode = newConfirmationCode;
-    user.emailConfirmation.expirationDate = add(new Date(), {
-      hours: 1,
-      minutes: 30,
+    user.updateEmailConfirmation({
+      status: EmailConfirmationStatus.Pending,
+      confirmationCode: newConfirmationCode,
+      expirationDate: add(new Date(), {
+        hours: 1,
+        minutes: 30,
+      }),
     });
 
     await this.usersRepository.save(user);
@@ -152,12 +158,14 @@ export class AuthService {
 
     // Set recovery code, status and expiration date
     const newRecoveryCode = new ObjectId().toString();
-    user.passwordRecovery.recoveryCode = newRecoveryCode;
-    user.passwordRecovery.expirationDate = add(new Date(), {
-      hours: 1,
-      minutes: 30,
+    user.updateRecoveryPassword({
+      recoveryCode: newRecoveryCode,
+      expirationDate: add(new Date(), {
+        hours: 1,
+        minutes: 30,
+      }),
+      recoveryStatus: PasswordRecoveryStatus.Pending,
     });
-    user.passwordRecovery.recoveryStatus = PasswordRecoveryStatus.Pending;
 
     await this.usersRepository.save(user);
 
@@ -198,10 +206,13 @@ export class AuthService {
       dto.newPassword,
       10,
     );
-    user.passwordHash = passwordHash;
-    user.passwordRecovery.recoveryStatus = PasswordRecoveryStatus.Confirmed;
-    user.passwordRecovery.recoveryCode = null;
-    user.passwordRecovery.expirationDate = null;
+
+    user.updateLoginPassword({ passwordHash });
+    user.updateRecoveryPassword({
+      recoveryStatus: PasswordRecoveryStatus.Confirmed,
+      recoveryCode: null,
+      expirationDate: null,
+    });
 
     await this.usersRepository.save(user);
   }

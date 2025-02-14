@@ -33,6 +33,7 @@ export class JwtAuthGuard implements CanActivate {
     const user = await this.usersQueryRepository.findUserById(userId);
 
     if (!user) throw new UnauthorizedException();
+
     return true;
   }
 }

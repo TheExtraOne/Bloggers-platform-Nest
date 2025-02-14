@@ -16,7 +16,7 @@ import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dt
 import { NewPasswordInputDto } from './input-dto/new-password.input-dto';
 import { LoginInputDto } from './input-dto/login.input-dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { ExtractUserFromRequest } from '../guards/decorators/extract.userId-from-request';
+import { ExtractUserFromHeader } from '../guards/decorators/extract.userId-from-request';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 
 @Controller(PATHS.AUTH)
@@ -29,7 +29,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getUserInformation(
-    @ExtractUserFromRequest() user: { userId: string },
+    @ExtractUserFromHeader() user: { userId: string },
   ): Promise<{
     email: string;
     login: string;
