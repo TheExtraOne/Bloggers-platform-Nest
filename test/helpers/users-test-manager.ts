@@ -2,7 +2,6 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { CreateUserInputDto } from '../../src/features/user-accounts/api/input-dto/users.input-dto';
 import { UserViewDto } from '../../src/features/user-accounts/api/view-dto/users.view-dto';
-// import { delay } from './delay';
 import { PATHS } from '../../src/constants';
 import { MeViewDto } from 'src/features/user-accounts/api/view-dto/me.view-dto';
 
@@ -14,7 +13,7 @@ export class UsersTestManager {
     statusCode: number = HttpStatus.CREATED,
   ): Promise<UserViewDto> {
     const response = await request(this.app.getHttpServer())
-      .post(`${PATHS.USERS}`)
+      .post(`/${PATHS.USERS}`)
       .send(createModel)
       .auth('admin', 'qwerty')
       .expect(statusCode);
@@ -28,13 +27,11 @@ export class UsersTestManager {
     statusCode: number = HttpStatus.OK,
   ): Promise<{ accessToken: string }> {
     const response = await request(this.app.getHttpServer())
-      .post(`${PATHS.AUTH}/login`)
+      .post(`/${PATHS.AUTH}/login`)
       .send({ login, password })
       .expect(statusCode);
 
-    return {
-      accessToken: response.body.accessToken,
-    };
+    return response.body;
   }
 
   async me(
@@ -42,38 +39,43 @@ export class UsersTestManager {
     statusCode: number = HttpStatus.OK,
   ): Promise<MeViewDto> {
     const response = await request(this.app.getHttpServer())
-      .get(`${PATHS.AUTH}/me`)
+      .get(`/${PATHS.AUTH}/me`)
       .auth(accessToken, { type: 'bearer' })
       .expect(statusCode);
 
     return response.body;
   }
 
-  async createSeveralUsers(count: number): Promise<UserViewDto[]> {
-    const usersPromises = [] as Promise<UserViewDto>[];
+  async createAndLoginSeveralUsers(count: number) {
+    const tokens = [] as { accessToken: string }[];
 
     for (let i = 0; i < count; ++i) {
-      //   await delay(50);
-      const response = this.createUser({
+      await this.createUser({
         login: `test${i}`,
         email: `test${i}@gmail.com`,
-        password: '123456789',
+        password: 'qwerty',
       });
-      usersPromises.push(response);
+
+      const token = await this.login(`test${i}`, 'qwerty');
+      tokens.push(token);
     }
 
-    return Promise.all(usersPromises);
+    return tokens;
   }
 
-  async createAndLoginSeveralUsers(
-    count: number,
-  ): Promise<{ accessToken: string }[]> {
-    const users = await this.createSeveralUsers(count);
+  async createSeveralUsers(count: number) {
+    const users = [] as UserViewDto[];
 
-    const loginPromises = users.map((user: UserViewDto) =>
-      this.login(user.login, '123456789'),
-    );
+    for (let i = 0; i < count; ++i) {
+      const response = await this.createUser({
+        login: `test${i}`,
+        email: `test${i}@gmail.com`,
+        password: 'qwerty',
+      });
 
-    return await Promise.all(loginPromises);
+      users.push(response);
+    }
+
+    return users;
   }
 }

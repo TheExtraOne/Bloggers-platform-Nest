@@ -7,6 +7,7 @@ export const startMongoMemoryServer = async (): Promise<string> => {
   mongoServer = await MongoMemoryServer.create();
   const mongoUri = mongoServer.getUri();
   await mongoose.connect(mongoUri);
+
   return mongoUri;
 };
 

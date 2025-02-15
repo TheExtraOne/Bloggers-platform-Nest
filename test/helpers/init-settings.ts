@@ -1,6 +1,4 @@
-import { getConnectionToken } from '@nestjs/mongoose';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
-import { Connection } from 'mongoose';
 import { AppModule } from '../../src/app.module';
 import { appSetup } from '../../src/setup/app.setup';
 import { UsersTestManager } from './users-test-manager';
@@ -31,7 +29,7 @@ export const initSettings = async (
 
   await app.init();
   await startMongoMemoryServer();
-  //   const databaseConnection = app.get<Connection>(getConnectionToken());
+
   const httpServer = app.getHttpServer();
   const userTestManger = new UsersTestManager(app);
 
@@ -39,7 +37,6 @@ export const initSettings = async (
 
   return {
     app,
-    // databaseConnection,
     httpServer,
     userTestManger,
   };
