@@ -34,3 +34,17 @@ export class UpdatePostInputDto {
   @IsStringWithTrim()
   blogId: string;
 }
+
+export class CreatePostFromBlogInputDto {
+  @IsStringWithTrim()
+  @MaxLength(30)
+  title: string;
+
+  @IsStringWithTrim()
+  @MaxLength(100)
+  shortDescription: string;
+
+  @IsStringWithTrim()
+  @MaxLength(1000)
+  content: string;
+}

@@ -22,7 +22,7 @@ import { GetBlogsQueryParams } from './input-dto/get-blogs.query-params.input-dt
 import { GetPostsQueryParams } from './input-dto/get-posts.query-params.input-dto';
 import { PostsViewDto } from './view-dto/posts.view-dto';
 import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
-import { CreatePostInputDto } from './input-dto/posts.input-dto';
+import { CreatePostFromBlogInputDto } from './input-dto/posts.input-dto';
 import { PostsService } from '../app/posts.service';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated-view.dto';
 
@@ -68,7 +68,7 @@ export class BlogsController {
   @Post(':id/posts')
   async createPostByBlogId(
     @Param('id') id: string,
-    @Body() postDto: Omit<CreatePostInputDto, 'blogId'>,
+    @Body() postDto: CreatePostFromBlogInputDto,
   ): Promise<PostsViewDto> {
     await this.blogsQueryRepository.findBlogById(id);
     const postId = await this.postsService.createPost({

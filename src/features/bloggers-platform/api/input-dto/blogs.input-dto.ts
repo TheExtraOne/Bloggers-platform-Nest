@@ -13,7 +13,7 @@ export class CreateBlogInputDto {
   @IsStringWithTrim()
   @MaxLength(100)
   @Matches(
-    /^(http|https):\/\/[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/,
+    /^(http|https):\/\/[a-z0-9]+([-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/,
   )
   websiteUrl: string;
 }
@@ -30,7 +30,7 @@ export class UpdateBlogInputDto {
   @IsStringWithTrim()
   @MaxLength(100)
   @Matches(
-    /^(http|https):\/\/[a-z0-9]+([\\-\\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/,
+    /^(http|https):\/\/[a-z0-9]+([-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/,
   )
   websiteUrl: string;
 }
