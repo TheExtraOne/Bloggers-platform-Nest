@@ -16,8 +16,8 @@ import { GetUsersQueryParams } from './input-dto/get-users.query-params.input-dt
 import { PaginatedViewDto } from '../../../core/dto/base.paginated-view.dto';
 import { UserViewDto } from './view-dto/users.view-dto';
 import { UserService } from '../app/users.service';
-import { PATHS } from 'src/settings';
-import { BasicAuthGuard } from '../guards/basic.guard';
+import { PATHS } from '../../../constants';
+import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
 import { AuthService } from '../app/auth.service';
 
 @UseGuards(BasicAuthGuard)

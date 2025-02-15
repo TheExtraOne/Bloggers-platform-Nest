@@ -1,6 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { SETTINGS } from 'src/settings';
+import { SETTINGS } from '../../../constants';
 
 export enum TOKEN_TYPE {
   AC_TOKEN = 'AC_TOKEN',
@@ -43,29 +43,4 @@ export class CustomJwtService {
 
     return token;
   }
-  // TODO: delete?
-  // async verifyToken({
-  //   token,
-  //   type,
-  // }: {
-  //   token: string;
-  //   type?: TOKEN_TYPE;
-  // }): Promise<{ userId: string }> {
-  //   let payload: { userId: string } = { userId: '' };
-  //   let secret = SETTINGS.JWT_SECRET;
-  //   if (type)
-  //     secret =
-  //       type === TOKEN_TYPE.AC_TOKEN ? SETTINGS.AC_SECRET : SETTINGS.RT_SECRET;
-
-  //   try {
-  //     payload = await this.jwtService.verifyAsync(token, {
-  //       secret,
-  //     });
-  //   } catch (error) {
-  //     console.log('error', error);
-  //     throw new UnauthorizedException();
-  //   }
-
-  //   return payload;
-  // }
 }

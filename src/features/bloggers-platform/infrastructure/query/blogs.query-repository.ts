@@ -4,7 +4,7 @@ import { Blog, BlogModelType } from '../../domain/blog.entity';
 import { BlogsViewDto } from '../../api/view-dto/blogs.view-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
 import { FilterQuery } from 'mongoose';
-import { ERRORS } from 'src/settings';
+import { ERRORS } from '../../../../constants';
 import { ObjectId } from 'mongodb';
 import { GetBlogsQueryParams } from '../../api/input-dto/get-blogs.query-params.input-dto';
 

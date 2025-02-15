@@ -5,7 +5,7 @@ import { GetPostsQueryParams } from '../../api/input-dto/get-posts.query-params.
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
 import { PostsViewDto } from '../../api/view-dto/posts.view-dto';
 import { FilterQuery } from 'mongoose';
-import { ERRORS } from 'src/settings';
+import { ERRORS } from '../../../../constants';
 import { ObjectId } from 'mongodb';
 
 @Injectable()

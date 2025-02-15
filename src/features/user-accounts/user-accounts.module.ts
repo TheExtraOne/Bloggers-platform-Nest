@@ -10,10 +10,10 @@ import { AuthController } from './api/auth.controller';
 import { AuthService } from './app/auth.service';
 import { EmailService } from './app/email.service';
 import { CustomJwtService } from './app/custom-jwt.service';
-import { BasicAuthGuard } from './guards/basic.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './guards/local/local.strategy';
 import { JwtStrategy } from './guards/jwt/jwt.strategy';
+import { BasicStrategy } from './guards/basic/basic.strategy';
 
 @Module({
   imports: [
@@ -33,7 +33,7 @@ import { JwtStrategy } from './guards/jwt/jwt.strategy';
     AuthService,
     EmailService,
     CustomJwtService,
-    BasicAuthGuard,
+    BasicStrategy,
     JwtStrategy,
     LocalStrategy,
   ],

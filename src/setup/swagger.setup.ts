@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { SETTINGS } from 'src/settings';
+import { SETTINGS } from '../constants';
 
 export function swaggerSetup(app: INestApplication) {
   const config = new DocumentBuilder()

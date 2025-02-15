@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import nodemailer from 'nodemailer';
-import { SETTINGS } from 'src/settings';
+import { SETTINGS } from '../../../constants';
 
 // TODO: "@nestjs-modules/mailer"?
 @Injectable()

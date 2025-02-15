@@ -6,9 +6,8 @@ import {
   HttpCode,
   HttpStatus,
   Body,
-  Request,
 } from '@nestjs/common';
-import { PATHS } from 'src/settings';
+import { PATHS } from '../../../constants';
 import { CreateUserInputDto } from './input-dto/users.input-dto';
 import { AuthService } from '../app/auth.service';
 import { ConfirmRegistrationInputDto } from './input-dto/confirm-registration.input-dto';
@@ -18,6 +17,7 @@ import { NewPasswordInputDto } from './input-dto/new-password.input-dto';
 import { JwtAuthGuard } from '../guards/jwt/jwt-auth.guard';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
+import { CurrentUserId } from '../guards/decorators/current-user-id.decorator';
 
 @Controller(PATHS.AUTH)
 export class AuthController {
@@ -26,17 +26,13 @@ export class AuthController {
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
-  // TODO: add userId extraction
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getUserInformation(
-    @Request() req: { user: { userId: string } },
-  ): Promise<{
+  async getUserInformation(@CurrentUserId() userId: string): Promise<{
     email: string;
     login: string;
     userId: string;
   }> {
-    const { userId } = req.user;
     const result = await this.usersQueryRepository.findUserById(userId);
 
     const mappedUser = {
@@ -47,12 +43,14 @@ export class AuthController {
 
     return mappedUser;
   }
-  // TODO: add userId extraction
+
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async login(@Request() req: { user: { userId: string } }) {
-    return await this.authService.login(req.user.userId);
+  async login(
+    @CurrentUserId() userId: string,
+  ): Promise<{ accessToken: string }> {
+    return await this.authService.login(userId);
   }
 
   // TODO: add rate limiting

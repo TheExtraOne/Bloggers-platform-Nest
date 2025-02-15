@@ -5,7 +5,7 @@ import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
 import { UserViewDto } from '../../api/view-dto/users.view-dto';
 import { FilterQuery } from 'mongoose';
-import { ERRORS } from 'src/settings';
+import { ERRORS } from '../../../../constants';
 import { ObjectId } from 'mongodb';
 
 @Injectable()

@@ -10,7 +10,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { PATHS } from 'src/settings';
+import { PATHS } from '../../../constants';
 import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
 import { GetPostsQueryParams } from './input-dto/get-posts.query-params.input-dto';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated-view.dto';

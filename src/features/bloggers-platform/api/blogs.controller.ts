@@ -10,7 +10,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { PATHS } from 'src/settings';
+import { PATHS } from '../../../constants';
 import { BlogsService } from '../app/blogs.service';
 import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
 import {

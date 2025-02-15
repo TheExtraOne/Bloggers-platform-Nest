@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostDocument, PostModelType } from '../domain/post.entity';
 import { ObjectId } from 'mongodb';
-import { ERRORS } from 'src/settings';
+import { ERRORS } from '../../../constants';
 
 @Injectable()
 export class PostsRepository {

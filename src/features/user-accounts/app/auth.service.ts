@@ -9,7 +9,7 @@ import { CreateUserInputDto } from '../api/input-dto/users.input-dto';
 import { ConfirmRegistrationInputDto } from '../api/input-dto/confirm-registration.input-dto';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { UserDocument } from '../domain/user.entity';
-import { ERRORS } from 'src/settings';
+import { ERRORS } from '../../../constants';
 import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
 import { ResendRegistrationInputDto } from '../api/input-dto/resend-registration.inout-dto';
 import { ObjectId } from 'mongodb';
