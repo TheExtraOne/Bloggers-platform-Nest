@@ -45,7 +45,7 @@ export class EmailService {
     });
   }
 
-  sendEmail({
+  private sendEmail({
     userEmail,
     subject,
     message,

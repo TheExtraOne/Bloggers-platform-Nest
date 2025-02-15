@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../guards/jwt/jwt-auth.guard';
 import { UsersQueryRepository } from '../infrastructure/query/users.query-repository';
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 import { CurrentUserId } from '../guards/decorators/current-user-id.decorator';
+import { MeViewDto } from './view-dto/me.view-dto';
 
 @Controller(PATHS.AUTH)
 export class AuthController {
@@ -28,14 +29,12 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getUserInformation(@CurrentUserId() userId: string): Promise<{
-    email: string;
-    login: string;
-    userId: string;
-  }> {
+  async getUserInformation(
+    @CurrentUserId() userId: string,
+  ): Promise<MeViewDto> {
     const result = await this.usersQueryRepository.findUserById(userId);
 
-    const mappedUser = {
+    const mappedUser: MeViewDto = {
       email: result.email,
       login: result.login,
       userId: result.id,
