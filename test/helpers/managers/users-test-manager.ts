@@ -10,57 +10,17 @@ export class UsersTestManager {
 
   async createUser(
     createModel: CreateUserInputDto,
-    statusCode: number = HttpStatus.CREATED,
-  ): Promise<UserViewDto> {
+    statusCode: HttpStatus = HttpStatus.CREATED,
+    username: string = 'admin',
+    password: string = 'qwerty',
+  ): Promise<any> {
     const response = await request(this.app.getHttpServer())
       .post(`/${PATHS.USERS}`)
       .send(createModel)
-      .auth('admin', 'qwerty')
+      .auth(username, password)
       .expect(statusCode);
 
     return response.body;
-  }
-
-  async login(
-    login: string,
-    password: string,
-    statusCode: number = HttpStatus.OK,
-  ): Promise<{ accessToken: string }> {
-    const response = await request(this.app.getHttpServer())
-      .post(`/${PATHS.AUTH}/login`)
-      .send({ login, password })
-      .expect(statusCode);
-
-    return response.body;
-  }
-
-  async me(
-    accessToken: string,
-    statusCode: number = HttpStatus.OK,
-  ): Promise<MeViewDto> {
-    const response = await request(this.app.getHttpServer())
-      .get(`/${PATHS.AUTH}/me`)
-      .auth(accessToken, { type: 'bearer' })
-      .expect(statusCode);
-
-    return response.body;
-  }
-
-  async createAndLoginSeveralUsers(count: number) {
-    const tokens = [] as { accessToken: string }[];
-
-    for (let i = 0; i < count; ++i) {
-      await this.createUser({
-        login: `test${i}`,
-        email: `test${i}@gmail.com`,
-        password: 'qwerty',
-      });
-
-      const token = await this.login(`test${i}`, 'qwerty');
-      tokens.push(token);
-    }
-
-    return tokens;
   }
 
   async createSeveralUsers(count: number) {
@@ -77,5 +37,12 @@ export class UsersTestManager {
     }
 
     return users;
+  }
+
+  async getUserByEmail(email: string) {
+    const dbConnection = this.app.get('DatabaseConnection');
+    const usersCollection = dbConnection.collection('users');
+    const user = await usersCollection.findOne({ email });
+    return user;
   }
 }

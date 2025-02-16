@@ -11,7 +11,7 @@ import { PATHS } from '../../../constants';
 import { CreateUserInputDto } from './input-dto/users.input-dto';
 import { AuthService } from '../app/auth.service';
 import { ConfirmRegistrationInputDto } from './input-dto/confirm-registration.input-dto';
-import { ResendRegistrationInputDto } from './input-dto/resend-registration.inout-dto';
+import { ResendRegistrationInputDto } from './input-dto/resend-registration.input-dto';
 import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
 import { NewPasswordInputDto } from './input-dto/new-password.input-dto';
 import { JwtAuthGuard } from '../guards/jwt/jwt-auth.guard';

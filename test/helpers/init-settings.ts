@@ -12,6 +12,9 @@ import { UserAccountsModule } from '../../src/features/user-accounts/user-accoun
 import { BloggersPlatformModule } from '../../src/features/bloggers-platform/bloggers-platform.module';
 import { TestingModule } from '../../src/testing/testing.module';
 import { CoreModule } from '../../src/core/core-module';
+import { PostsTestManager } from './managers/posts-test-manager';
+import { BlogsTestManager } from './managers/blogs-test-manager';
+import { AuthTestManager } from './managers/auth-test-manager';
 
 export const initSettings = async (
   // Passing a callback which will be received by the module builder, if we want to change the settings of the test module
@@ -45,6 +48,10 @@ export const initSettings = async (
 
   const httpServer = app.getHttpServer();
   const userTestManger = new UsersTestManager(app);
+  const postsTestManager = new PostsTestManager(app);
+  const blogsTestManager = new BlogsTestManager(app);
+  const authTestManager = new AuthTestManager(app);
+  const emailServiceMock = testingAppModule.get<EmailServiceMock>(EmailService);
 
   await deleteAllData(app);
 
@@ -52,5 +59,9 @@ export const initSettings = async (
     app,
     httpServer,
     userTestManger,
+    postsTestManager,
+    blogsTestManager,
+    authTestManager,
+    emailServiceMock,
   };
 };

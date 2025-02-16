@@ -24,7 +24,7 @@ describe('Blogs Controller (e2e)', () => {
     const result = await initSettings();
     app = result.app;
     httpServer = result.httpServer;
-    blogsTestManager = new BlogsTestManager(app);
+    blogsTestManager = result.blogsTestManager;
   });
 
   beforeEach(async () => {

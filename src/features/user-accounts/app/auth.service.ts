@@ -11,7 +11,7 @@ import { UsersRepository } from '../infrastructure/users.repository';
 import { UserDocument } from '../domain/user.entity';
 import { ERRORS } from '../../../constants';
 import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
-import { ResendRegistrationInputDto } from '../api/input-dto/resend-registration.inout-dto';
+import { ResendRegistrationInputDto } from '../api/input-dto/resend-registration.input-dto';
 import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { EmailService } from './email.service';
@@ -182,14 +182,17 @@ export class AuthService {
         dto.recoveryCode,
       );
     // Check if user with such recoveryCode exist
-    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    if (!user)
+      throw new BadRequestException([
+        { field: 'recoveryCode', message: 'incorrect recoveryCode' },
+      ]);
 
     // Check if recoveryCode has already been applied
     if (
       user.passwordRecovery.recoveryStatus === PasswordRecoveryStatus.Confirmed
     )
       throw new BadRequestException([
-        { field: 'code', message: 'already confirmed' },
+        { field: 'recoveryCode', message: 'already confirmed' },
       ]);
 
     // Check if recoveryCode expired
@@ -198,7 +201,7 @@ export class AuthService {
       user.passwordRecovery.expirationDate < new Date()
     )
       throw new BadRequestException([
-        { field: 'code', message: 'already expired' },
+        { field: 'recoveryCode', message: 'already expired' },
       ]);
 
     // If ok, then updating user password
