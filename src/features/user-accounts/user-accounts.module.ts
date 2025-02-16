@@ -37,6 +37,6 @@ import { BasicStrategy } from './guards/basic/basic.strategy';
     JwtStrategy,
     LocalStrategy,
   ],
-  //   exports: [UsersRepository],
+  exports: [BasicStrategy],
 })
 export class UserAccountsModule {}

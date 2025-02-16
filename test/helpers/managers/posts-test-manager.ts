@@ -13,9 +13,12 @@ export class PostsTestManager {
   async createPost(
     createModel: CreatePostInputDto,
     statusCode: number = HttpStatus.CREATED,
+    username: string = 'admin',
+    password: string = 'qwerty',
   ): Promise<PostsViewDto> {
     const response = await request(this.app.getHttpServer())
       .post(`/${PATHS.POSTS}`)
+      .auth(username, password)
       .send(createModel)
       .expect(statusCode);
 
@@ -26,9 +29,12 @@ export class PostsTestManager {
     id: string,
     updateModel: UpdatePostInputDto,
     statusCode: number = HttpStatus.NO_CONTENT,
+    username: string = 'admin',
+    password: string = 'qwerty',
   ): Promise<void> {
     await request(this.app.getHttpServer())
       .put(`/${PATHS.POSTS}/${id}`)
+      .auth(username, password)
       .send(updateModel)
       .expect(statusCode);
   }
@@ -36,9 +42,12 @@ export class PostsTestManager {
   async deletePost(
     id: string,
     statusCode: number = HttpStatus.NO_CONTENT,
+    username: string = 'admin',
+    password: string = 'qwerty',
   ): Promise<void> {
     await request(this.app.getHttpServer())
       .delete(`/${PATHS.POSTS}/${id}`)
+      .auth(username, password)
       .expect(statusCode);
   }
 

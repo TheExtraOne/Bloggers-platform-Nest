@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { PATHS } from '../../../constants';
 import { BlogsService } from '../app/blogs.service';
@@ -25,6 +26,7 @@ import { PostsQueryRepository } from '../infrastructure/query/posts.query-reposi
 import { CreatePostFromBlogInputDto } from './input-dto/posts.input-dto';
 import { PostsService } from '../app/posts.service';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated-view.dto';
+import { BasicAuthGuard } from 'src/features/user-accounts/guards/basic/basic-auth.guard';
 
 @Controller(PATHS.BLOGS)
 export class BlogsController {
@@ -57,6 +59,7 @@ export class BlogsController {
   }
 
   @Post()
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   async createBlog(
     @Body() createBlogDto: CreateBlogInputDto,
@@ -66,6 +69,7 @@ export class BlogsController {
   }
 
   @Post(':id/posts')
+  @UseGuards(BasicAuthGuard)
   async createPostByBlogId(
     @Param('id') id: string,
     @Body() postDto: CreatePostFromBlogInputDto,
@@ -79,6 +83,7 @@ export class BlogsController {
   }
 
   @Put(':id')
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateBlogById(
     @Param('id') id: string,
@@ -88,6 +93,7 @@ export class BlogsController {
   }
 
   @Delete(':id')
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlogById(@Param('id') id: string) {
     return this.blogsService.deleteBlogById(id);

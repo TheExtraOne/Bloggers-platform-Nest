@@ -58,6 +58,24 @@ describe('Blogs Controller (e2e)', () => {
       );
     });
 
+    it('should not create blog without basic auth', async () => {
+      await blogsTestManager.createBlog(
+        validBlog,
+        HttpStatus.UNAUTHORIZED,
+        '',
+        '',
+      );
+    });
+
+    it('should not create blog with incorrect credentials', async () => {
+      await blogsTestManager.createBlog(
+        validBlog,
+        HttpStatus.UNAUTHORIZED,
+        'wrong',
+        'wrong',
+      );
+    });
+
     describe('name validation', () => {
       it('should not create blog with empty name', async () => {
         const invalidBlog = { ...validBlog, name: '' };
@@ -195,12 +213,14 @@ describe('Blogs Controller (e2e)', () => {
   });
 
   describe('PUT /blogs/:id', () => {
+    const validBlog: CreateBlogInputDto = {
+      name: 'Test Blog',
+      description: 'Test Description',
+      websiteUrl: 'https://test-blog.com',
+    };
+
     it('should update existing blog', async () => {
-      const blog = await blogsTestManager.createBlog({
-        name: 'Test Blog',
-        description: 'Test Description',
-        websiteUrl: 'https://test-blog.com',
-      });
+      const blog = await blogsTestManager.createBlog(validBlog);
 
       const updateDto: UpdateBlogInputDto = {
         name: 'Updated Blog',
@@ -223,6 +243,23 @@ describe('Blogs Controller (e2e)', () => {
       });
     });
 
+    it('should not update blog without basic auth', async () => {
+      const blog = await blogsTestManager.createBlog(validBlog);
+      const updateDto: UpdateBlogInputDto = {
+        name: 'Updated Blog',
+        description: 'Updated Description',
+        websiteUrl: 'https://updated-blog.com',
+      };
+
+      await blogsTestManager.updateBlog(
+        blog.id,
+        updateDto,
+        HttpStatus.UNAUTHORIZED,
+        '',
+        '',
+      );
+    });
+
     it('should return 404 when updating non-existing blog', async () => {
       const updateDto: UpdateBlogInputDto = {
         name: 'Updated Blog',
@@ -239,12 +276,14 @@ describe('Blogs Controller (e2e)', () => {
   });
 
   describe('DELETE /blogs/:id', () => {
+    const validBlog: CreateBlogInputDto = {
+      name: 'Test Blog',
+      description: 'Test Description',
+      websiteUrl: 'https://test-blog.com',
+    };
+
     it('should delete existing blog', async () => {
-      const blog = await blogsTestManager.createBlog({
-        name: 'Test Blog',
-        description: 'Test Description',
-        websiteUrl: 'https://test-blog.com',
-      });
+      const blog = await blogsTestManager.createBlog(validBlog);
 
       await blogsTestManager.deleteBlog(blog.id);
 
@@ -252,6 +291,16 @@ describe('Blogs Controller (e2e)', () => {
       await request(httpServer)
         .get(`/${PATHS.BLOGS}/${blog.id}`)
         .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it('should not delete blog without basic auth', async () => {
+      const blog = await blogsTestManager.createBlog(validBlog);
+      await blogsTestManager.deleteBlog(
+        blog.id,
+        HttpStatus.UNAUTHORIZED,
+        '',
+        '',
+      );
     });
 
     it('should return 404 when deleting non-existing blog', async () => {

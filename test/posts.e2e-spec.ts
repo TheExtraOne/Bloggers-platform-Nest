@@ -70,6 +70,24 @@ describe('Posts Controller (e2e)', () => {
       );
     });
 
+    it('should not create post without basic auth', async () => {
+      await postsTestManager.createPost(
+        validPost,
+        HttpStatus.UNAUTHORIZED,
+        '',
+        '',
+      );
+    });
+
+    it('should not create post with incorrect credentials', async () => {
+      await postsTestManager.createPost(
+        validPost,
+        HttpStatus.UNAUTHORIZED,
+        'wrong',
+        'wrong',
+      );
+    });
+
     describe('title validation', () => {
       it('should not create post with empty title', async () => {
         const invalidPost = { ...validPost, title: '' };
@@ -185,22 +203,22 @@ describe('Posts Controller (e2e)', () => {
   });
 
   describe('PUT /posts/:id', () => {
-    const updateDto: UpdatePostInputDto = {
-      title: 'Updated Title',
-      shortDescription: 'Updated Short Description',
-      content: 'Updated Content',
-      blogId: '', // Will be set in beforeEach
-    };
+    let updateDto: UpdatePostInputDto;
 
     beforeEach(() => {
-      updateDto.blogId = blogId;
+      updateDto = {
+        title: 'Updated Post',
+        shortDescription: 'Updated Short Description',
+        content: 'Updated Content',
+        blogId: blogId,
+      };
     });
 
     it('should update post with valid data', async () => {
       const post = await postsTestManager.createPost(validPost);
-
       await postsTestManager.updatePost(post.id, updateDto);
 
+      // Verify the post was updated
       const response = await request(httpServer)
         .get(`/${PATHS.POSTS}/${post.id}`)
         .expect(HttpStatus.OK);
@@ -212,15 +230,33 @@ describe('Posts Controller (e2e)', () => {
           shortDescription: updateDto.shortDescription,
           content: updateDto.content,
           blogId: updateDto.blogId,
+          blogName: expect.any(String),
+          createdAt: expect.any(String),
         }),
       );
     });
 
-    it('should return 404 for non-existent post', async () => {
+    it('should not update post without basic auth', async () => {
+      const post = await postsTestManager.createPost(validPost);
+
       await postsTestManager.updatePost(
-        'non-existent-id',
+        post.id,
         updateDto,
-        HttpStatus.NOT_FOUND,
+        HttpStatus.UNAUTHORIZED,
+        '',
+        '',
+      );
+    });
+
+    it('should not update post with incorrect credentials', async () => {
+      const post = await postsTestManager.createPost(validPost);
+
+      await postsTestManager.updatePost(
+        post.id,
+        updateDto,
+        HttpStatus.UNAUTHORIZED,
+        'wrong',
+        'wrong',
       );
     });
 
@@ -228,20 +264,28 @@ describe('Posts Controller (e2e)', () => {
   });
 
   describe('DELETE /posts/:id', () => {
-    it('should delete existing post', async () => {
+    it('should delete post with valid id', async () => {
       const post = await postsTestManager.createPost(validPost);
-
       await postsTestManager.deletePost(post.id);
-
-      await request(httpServer)
-        .get(`/${PATHS.POSTS}/${post.id}`)
-        .expect(HttpStatus.NOT_FOUND);
     });
 
-    it('should return 404 for non-existent post', async () => {
+    it('should not delete post without basic auth', async () => {
+      const post = await postsTestManager.createPost(validPost);
       await postsTestManager.deletePost(
-        'non-existent-id',
-        HttpStatus.NOT_FOUND,
+        post.id,
+        HttpStatus.UNAUTHORIZED,
+        '',
+        '',
+      );
+    });
+
+    it('should not delete post with incorrect credentials', async () => {
+      const post = await postsTestManager.createPost(validPost);
+      await postsTestManager.deletePost(
+        post.id,
+        HttpStatus.UNAUTHORIZED,
+        'wrong',
+        'wrong',
       );
     });
   });

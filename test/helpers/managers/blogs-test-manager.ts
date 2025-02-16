@@ -15,9 +15,12 @@ export class BlogsTestManager {
   async createBlog(
     createModel: CreateBlogInputDto,
     statusCode: number = HttpStatus.CREATED,
+    username: string = 'admin',
+    password: string = 'qwerty',
   ): Promise<BlogsViewDto> {
     const response = await request(this.app.getHttpServer())
       .post(`/${PATHS.BLOGS}`)
+      .auth(username, password)
       .send(createModel)
       .expect(statusCode);
 
@@ -28,9 +31,12 @@ export class BlogsTestManager {
     id: string,
     updateModel: UpdateBlogInputDto,
     statusCode: number = HttpStatus.NO_CONTENT,
+    username: string = 'admin',
+    password: string = 'qwerty',
   ): Promise<void> {
     await request(this.app.getHttpServer())
       .put(`/${PATHS.BLOGS}/${id}`)
+      .auth(username, password)
       .send(updateModel)
       .expect(statusCode);
   }
@@ -38,9 +44,12 @@ export class BlogsTestManager {
   async deleteBlog(
     id: string,
     statusCode: number = HttpStatus.NO_CONTENT,
+    username: string = 'admin',
+    password: string = 'qwerty',
   ): Promise<void> {
     await request(this.app.getHttpServer())
       .delete(`/${PATHS.BLOGS}/${id}`)
+      .auth(username, password)
       .expect(statusCode);
   }
 
@@ -48,9 +57,12 @@ export class BlogsTestManager {
     blogId: string,
     createModel: Omit<CreatePostInputDto, 'blogId'>,
     statusCode: number = HttpStatus.CREATED,
+    username: string = 'admin',
+    password: string = 'qwerty',
   ): Promise<PostsViewDto> {
     const response = await request(this.app.getHttpServer())
       .post(`/${PATHS.BLOGS}/${blogId}/posts`)
+      .auth(username, password)
       .send(createModel)
       .expect(statusCode);
 
