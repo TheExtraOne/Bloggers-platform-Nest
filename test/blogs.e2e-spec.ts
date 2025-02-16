@@ -5,7 +5,7 @@ import { PATHS } from '../src/constants';
 import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { initSettings } from './helpers/init-settings';
 import { deleteAllData } from './helpers/delete-all-data';
-import { BlogsTestManager } from './helpers/blogs-test-manager';
+import { BlogsTestManager } from './helpers/managers/blogs-test-manager';
 import { BlogsViewDto } from '../src/features/bloggers-platform/api/view-dto/blogs.view-dto';
 import { PaginatedViewDto } from '../src/core/dto/base.paginated-view.dto';
 import {

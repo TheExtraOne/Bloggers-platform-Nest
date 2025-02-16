@@ -13,6 +13,7 @@ import {
   PasswordRecoveryStatus,
 } from './password-recovery.schema';
 
+// TODO: add validation for schema
 // Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
  * User Entity Schema

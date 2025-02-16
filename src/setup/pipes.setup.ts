@@ -15,7 +15,7 @@ export function pipesSetup(app: INestApplication) {
       exceptionFactory: (errors: ValidationError[]) => {
         // Mapping errors to the desired format
         const errorsMessages = errors.map((error: ValidationError) => {
-          const field = error.property.toLowerCase();
+          const field = error.property;
           return {
             message: error.constraints?.[Object.keys(error.constraints)[0]],
             field,

@@ -4,7 +4,7 @@ import { CreateUserInputDto } from '../src/features/user-accounts/api/input-dto/
 import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { initSettings } from './helpers/init-settings';
 import { deleteAllData } from './helpers/delete-all-data';
-import { UsersTestManager } from './helpers/users-test-manager';
+import { UsersTestManager } from './helpers/managers/users-test-manager';
 import { UserViewDto } from '../src/features/user-accounts/api/view-dto/users.view-dto';
 import { PaginatedViewDto } from '../src/core/dto/base.paginated-view.dto';
 import { App } from 'supertest/types';

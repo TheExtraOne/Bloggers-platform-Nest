@@ -1,13 +1,13 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { PATHS } from '../../src/constants';
+import { PATHS } from '../../../src/constants';
 import {
   CreateBlogInputDto,
   UpdateBlogInputDto,
-} from '../../src/features/bloggers-platform/api/input-dto/blogs.input-dto';
-import { BlogsViewDto } from '../../src/features/bloggers-platform/api/view-dto/blogs.view-dto';
-import { CreatePostInputDto } from '../../src/features/bloggers-platform/api/input-dto/posts.input-dto';
-import { PostsViewDto } from '../../src/features/bloggers-platform/api/view-dto/posts.view-dto';
+} from '../../../src/features/bloggers-platform/api/input-dto/blogs.input-dto';
+import { BlogsViewDto } from '../../../src/features/bloggers-platform/api/view-dto/blogs.view-dto';
+import { CreatePostInputDto } from '../../../src/features/bloggers-platform/api/input-dto/posts.input-dto';
+import { PostsViewDto } from '../../../src/features/bloggers-platform/api/view-dto/posts.view-dto';
 
 export class BlogsTestManager {
   constructor(private app: INestApplication) {}
