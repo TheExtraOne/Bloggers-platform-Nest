@@ -1,5 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { INestApplication } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { initSettings } from './helpers/init-settings';
 import { AuthTestManager } from './helpers/managers/auth-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
@@ -8,12 +9,14 @@ import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { deleteAllData } from './helpers/delete-all-data';
 import { CreateUserInputDto } from '../src/features/user-accounts/api/input-dto/users.input-dto';
 import { MeViewDto } from '../src/features/user-accounts/api/view-dto/me.view-dto';
+import { EmailService } from '../src/features/user-accounts/app/email.service';
 
 describe('Auth Controller (e2e)', () => {
   let app: INestApplication;
   let authTestManager: AuthTestManager;
   let usersTestManager: UsersTestManager;
   let emailServiceMock: EmailServiceMock;
+  let jwtService: JwtService;
 
   beforeAll(async () => {
     const result = await initSettings();
@@ -21,6 +24,7 @@ describe('Auth Controller (e2e)', () => {
     authTestManager = result.authTestManager;
     usersTestManager = result.userTestManger;
     emailServiceMock = result.emailServiceMock;
+    jwtService = app.get(JwtService);
   });
 
   beforeEach(async () => {
@@ -40,8 +44,16 @@ describe('Auth Controller (e2e)', () => {
     };
 
     it('should register user with valid data', async () => {
-      // TODO: add check, that email was sent and user is in db
+      const sendEmailMethod = (app.get(EmailService).sendRegistrationMail = jest
+        .fn()
+        .mockImplementation(() => Promise.resolve()));
+
       await authTestManager.registration(validUser, HttpStatus.NO_CONTENT);
+      // Check that email was sent
+      expect(sendEmailMethod).toHaveBeenCalled();
+      // Check that user was created
+      const user = await usersTestManager.getUserByEmail(validUser.email);
+      expect(user).toBeDefined();
     });
 
     describe('login validation', () => {
@@ -99,10 +111,11 @@ describe('Auth Controller (e2e)', () => {
     };
 
     beforeEach(async () => {
+      // Create confirmed user
       await usersTestManager.createUser(validUser, HttpStatus.CREATED);
     });
 
-    it('should login with valid credentials', async () => {
+    it('should login with valid credentials and return access token', async () => {
       const response = await authTestManager.login(
         { loginOrEmail: validUser.login, password: validUser.password },
         HttpStatus.OK,
@@ -161,8 +174,6 @@ describe('Auth Controller (e2e)', () => {
       const user = await usersTestManager.createUser(
         validUser,
         HttpStatus.CREATED,
-        'admin',
-        'qwerty',
       );
       userId = user.id;
 
@@ -188,6 +199,19 @@ describe('Auth Controller (e2e)', () => {
 
     it('should not return user information with invalid token', async () => {
       await authTestManager.me('invalid-token', HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should not return user information with expired token', async () => {
+      // Create an expired token using JwtService
+      const expiredToken = await jwtService.signAsync(
+        { userId },
+        {
+          secret: process.env.AC_SECRET,
+          expiresIn: '0s', // Token expires immediately
+        },
+      );
+
+      await authTestManager.me(expiredToken, HttpStatus.UNAUTHORIZED);
     });
   });
 
@@ -314,12 +338,7 @@ describe('Auth Controller (e2e)', () => {
 
     beforeEach(async () => {
       // Create confirmed user with admin credentials
-      await usersTestManager.createUser(
-        validUser,
-        HttpStatus.CREATED,
-        'admin',
-        'qwerty',
-      );
+      await usersTestManager.createUser(validUser, HttpStatus.CREATED);
     });
 
     it('should initiate password recovery for existing email', async () => {
@@ -347,12 +366,7 @@ describe('Auth Controller (e2e)', () => {
 
     beforeEach(async () => {
       // Create confirmed user with admin credentials
-      await usersTestManager.createUser(
-        validUser,
-        HttpStatus.CREATED,
-        'admin',
-        'qwerty',
-      );
+      await usersTestManager.createUser(validUser, HttpStatus.CREATED);
 
       // Initiate password recovery
       await authTestManager.passwordRecovery(
@@ -395,6 +409,16 @@ describe('Auth Controller (e2e)', () => {
         {
           newPassword: 'newpassword123',
           recoveryCode: 'invalid-code',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    });
+
+    it('should not set new password if password is too short', async () => {
+      await authTestManager.newPassword(
+        {
+          newPassword: 'short', // Password that's too short
+          recoveryCode: recoveryCode,
         },
         HttpStatus.BAD_REQUEST,
       );
