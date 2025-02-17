@@ -15,8 +15,11 @@ import { CoreModule } from '../../src/core/core-module';
 import { PostsTestManager } from './managers/posts-test-manager';
 import { BlogsTestManager } from './managers/blogs-test-manager';
 import { AuthTestManager } from './managers/auth-test-manager';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 export const initSettings = async (
+  ttl: number = 1000,
+  limit: number = 50,
   // Passing a callback which will be received by the module builder, if we want to change the settings of the test module
   addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
 ) => {
@@ -26,6 +29,12 @@ export const initSettings = async (
     imports: [
       ConfigModule.forRoot(),
       MongooseModule.forRoot(mongoUri),
+      ThrottlerModule.forRoot([
+        {
+          ttl, // 1 second for tests
+          limit, // Lower limit to test rate limiting
+        },
+      ]),
       UserAccountsModule,
       BloggersPlatformModule,
       TestingModule,

@@ -21,7 +21,9 @@ import { UsersQueryRepository } from '../infrastructure/query/users.query-reposi
 import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 import { CurrentUserId } from '../guards/decorators/current-user-id.decorator';
 import { MeViewDto } from './view-dto/me.view-dto';
+import { ThrottlerGuard, SkipThrottle } from '@nestjs/throttler';
 
+@UseGuards(ThrottlerGuard)
 @Controller(PATHS.AUTH)
 export class AuthController {
   constructor(
@@ -29,6 +31,7 @@ export class AuthController {
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
+  @SkipThrottle()
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getUserInformation(
@@ -45,6 +48,7 @@ export class AuthController {
     return mappedUser;
   }
 
+  @SkipThrottle()
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -62,14 +66,12 @@ export class AuthController {
     return { accessToken };
   }
 
-  // TODO: add rate limiting
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   async createUser(@Body() dto: CreateUserInputDto): Promise<void> {
     await this.authService.createUser(dto);
   }
 
-  // TODO: add rate limiting
   @Post('registration-confirmation')
   @HttpCode(HttpStatus.NO_CONTENT)
   async confirmRegistration(
@@ -78,7 +80,6 @@ export class AuthController {
     await this.authService.confirmRegistration(dto);
   }
 
-  // TODO: add rate limiting
   @Post('registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
   async registrationEmailResending(
@@ -87,14 +88,12 @@ export class AuthController {
     await this.authService.resendRegistration(dto);
   }
 
-  // TODO: add rate limiting
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body() dto: PasswordRecoveryInputDto): Promise<void> {
     await this.authService.recoverPassword(dto);
   }
 
-  // TODO: add rate limiting
   @Post('new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   async newPassword(@Body() dto: NewPasswordInputDto): Promise<void> {

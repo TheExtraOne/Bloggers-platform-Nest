@@ -4,18 +4,17 @@ import { JwtService } from '@nestjs/jwt';
 import { initSettings } from './helpers/init-settings';
 import { AuthTestManager } from './helpers/managers/auth-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
-import { EmailServiceMock } from './mock/email-service.mock';
 import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { deleteAllData } from './helpers/delete-all-data';
 import { CreateUserInputDto } from '../src/features/user-accounts/api/input-dto/users.input-dto';
 import { MeViewDto } from '../src/features/user-accounts/api/view-dto/me.view-dto';
 import { EmailService } from '../src/features/user-accounts/app/email.service';
+import { SETTINGS } from '../src/constants';
 
 describe('Auth Controller (e2e)', () => {
   let app: INestApplication;
   let authTestManager: AuthTestManager;
   let usersTestManager: UsersTestManager;
-  let emailServiceMock: EmailServiceMock;
   let jwtService: JwtService;
 
   beforeAll(async () => {
@@ -23,7 +22,6 @@ describe('Auth Controller (e2e)', () => {
     app = result.app;
     authTestManager = result.authTestManager;
     usersTestManager = result.userTestManger;
-    emailServiceMock = result.emailServiceMock;
     jwtService = app.get(JwtService);
   });
 
@@ -423,5 +421,85 @@ describe('Auth Controller (e2e)', () => {
         HttpStatus.BAD_REQUEST,
       );
     });
+  });
+});
+
+describe('Rate Limiting', () => {
+  let app: INestApplication;
+  let authTestManager: AuthTestManager;
+  let usersTestManager: UsersTestManager;
+
+  beforeAll(async () => {
+    const result = await initSettings(+SETTINGS.TTL, +SETTINGS.LIMIT);
+    app = result.app;
+    authTestManager = result.authTestManager;
+    usersTestManager = result.userTestManger;
+  });
+
+  beforeEach(async () => {
+    await deleteAllData(app);
+  });
+
+  afterAll(async () => {
+    await app.close();
+    await stopMongoMemoryServer();
+  });
+
+  const validUser = {
+    login: 'testuser',
+    password: 'password123',
+    email: 'test@example.com',
+  };
+
+  it('should handle rate limiting correctly for registration', async () => {
+    // First 5 requests should succeed
+    for (let i = 0; i < 5; i++) {
+      const user = {
+        ...validUser,
+        email: `test${i}@example.com`,
+        login: `testuser${i}`,
+      };
+      await authTestManager.registration(user, HttpStatus.NO_CONTENT);
+    }
+
+    // 6th request should be blocked
+    const extraUser = {
+      ...validUser,
+      email: 'extra@example.com',
+      login: 'extrauser',
+    };
+    await authTestManager.registration(extraUser, HttpStatus.TOO_MANY_REQUESTS);
+  });
+
+  it('should handle rate limiting correctly for password recovery', async () => {
+    // First 5 requests should succeed
+    for (let i = 0; i < 5; i++) {
+      await authTestManager.passwordRecovery(
+        { email: validUser.email },
+        HttpStatus.NO_CONTENT,
+      );
+    }
+
+    // 6th request should be blocked
+    await authTestManager.passwordRecovery(
+      { email: validUser.email },
+      HttpStatus.TOO_MANY_REQUESTS,
+    );
+  });
+
+  it('should not apply rate limit to /auth/me endpoint', async () => {
+    // Register and login a user
+    await usersTestManager.createUser(validUser, HttpStatus.CREATED);
+
+    // Login to get access token
+    const { accessToken } = await authTestManager.login(
+      { loginOrEmail: validUser.login, password: validUser.password },
+      HttpStatus.OK,
+    );
+
+    // Make multiple requests to /auth/me
+    for (let i = 0; i < 10; i++) {
+      await authTestManager.me(accessToken, HttpStatus.OK);
+    }
   });
 });
