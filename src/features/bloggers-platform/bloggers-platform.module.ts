@@ -10,6 +10,11 @@ import { PostsController } from './api/posts.controller';
 import { PostsQueryRepository } from './infrastructure/query/posts.query-repository';
 import { PostsService } from './app/posts.service';
 import { PostsRepository } from './infrastructure/posts.repository';
+import { CreateBlogUseCase } from './app/blogs.use-cases/create-blog.use-case';
+import { UpdateBlogUseCase } from './app/blogs.use-cases/update-blog.use-case';
+import { DeleteBlogUseCase } from './app/blogs.use-cases/delete-blog.use-case';
+
+const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 
 @Module({
   imports: [
@@ -32,6 +37,7 @@ import { PostsRepository } from './infrastructure/posts.repository';
     PostsService,
     PostsRepository,
     PostsQueryRepository,
+    ...blogsUseCases,
   ],
 })
 export class BloggersPlatformModule {}

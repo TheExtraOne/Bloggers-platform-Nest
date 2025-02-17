@@ -12,7 +12,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PATHS } from '../../../constants';
-import { BlogsService } from '../app/blogs.service';
 import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
 import {
   CreateBlogInputDto,
@@ -27,11 +26,16 @@ import { CreatePostFromBlogInputDto } from './input-dto/posts.input-dto';
 import { PostsService } from '../app/posts.service';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated-view.dto';
 import { BasicAuthGuard } from 'src/features/user-accounts/guards/basic/basic-auth.guard';
+import { CreateBlogUseCase } from '../app/blogs.use-cases/create-blog.use-case';
+import { UpdateBlogUseCase } from '../app/blogs.use-cases/update-blog.use-case';
+import { DeleteBlogUseCase } from '../app/blogs.use-cases/delete-blog.use-case';
 
 @Controller(PATHS.BLOGS)
 export class BlogsController {
   constructor(
-    private readonly blogsService: BlogsService,
+    private readonly createBlogUseCase: CreateBlogUseCase,
+    private readonly updateBlogUseCase: UpdateBlogUseCase,
+    private readonly deleteBlogUseCase: DeleteBlogUseCase,
     private readonly postsService: PostsService,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
@@ -64,7 +68,7 @@ export class BlogsController {
   async createBlog(
     @Body() createBlogDto: CreateBlogInputDto,
   ): Promise<BlogsViewDto> {
-    const blogId = await this.blogsService.createBlog(createBlogDto);
+    const blogId = await this.createBlogUseCase.execute(createBlogDto);
     return this.blogsQueryRepository.findBlogById(blogId);
   }
 
@@ -89,13 +93,13 @@ export class BlogsController {
     @Param('id') id: string,
     @Body() updateBlogDto: UpdateBlogInputDto,
   ) {
-    return this.blogsService.updateBlogById(id, updateBlogDto);
+    return this.updateBlogUseCase.execute(id, updateBlogDto);
   }
 
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlogById(@Param('id') id: string) {
-    return this.blogsService.deleteBlogById(id);
+    return this.deleteBlogUseCase.execute(id);
   }
 }

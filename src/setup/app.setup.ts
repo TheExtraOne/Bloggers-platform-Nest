@@ -4,6 +4,7 @@ import { HttpExceptionFilter } from '../exception.filter';
 import cookieParser from 'cookie-parser';
 
 // TODO: refactor
+// TODO: add swagger
 export function appSetup(app: INestApplication) {
   pipesSetup(app);
   app.enableCors();

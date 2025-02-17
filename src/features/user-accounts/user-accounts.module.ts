@@ -15,13 +15,14 @@ import { LocalStrategy } from './guards/local/local.strategy';
 import { JwtStrategy } from './guards/jwt/jwt.strategy';
 import { BasicStrategy } from './guards/basic/basic.strategy';
 
+const adapters = [BcryptService, EmailService, CustomJwtService];
+const strategies = [JwtStrategy, LocalStrategy, BasicStrategy];
+
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtModule.register({
       global: true,
-      // secret: SETTINGS.jwtSecret,
-      // signOptions: { expiresIn: '60s' },
     }),
   ],
   controllers: [UserController, AuthController],
@@ -29,13 +30,9 @@ import { BasicStrategy } from './guards/basic/basic.strategy';
     UserService,
     UsersQueryRepository,
     UsersRepository,
-    BcryptService,
     AuthService,
-    EmailService,
-    CustomJwtService,
-    BasicStrategy,
-    JwtStrategy,
-    LocalStrategy,
+    ...adapters,
+    ...strategies,
   ],
   exports: [BasicStrategy],
 })
