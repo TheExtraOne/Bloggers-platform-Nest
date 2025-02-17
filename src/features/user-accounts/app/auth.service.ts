@@ -31,15 +31,17 @@ export class AuthService {
     private readonly customJwtService: CustomJwtService,
   ) {}
 
-  async login(userId: string): Promise<{ accessToken: string }> {
+  async login(
+    userId: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const accessToken: string = await this.customJwtService.createToken({
       payload: { userId },
       type: TOKEN_TYPE.AC_TOKEN,
     });
-    // const refreshToken: string = await this.jwtService.createToken({
-    //   payload: { userId, deviceId: deviceId.toString() },
-    //   type: TOKEN_TYPE.R_TOKEN,
-    // });
+    const refreshToken: string = await this.customJwtService.createToken({
+      payload: { userId, deviceId: new ObjectId().toString() },
+      type: TOKEN_TYPE.R_TOKEN,
+    });
 
     // await this.securityService.createRefreshTokenMeta({
     //   refreshToken,
@@ -48,8 +50,7 @@ export class AuthService {
     //   deviceId,
     // });
 
-    // res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true });
-    return { accessToken };
+    return { accessToken, refreshToken };
   }
 
   async validateUser(loginOrEmail: string, password: string): Promise<string> {

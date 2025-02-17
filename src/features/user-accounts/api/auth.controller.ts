@@ -6,7 +6,9 @@ import {
   HttpCode,
   HttpStatus,
   Body,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { PATHS } from '../../../constants';
 import { CreateUserInputDto } from './input-dto/users.input-dto';
 import { AuthService } from '../app/auth.service';
@@ -48,8 +50,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(
     @CurrentUserId() userId: string,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<{ accessToken: string }> {
-    return await this.authService.login(userId);
+    const { accessToken, refreshToken } = await this.authService.login(userId);
+
+    response.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+
+    return { accessToken };
   }
 
   // TODO: add rate limiting
