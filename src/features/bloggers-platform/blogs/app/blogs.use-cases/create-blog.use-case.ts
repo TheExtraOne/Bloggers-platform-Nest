@@ -2,7 +2,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogModelType } from '../../domain/blog.entity';
 import { CreateBlogInputDto } from '../../api/input-dto/blogs.input-dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogsRepository } from '../../infrastucture/blogs.repository';
+import { BlogsRepository } from '../../infrastructure/blogs.repository';
 
 export class CreateBlogCommand {
   constructor(public dto: CreateBlogInputDto) {}

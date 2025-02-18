@@ -1,12 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateCommentInputDto } from '../../api/input-dto/comment.input.dto';
-import { PostsRepository } from '../../../posts/infractucture/posts.repository';
+import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 import { NotFoundException } from '@nestjs/common';
 import { ERRORS } from '../../../../../constants';
 import { UsersRepository } from '../../../../user-accounts/infrastructure/users.repository';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentModelType } from '../../domain/comment.entity';
-import { CommentsRepository } from '../../infrastucture/comments.repository';
+import { CommentsRepository } from '../../infrastructure/comments.repository';
 
 export class CreateCommentCommand {
   constructor(

@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PATHS } from '../../../../constants';
-import { PostsQueryRepository } from '../infractucture/query/posts.query-repository';
+import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
 import { GetPostsQueryParams } from './input-dto/get-posts.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
 import { PostsViewDto } from './view-dto/posts.view-dto';
@@ -26,7 +26,7 @@ import { JwtAuthGuard } from 'src/features/user-accounts/guards/jwt/jwt-auth.gua
 import { CreateCommentInputDto } from '../../comments/api/input-dto/comment.input.dto';
 import { CurrentUserId } from 'src/features/user-accounts/guards/decorators/current-user-id.decorator';
 import { CreateCommentCommand } from '../../comments/app/command.use-cases/create-comment.use-case';
-import { CommentsQueryRepository } from '../../comments/infrastucture/query/comments.query-repository';
+import { CommentsQueryRepository } from '../../comments/infrastructure/query/comments.query-repository';
 import { CommentsViewDto } from '../../comments/api/view-dto/comment.view-dto';
 import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments.query-params.input-dto';
 import { CreatePostCommand } from '../app/posts.use-cases/create-post.use-case';

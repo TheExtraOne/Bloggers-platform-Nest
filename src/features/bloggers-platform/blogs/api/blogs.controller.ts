@@ -28,8 +28,8 @@ import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts.query-p
 import { CreatePostFromBlogInputDto } from '../../posts/api/input-dto/posts.input-dto';
 import { PostsViewDto } from '../../posts/api/view-dto/posts.view-dto';
 import { CreatePostCommand } from '../../posts/app/posts.use-cases/create-post.use-case';
-import { PostsQueryRepository } from '../../posts/infractucture/query/posts.query-repository';
-import { BlogsQueryRepository } from '../infrastucture/query/blogs.query-repository';
+import { PostsQueryRepository } from '../../posts/infrastructure/query/posts.query-repository';
+import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
 
 @Controller(PATHS.BLOGS)
 export class BlogsController {

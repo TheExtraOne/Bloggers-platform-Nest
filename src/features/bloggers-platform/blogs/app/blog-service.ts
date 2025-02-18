@@ -1,7 +1,7 @@
 import { BlogDocument } from '../domain/blog.entity';
 import { BlogsViewDto } from '../api/view-dto/blogs.view-dto';
 import { Injectable } from '@nestjs/common';
-import { BlogsRepository } from '../infrastucture/blogs.repository';
+import { BlogsRepository } from '../infrastructure/blogs.repository';
 
 @Injectable()
 export class BlogsService {
