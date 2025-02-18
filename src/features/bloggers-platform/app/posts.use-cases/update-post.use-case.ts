@@ -2,15 +2,26 @@ import { Injectable } from '@nestjs/common';
 import { UpdatePostInputDto } from '../../api/input-dto/posts.input-dto';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 import { BlogsService } from '../blog-service';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-@Injectable()
-export class UpdatePostUseCase {
+export class UpdatePostCommand {
+  constructor(
+    public id: string,
+    public dto: UpdatePostInputDto,
+  ) {}
+}
+
+@CommandHandler(UpdatePostCommand)
+export class UpdatePostUseCase
+  implements ICommandHandler<UpdatePostCommand, void>
+{
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly blogsService: BlogsService,
   ) {}
 
-  async execute(id: string, dto: UpdatePostInputDto): Promise<void> {
+  async execute(command: UpdatePostCommand): Promise<void> {
+    const { id, dto } = command;
     const post = await this.postsRepository.findPostById(id);
     const blog = await this.blogsService.getBlogById(dto.blogId);
 

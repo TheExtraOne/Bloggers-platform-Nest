@@ -25,17 +25,16 @@ import { PostsQueryRepository } from '../infrastructure/query/posts.query-reposi
 import { CreatePostFromBlogInputDto } from './input-dto/posts.input-dto';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated-view.dto';
 import { BasicAuthGuard } from 'src/features/user-accounts/guards/basic/basic-auth.guard';
-import { CreatePostUseCase } from '../app/posts.use-cases/create-post.use-case';
 import { CreateBlogCommand } from '../app/blogs.use-cases/create-blog.use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteBlogCommand } from '../app/blogs.use-cases/delete-blog.use-case';
 import { UpdateBlogCommand } from '../app/blogs.use-cases/update-blog.use-case';
+import { CreatePostCommand } from '../app/posts.use-cases/create-post.use-case';
 
 @Controller(PATHS.BLOGS)
 export class BlogsController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly createPostUseCase: CreatePostUseCase,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
@@ -80,10 +79,12 @@ export class BlogsController {
     @Body() postDto: CreatePostFromBlogInputDto,
   ): Promise<PostsViewDto> {
     await this.blogsQueryRepository.findBlogById(id);
-    const postId = await this.createPostUseCase.execute({
-      ...postDto,
-      blogId: id,
-    });
+    const postId = await this.commandBus.execute(
+      new CreatePostCommand({
+        ...postDto,
+        blogId: id,
+      }),
+    );
     return this.postsQueryRepository.findPostById(postId);
   }
 

@@ -21,16 +21,15 @@ import {
   UpdatePostInputDto,
 } from './input-dto/posts.input-dto';
 import { BasicAuthGuard } from 'src/features/user-accounts/guards/basic/basic-auth.guard';
-import { CreatePostUseCase } from '../app/posts.use-cases/create-post.use-case';
-import { UpdatePostUseCase } from '../app/posts.use-cases/update-post.use-case';
-import { DeletePostUseCase } from '../app/posts.use-cases/delete-post.use-case';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreatePostCommand } from '../app/posts.use-cases/create-post.use-case';
+import { DeletePostCommand } from '../app/posts.use-cases/delete-post.use-case';
+import { UpdatePostCommand } from '../app/posts.use-cases/update-post.use-case';
 
 @Controller(PATHS.POSTS)
 export class PostsController {
   constructor(
-    private readonly deletePostUseCase: DeletePostUseCase,
-    private readonly createPostUseCase: CreatePostUseCase,
-    private readonly updatePostUseCase: UpdatePostUseCase,
+    private readonly commandBus: CommandBus,
     private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
 
@@ -50,7 +49,7 @@ export class PostsController {
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   async createPost(@Body() dto: CreatePostInputDto): Promise<PostsViewDto> {
-    const postId = await this.createPostUseCase.execute(dto);
+    const postId = await this.commandBus.execute(new CreatePostCommand(dto));
 
     return await this.postsQueryRepository.findPostById(postId);
   }
@@ -62,13 +61,15 @@ export class PostsController {
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostInputDto,
   ): Promise<void> {
-    return await this.updatePostUseCase.execute(id, updatePostDto);
+    return await this.commandBus.execute(
+      new UpdatePostCommand(id, updatePostDto),
+    );
   }
 
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePostById(@Param('id') id: string): Promise<void> {
-    return await this.deletePostUseCase.execute(id);
+    return await this.commandBus.execute(new DeletePostCommand(id));
   }
 }
