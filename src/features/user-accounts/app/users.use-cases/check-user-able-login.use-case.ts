@@ -3,6 +3,7 @@ import { UsersRepository } from '../../infrastructure/users.repository';
 import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
 import { BcryptService } from '../facades/bcrypt.service';
 
+// TODO: add command handler
 @Injectable()
 export class CheckIfUserIsAbleToLoginUseCase {
   constructor(

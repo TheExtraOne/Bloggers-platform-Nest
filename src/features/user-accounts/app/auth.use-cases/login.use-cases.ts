@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { CustomJwtService, TOKEN_TYPE } from '../facades/custom-jwt.service';
 
+// TODO: add command handler
 @Injectable()
 export class LoginUseCases {
   constructor(private readonly customJwtService: CustomJwtService) {}

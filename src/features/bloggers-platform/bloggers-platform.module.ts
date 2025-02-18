@@ -15,9 +15,15 @@ import { CreatePostUseCase } from './app/posts.use-cases/create-post.use-case';
 import { UpdatePostUseCase } from './app/posts.use-cases/update-post.use-case';
 import { DeletePostUseCase } from './app/posts.use-cases/delete-post.use-case';
 import { BlogsService } from './app/blog-service';
+import { CommentsRepository } from './infrastructure/comments.repository';
+import { CreateCommentUseCase } from './app/command.use-cases/create-comment.use-case';
+import { Comment, CommentSchema } from './domain/comment.entity';
+import { UserAccountsModule } from '../user-accounts/user-accounts.module';
+import { CommentsQueryRepository } from './infrastructure/query/comments.query-repository';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
+const commentsUseCases = [CreateCommentUseCase];
 
 @Module({
   imports: [
@@ -30,7 +36,12 @@ const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
         name: Post.name,
         schema: PostSchema,
       },
+      {
+        name: Comment.name,
+        schema: CommentSchema,
+      },
     ]),
+    UserAccountsModule,
   ],
   controllers: [BlogsController, PostsController],
   providers: [
@@ -39,8 +50,11 @@ const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
     BlogsRepository,
     PostsRepository,
     PostsQueryRepository,
+    CommentsRepository,
+    CommentsQueryRepository,
     ...blogsUseCases,
     ...postsUseCases,
+    ...commentsUseCases,
   ],
 })
 export class BloggersPlatformModule {}

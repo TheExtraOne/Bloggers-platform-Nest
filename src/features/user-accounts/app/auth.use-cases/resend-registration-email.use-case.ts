@@ -7,6 +7,7 @@ import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { EmailService } from '../facades/email.service';
 
+// TODO: add command handler
 @Injectable()
 export class ResendRegistrationEmailUseCase {
   constructor(

@@ -12,6 +12,7 @@ type TExtension = {
   message: string;
 };
 
+// TODO: add command handler
 @Injectable()
 export class CreateUserUseCase {
   constructor(

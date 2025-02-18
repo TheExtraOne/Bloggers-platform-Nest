@@ -7,6 +7,7 @@ import { EmailService } from '../facades/email.service';
 import { PasswordRecoveryInputDto } from '../../api/input-dto/password-recovery.input-dto';
 import { PasswordRecoveryStatus } from '../../domain/password-recovery.schema';
 
+// TODO: add command handler
 @Injectable()
 export class SendRecoverPasswordEmailUseCase {
   constructor(

@@ -52,6 +52,6 @@ const authUseCases = [
     ...usersUseCases,
     ...authUseCases,
   ],
-  exports: [BasicStrategy],
+  exports: [BasicStrategy, UsersRepository],
 })
 export class UserAccountsModule {}

@@ -4,6 +4,7 @@ import { UsersRepository } from '../../infrastructure/users.repository';
 import { UserDocument } from '../../domain/user.entity';
 import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
 
+// TODO: add command handler
 @Injectable()
 export class ConfirmEmailRegistrationUseCase {
   constructor(private readonly usersRepository: UsersRepository) {}

@@ -5,6 +5,7 @@ import { PasswordRecoveryStatus } from '../../domain/password-recovery.schema';
 import { NewPasswordInputDto } from '../../api/input-dto/new-password.input-dto';
 import { BcryptService } from '../facades/bcrypt.service';
 
+// TODO: add command handler
 @Injectable()
 export class SetNewPasswordUseCase {
   constructor(

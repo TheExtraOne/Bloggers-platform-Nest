@@ -25,12 +25,19 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../app/posts.use-cases/create-post.use-case';
 import { DeletePostCommand } from '../app/posts.use-cases/delete-post.use-case';
 import { UpdatePostCommand } from '../app/posts.use-cases/update-post.use-case';
+import { JwtAuthGuard } from 'src/features/user-accounts/guards/jwt/jwt-auth.guard';
+import { CreateCommentInputDto } from './input-dto/comment.input.dto';
+import { CurrentUserId } from 'src/features/user-accounts/guards/decorators/current-user-id.decorator';
+import { CreateCommentCommand } from '../app/command.use-cases/create-comment.use-case';
+import { CommentsQueryRepository } from '../infrastructure/query/comments.query-repository';
+import { CommentsViewDto } from './view-dto/comment.view-dto';
 
 @Controller(PATHS.POSTS)
 export class PostsController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   @Get()
@@ -52,6 +59,21 @@ export class PostsController {
     const postId = await this.commandBus.execute(new CreatePostCommand(dto));
 
     return await this.postsQueryRepository.findPostById(postId);
+  }
+
+  @Post(':id/comments')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.CREATED)
+  async createCommentByPostId(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+    @Body() commentDto: CreateCommentInputDto,
+  ): Promise<CommentsViewDto> {
+    const commentId = await this.commandBus.execute(
+      new CreateCommentCommand(id, userId, commentDto),
+    );
+
+    return await this.commentsQueryRepository.findCommentById(commentId);
   }
 
   @Put(':id')
