@@ -46,16 +46,14 @@ describe('Blogs Controller (e2e)', () => {
     it('should create blog with valid data', async () => {
       const response = await blogsTestManager.createBlog(validBlog);
 
-      expect(response).toEqual(
-        expect.objectContaining({
-          id: expect.any(String),
-          name: validBlog.name,
-          description: validBlog.description,
-          websiteUrl: validBlog.websiteUrl,
-          createdAt: expect.any(String),
-          isMembership: expect.any(Boolean),
-        }),
-      );
+      expect(response).toEqual({
+        id: expect.any(String),
+        name: validBlog.name,
+        description: validBlog.description,
+        websiteUrl: validBlog.websiteUrl,
+        createdAt: expect.any(String),
+        isMembership: expect.any(Boolean),
+      });
     });
 
     it('should not create blog without basic auth', async () => {
@@ -324,17 +322,21 @@ describe('Blogs Controller (e2e)', () => {
 
       const response = await blogsTestManager.createPost(blog.id, validPost);
 
-      expect(response).toEqual(
-        expect.objectContaining({
-          id: expect.any(String),
-          title: validPost.title,
-          shortDescription: validPost.shortDescription,
-          content: validPost.content,
-          blogId: blog.id,
-          blogName: blog.name,
-          createdAt: expect.any(String),
-        }),
-      );
+      expect(response).toEqual({
+        id: expect.any(String),
+        title: validPost.title,
+        shortDescription: validPost.shortDescription,
+        content: validPost.content,
+        blogId: blog.id,
+        blogName: blog.name,
+        createdAt: expect.any(String),
+        extendedLikesInfo: {
+          dislikesCount: expect.any(Number),
+          likesCount: expect.any(Number),
+          myStatus: 'None',
+          newestLikes: expect.any(Array),
+        },
+      });
     });
 
     it('should return 404 when creating post for non-existing blog', async () => {

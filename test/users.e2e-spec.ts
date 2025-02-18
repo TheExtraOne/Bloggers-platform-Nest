@@ -41,14 +41,12 @@ describe('Users Controller (e2e)', () => {
     it('should create user with valid data', async () => {
       const response = await userTestManager.createUser(validUser);
 
-      expect(response).toEqual(
-        expect.objectContaining({
-          id: expect.any(String),
-          login: validUser.login,
-          email: validUser.email,
-          createdAt: expect.any(String),
-        }),
-      );
+      expect(response).toEqual({
+        id: expect.any(String),
+        login: validUser.login,
+        email: validUser.email,
+        createdAt: expect.any(String),
+      });
     });
 
     it('should not create user without auth credentials', async () => {

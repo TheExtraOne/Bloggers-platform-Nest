@@ -57,17 +57,21 @@ describe('Posts Controller (e2e)', () => {
     it('should create post with valid data', async () => {
       const response = await postsTestManager.createPost(validPost);
 
-      expect(response).toEqual(
-        expect.objectContaining({
-          id: expect.any(String),
-          title: validPost.title,
-          shortDescription: validPost.shortDescription,
-          content: validPost.content,
-          blogId: validPost.blogId,
-          blogName: expect.any(String),
-          createdAt: expect.any(String),
-        }),
-      );
+      expect(response).toEqual({
+        id: expect.any(String),
+        title: validPost.title,
+        shortDescription: validPost.shortDescription,
+        content: validPost.content,
+        blogId: validPost.blogId,
+        blogName: expect.any(String),
+        createdAt: expect.any(String),
+        extendedLikesInfo: {
+          dislikesCount: expect.any(Number),
+          likesCount: expect.any(Number),
+          myStatus: 'None',
+          newestLikes: expect.any(Array),
+        },
+      });
     });
 
     it('should not create post without basic auth', async () => {
@@ -223,17 +227,21 @@ describe('Posts Controller (e2e)', () => {
         .get(`/${PATHS.POSTS}/${post.id}`)
         .expect(HttpStatus.OK);
 
-      expect(response.body).toEqual(
-        expect.objectContaining({
-          id: post.id,
-          title: updateDto.title,
-          shortDescription: updateDto.shortDescription,
-          content: updateDto.content,
-          blogId: updateDto.blogId,
-          blogName: expect.any(String),
-          createdAt: expect.any(String),
-        }),
-      );
+      expect(response.body).toEqual({
+        id: post.id,
+        title: updateDto.title,
+        shortDescription: updateDto.shortDescription,
+        content: updateDto.content,
+        blogId: updateDto.blogId,
+        blogName: expect.any(String),
+        createdAt: expect.any(String),
+        extendedLikesInfo: {
+          dislikesCount: expect.any(Number),
+          likesCount: expect.any(Number),
+          myStatus: 'None',
+          newestLikes: expect.any(Array),
+        },
+      });
     });
 
     it('should not update post without basic auth', async () => {
