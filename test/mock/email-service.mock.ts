@@ -7,13 +7,7 @@ export class EmailServiceMock extends EmailService {
   }: {
     confirmationCode: string;
     email: string;
-  }): void {
-    console.log(
-      `Call mock method sendRegistrationMail / EmailServiceMock with params: 
-      ${email}, ${confirmationCode}`,
-    );
-    return;
-  }
+  }): void {}
 
   sendRecoveryPasswordMail({
     userEmail,
@@ -21,11 +15,5 @@ export class EmailServiceMock extends EmailService {
   }: {
     recoveryCode: string;
     userEmail: string;
-  }): void {
-    console.log(
-      `Call mock method sendRecoveryPasswordMail / EmailServiceMock with params: 
-      ${userEmail}, ${recoveryCode}`,
-    );
-    return;
-  }
+  }): void {}
 }

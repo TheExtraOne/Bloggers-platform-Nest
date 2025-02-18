@@ -21,7 +21,7 @@ describe('Auth Controller (e2e)', () => {
     const result = await new TestSettingsInitializer().init();
     app = result.app;
     authTestManager = result.authTestManager;
-    usersTestManager = result.userTestManger;
+    usersTestManager = result.usersTestManager;
     jwtService = app.get(JwtService);
   });
 
@@ -436,7 +436,7 @@ describe('Rate Limiting', () => {
     );
     app = result.app;
     authTestManager = result.authTestManager;
-    usersTestManager = result.userTestManger;
+    usersTestManager = result.usersTestManager;
   });
 
   beforeEach(async () => {
@@ -444,6 +444,7 @@ describe('Rate Limiting', () => {
   });
 
   afterAll(async () => {
+    await app.close();
     await app.close();
     await stopMongoMemoryServer();
   });

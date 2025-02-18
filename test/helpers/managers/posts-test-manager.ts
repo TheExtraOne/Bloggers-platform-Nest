@@ -6,6 +6,8 @@ import {
   UpdatePostInputDto,
 } from '../../../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
 import { PostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { CreateCommentInputDto } from '../../../src/features/bloggers-platform/comments/api/input-dto/comment.input.dto';
+import { CommentsViewDto } from '../../../src/features/bloggers-platform/comments/api/view-dto/comment.view-dto';
 
 export class PostsTestManager {
   constructor(private app: INestApplication) {}
@@ -66,5 +68,37 @@ export class PostsTestManager {
     }
 
     return posts;
+  }
+
+  async createComment(
+    postId: string,
+    dto: CreateCommentInputDto,
+    accessToken: string,
+    statusCode: number = HttpStatus.CREATED,
+  ): Promise<CommentsViewDto> {
+    const response = await request(this.app.getHttpServer())
+      .post(`/${PATHS.POSTS}/${postId}/comments`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send(dto)
+      .expect(statusCode);
+
+    return response.body;
+  }
+
+  async getPostComments(
+    postId: string,
+    query: { pageNumber?: number; pageSize?: number } = {},
+    statusCode: number = HttpStatus.OK,
+  ): Promise<any> {
+    const queryString = new URLSearchParams({
+      pageNumber: (query.pageNumber || 1).toString(),
+      pageSize: (query.pageSize || 10).toString(),
+    }).toString();
+
+    const response = await request(this.app.getHttpServer())
+      .get(`/${PATHS.POSTS}/${postId}/comments?${queryString}`)
+      .expect(statusCode);
+
+    return response.body;
   }
 }

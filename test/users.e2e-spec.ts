@@ -18,7 +18,7 @@ describe('Users Controller (e2e)', () => {
   beforeAll(async () => {
     const result = await new TestSettingsInitializer().init();
     app = result.app;
-    userTestManager = result.userTestManger;
+    userTestManager = result.usersTestManager;
     httpServer = result.httpServer;
   });
 
