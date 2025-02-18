@@ -6,14 +6,14 @@ import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { initSettings } from './helpers/init-settings';
 import { deleteAllData } from './helpers/delete-all-data';
 import { BlogsTestManager } from './helpers/managers/blogs-test-manager';
-import { BlogsViewDto } from '../src/features/bloggers-platform/api/view-dto/blogs.view-dto';
 import { PaginatedViewDto } from '../src/core/dto/base.paginated-view.dto';
 import {
   CreateBlogInputDto,
   UpdateBlogInputDto,
-} from '../src/features/bloggers-platform/api/input-dto/blogs.input-dto';
-import { CreatePostInputDto } from '../src/features/bloggers-platform/api/input-dto/posts.input-dto';
-import { PostsViewDto } from '../src/features/bloggers-platform/api/view-dto/posts.view-dto';
+} from '../src/features/bloggers-platform/blogs/api/input-dto/blogs.input-dto';
+import { BlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
+import { CreatePostInputDto } from '../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
+import { PostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 
 describe('Blogs Controller (e2e)', () => {
   let app: INestApplication;

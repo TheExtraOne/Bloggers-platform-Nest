@@ -4,8 +4,8 @@ import { PATHS } from '../../../src/constants';
 import {
   CreatePostInputDto,
   UpdatePostInputDto,
-} from '../../../src/features/bloggers-platform/api/input-dto/posts.input-dto';
-import { PostsViewDto } from '../../../src/features/bloggers-platform/api/view-dto/posts.view-dto';
+} from '../../../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
+import { PostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 
 export class PostsTestManager {
   constructor(private app: INestApplication) {}

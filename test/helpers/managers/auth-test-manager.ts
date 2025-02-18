@@ -3,8 +3,8 @@ import { HttpStatus } from '@nestjs/common';
 import request from 'supertest';
 import { PATHS } from '../../../src/constants';
 import { ConfirmRegistrationInputDto } from '../../../src/features/user-accounts/api/input-dto/confirm-registration.input-dto';
-import { PasswordRecoveryInputDto } from '../../../src/features/user-accounts/api/input-dto/password-recovery.input-dto';
 import { NewPasswordInputDto } from '../../../src/features/user-accounts/api/input-dto/new-password.input-dto';
+import { PasswordRecoveryInputDto } from '../../../src/features/user-accounts/api/input-dto/password-recovery.input-dto';
 import { ResendRegistrationInputDto } from '../../../src/features/user-accounts/api/input-dto/resend-registration.input-dto';
 import { CreateUserInputDto } from '../../../src/features/user-accounts/api/input-dto/users.input-dto';
 

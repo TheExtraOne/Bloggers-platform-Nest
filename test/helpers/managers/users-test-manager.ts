@@ -1,9 +1,8 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { MeViewDto } from 'src/features/user-accounts/api/view-dto/me.view-dto';
+import { PATHS } from '../../../src/constants';
 import { CreateUserInputDto } from '../../../src/features/user-accounts/api/input-dto/users.input-dto';
 import { UserViewDto } from '../../../src/features/user-accounts/api/view-dto/users.view-dto';
-import { PATHS } from '../../../src/constants';
 
 export class UsersTestManager {
   constructor(private app: INestApplication) {}
