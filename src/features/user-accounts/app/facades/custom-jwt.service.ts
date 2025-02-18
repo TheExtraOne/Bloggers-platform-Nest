@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { SETTINGS } from '../../../constants';
+import { SETTINGS } from '../../../../constants';
 
 export enum TOKEN_TYPE {
   AC_TOKEN = 'AC_TOKEN',

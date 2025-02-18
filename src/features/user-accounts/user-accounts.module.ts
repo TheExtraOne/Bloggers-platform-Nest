@@ -4,21 +4,33 @@ import { UsersQueryRepository } from './infrastructure/query/users.query-reposit
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './domain/user.entity';
 import { UsersRepository } from './infrastructure/users.repository';
-import { BcryptService } from './app/bcrypt.service';
+import { BcryptService } from './app/facades/bcrypt.service';
 import { AuthController } from './api/auth.controller';
 import { AuthService } from './app/auth.service';
-import { EmailService } from './app/email.service';
-import { CustomJwtService } from './app/custom-jwt.service';
+import { EmailService } from './app/facades/email.service';
+import { CustomJwtService } from './app/facades/custom-jwt.service';
 import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './guards/local/local.strategy';
 import { JwtStrategy } from './guards/jwt/jwt.strategy';
 import { BasicStrategy } from './guards/basic/basic.strategy';
 import { CreateUserUseCase } from './app/users.use-cases/create-user.use-case';
 import { DeleteUserUseCase } from './app/users.use-cases/delete-user.use-case';
+import { LoginUseCases } from './app/auth.use-cases/login.use-cases';
+import { ConfirmEmailRegistrationUseCase } from './app/auth.use-cases/confirm-email-registration.use-case';
+import { ResendRegistrationEmailUseCase } from './app/auth.use-cases/resend-registration-email.use-case';
+import { SendRecoverPasswordEmailUseCase } from './app/auth.use-cases/send-recover-password-email.use-case';
+import { SetNewPasswordUseCase } from './app/auth.use-cases/set-new-password.use-case';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
 const strategies = [JwtStrategy, LocalStrategy, BasicStrategy];
 const usersUseCases = [CreateUserUseCase, DeleteUserUseCase];
+const authUseCases = [
+  LoginUseCases,
+  ConfirmEmailRegistrationUseCase,
+  ResendRegistrationEmailUseCase,
+  SendRecoverPasswordEmailUseCase,
+  SetNewPasswordUseCase,
+];
 
 @Module({
   imports: [
@@ -35,6 +47,7 @@ const usersUseCases = [CreateUserUseCase, DeleteUserUseCase];
     ...adapters,
     ...strategies,
     ...usersUseCases,
+    ...authUseCases,
   ],
   exports: [BasicStrategy],
 })

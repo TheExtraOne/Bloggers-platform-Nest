@@ -17,7 +17,10 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     password: string,
   ): Promise<{ userId: string }> {
     // Empty string validation is now handled by LocalAuthGuard
-    const userId = await this.authService.validateUser(loginOrEmail, password);
+    const userId = await this.authService.checkIfUserIsAbleToLogin(
+      loginOrEmail,
+      password,
+    );
     if (!userId) throw new UnauthorizedException();
     return { userId };
   }

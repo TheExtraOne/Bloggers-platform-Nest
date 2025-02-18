@@ -8,7 +8,7 @@ import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { deleteAllData } from './helpers/delete-all-data';
 import { CreateUserInputDto } from '../src/features/user-accounts/api/input-dto/users.input-dto';
 import { MeViewDto } from '../src/features/user-accounts/api/view-dto/me.view-dto';
-import { EmailService } from '../src/features/user-accounts/app/email.service';
+import { EmailService } from '../src/features/user-accounts/app/facades/email.service';
 import { SETTINGS } from '../src/constants';
 
 describe('Auth Controller (e2e)', () => {

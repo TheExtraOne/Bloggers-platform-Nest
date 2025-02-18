@@ -3,9 +3,9 @@ import { UsersRepository } from '../../infrastructure/users.repository';
 import { CreateUserInputDto } from '../../api/input-dto/users.input-dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../../domain/user.entity';
-import { BcryptService } from '../bcrypt.service';
+import { BcryptService } from '../facades/bcrypt.service';
 import { ObjectId } from 'mongodb';
-import { EmailService } from '../email.service';
+import { EmailService } from '../facades/email.service';
 
 type TExtension = {
   field: string | null;

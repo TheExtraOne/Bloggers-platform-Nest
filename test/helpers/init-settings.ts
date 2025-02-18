@@ -1,9 +1,8 @@
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
-import { AppModule } from '../../src/app.module';
 import { appSetup } from '../../src/setup/app.setup';
 import { UsersTestManager } from './managers/users-test-manager';
 import { deleteAllData } from './delete-all-data';
-import { EmailService } from '../../src/features/user-accounts/app/email.service';
+import { EmailService } from '../../src/features/user-accounts/app/facades/email.service';
 import { EmailServiceMock } from '../mock/email-service.mock';
 import { startMongoMemoryServer } from './mongodb-memory-server';
 import { MongooseModule } from '@nestjs/mongoose';

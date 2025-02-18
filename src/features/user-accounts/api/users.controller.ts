@@ -17,9 +17,9 @@ import { PaginatedViewDto } from '../../../core/dto/base.paginated-view.dto';
 import { UserViewDto } from './view-dto/users.view-dto';
 import { PATHS } from '../../../constants';
 import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
-import { AuthService } from '../app/auth.service';
 import { CreateUserUseCase } from '../app/users.use-cases/create-user.use-case';
 import { DeleteUserUseCase } from '../app/users.use-cases/delete-user.use-case';
+import { ConfirmEmailRegistrationUseCase } from '../app/auth.use-cases/confirm-email-registration.use-case';
 
 @UseGuards(BasicAuthGuard)
 @Controller(PATHS.USERS)
@@ -27,7 +27,7 @@ export class UserController {
   constructor(
     private readonly createUserUseCase: CreateUserUseCase,
     private readonly deleteUserUseCase: DeleteUserUseCase,
-    private readonly authService: AuthService,
+    private readonly confirmEmailRegistrationUseCase: ConfirmEmailRegistrationUseCase,
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
@@ -48,7 +48,9 @@ export class UserController {
       await this.createUserUseCase.execute(createUserDto);
 
     // Confirm email if user was created manually
-    await this.authService.confirmRegistration({ code: confirmationCode });
+    await this.confirmEmailRegistrationUseCase.execute({
+      code: confirmationCode,
+    });
 
     return await this.usersQueryRepository.findUserById(userId);
   }

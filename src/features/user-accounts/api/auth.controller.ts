@@ -11,7 +11,6 @@ import {
 import { Response } from 'express';
 import { PATHS } from '../../../constants';
 import { CreateUserInputDto } from './input-dto/users.input-dto';
-import { AuthService } from '../app/auth.service';
 import { ConfirmRegistrationInputDto } from './input-dto/confirm-registration.input-dto';
 import { ResendRegistrationInputDto } from './input-dto/resend-registration.input-dto';
 import { PasswordRecoveryInputDto } from './input-dto/password-recovery.input-dto';
@@ -22,12 +21,23 @@ import { LocalAuthGuard } from '../guards/local/local-auth.guard';
 import { CurrentUserId } from '../guards/decorators/current-user-id.decorator';
 import { MeViewDto } from './view-dto/me.view-dto';
 import { ThrottlerGuard, SkipThrottle } from '@nestjs/throttler';
+import { LoginUseCases } from '../app/auth.use-cases/login.use-cases';
+import { CreateUserUseCase } from '../app/users.use-cases/create-user.use-case';
+import { ConfirmEmailRegistrationUseCase } from '../app/auth.use-cases/confirm-email-registration.use-case';
+import { ResendRegistrationEmailUseCase } from '../app/auth.use-cases/resend-registration-email.use-case';
+import { SendRecoverPasswordEmailUseCase } from '../app/auth.use-cases/send-recover-password-email.use-case';
+import { SetNewPasswordUseCase } from '../app/auth.use-cases/set-new-password.use-case';
 
 @UseGuards(ThrottlerGuard)
 @Controller(PATHS.AUTH)
 export class AuthController {
   constructor(
-    private readonly authService: AuthService,
+    private readonly loginUseCases: LoginUseCases,
+    private readonly confirmEmailRegistrationUseCase: ConfirmEmailRegistrationUseCase,
+    private readonly resendRegistrationEmailUseCase: ResendRegistrationEmailUseCase,
+    private readonly sendRecoverPasswordEmailUseCase: SendRecoverPasswordEmailUseCase,
+    private readonly setNewPasswordUseCase: SetNewPasswordUseCase,
+    private readonly createUserUseCase: CreateUserUseCase,
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
@@ -56,7 +66,8 @@ export class AuthController {
     @CurrentUserId() userId: string,
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ accessToken: string }> {
-    const { accessToken, refreshToken } = await this.authService.login(userId);
+    const { accessToken, refreshToken } =
+      await this.loginUseCases.execute(userId);
 
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -69,7 +80,7 @@ export class AuthController {
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   async createUser(@Body() dto: CreateUserInputDto): Promise<void> {
-    await this.authService.createUser(dto);
+    await this.createUserUseCase.execute(dto);
   }
 
   @Post('registration-confirmation')
@@ -77,7 +88,7 @@ export class AuthController {
   async confirmRegistration(
     @Body() dto: ConfirmRegistrationInputDto,
   ): Promise<void> {
-    await this.authService.confirmRegistration(dto);
+    await this.confirmEmailRegistrationUseCase.execute(dto);
   }
 
   @Post('registration-email-resending')
@@ -85,18 +96,18 @@ export class AuthController {
   async registrationEmailResending(
     @Body() dto: ResendRegistrationInputDto,
   ): Promise<void> {
-    await this.authService.resendRegistration(dto);
+    await this.resendRegistrationEmailUseCase.execute(dto);
   }
 
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body() dto: PasswordRecoveryInputDto): Promise<void> {
-    await this.authService.recoverPassword(dto);
+    await this.sendRecoverPasswordEmailUseCase.execute(dto);
   }
 
   @Post('new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   async newPassword(@Body() dto: NewPasswordInputDto): Promise<void> {
-    await this.authService.setNewPassword(dto);
+    await this.setNewPasswordUseCase.execute(dto);
   }
 }
