@@ -8,13 +8,16 @@ import { BlogsRepository } from './infrastructure/blogs.repository';
 import { Post, PostSchema } from './domain/post.entity';
 import { PostsController } from './api/posts.controller';
 import { PostsQueryRepository } from './infrastructure/query/posts.query-repository';
-import { PostsService } from './app/posts.service';
 import { PostsRepository } from './infrastructure/posts.repository';
 import { CreateBlogUseCase } from './app/blogs.use-cases/create-blog.use-case';
 import { UpdateBlogUseCase } from './app/blogs.use-cases/update-blog.use-case';
 import { DeleteBlogUseCase } from './app/blogs.use-cases/delete-blog.use-case';
+import { CreatePostUseCase } from './app/posts.use-cases/create-post.use-case';
+import { UpdatePostUseCase } from './app/posts.use-cases/update-post.use-case';
+import { DeletePostUseCase } from './app/posts.use-cases/delete-post.use-case';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
+const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
 
 @Module({
   imports: [
@@ -34,10 +37,10 @@ const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
     BlogsService,
     BlogsQueryRepository,
     BlogsRepository,
-    PostsService,
     PostsRepository,
     PostsQueryRepository,
     ...blogsUseCases,
+    ...postsUseCases,
   ],
 })
 export class BloggersPlatformModule {}

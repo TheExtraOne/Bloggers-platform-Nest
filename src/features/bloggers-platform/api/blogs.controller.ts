@@ -23,12 +23,12 @@ import { GetPostsQueryParams } from './input-dto/get-posts.query-params.input-dt
 import { PostsViewDto } from './view-dto/posts.view-dto';
 import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
 import { CreatePostFromBlogInputDto } from './input-dto/posts.input-dto';
-import { PostsService } from '../app/posts.service';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated-view.dto';
 import { BasicAuthGuard } from 'src/features/user-accounts/guards/basic/basic-auth.guard';
 import { CreateBlogUseCase } from '../app/blogs.use-cases/create-blog.use-case';
 import { UpdateBlogUseCase } from '../app/blogs.use-cases/update-blog.use-case';
 import { DeleteBlogUseCase } from '../app/blogs.use-cases/delete-blog.use-case';
+import { CreatePostUseCase } from '../app/posts.use-cases/create-post.use-case';
 
 @Controller(PATHS.BLOGS)
 export class BlogsController {
@@ -36,7 +36,7 @@ export class BlogsController {
     private readonly createBlogUseCase: CreateBlogUseCase,
     private readonly updateBlogUseCase: UpdateBlogUseCase,
     private readonly deleteBlogUseCase: DeleteBlogUseCase,
-    private readonly postsService: PostsService,
+    private readonly createPostUseCase: CreatePostUseCase,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
@@ -79,7 +79,7 @@ export class BlogsController {
     @Body() postDto: CreatePostFromBlogInputDto,
   ): Promise<PostsViewDto> {
     await this.blogsQueryRepository.findBlogById(id);
-    const postId = await this.postsService.createPost({
+    const postId = await this.createPostUseCase.execute({
       ...postDto,
       blogId: id,
     });

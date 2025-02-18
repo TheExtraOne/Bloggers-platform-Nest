@@ -43,13 +43,6 @@ export class AuthService {
       type: TOKEN_TYPE.R_TOKEN,
     });
 
-    // await this.securityService.createRefreshTokenMeta({
-    //   refreshToken,
-    //   title: req.headers['user-agent'] || 'Unknown device',
-    //   ip: req.ip || '::1',
-    //   deviceId,
-    // });
-
     return { accessToken, refreshToken };
   }
 
