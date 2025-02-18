@@ -1045,6 +1045,11 @@
     path-to-regexp "8.2.0"
     tslib "2.8.1"
 
+"@nestjs/cqrs@^11.0.2":
+  version "11.0.2"
+  resolved "https://registry.yarnpkg.com/@nestjs/cqrs/-/cqrs-11.0.2.tgz#f28f434053a24f1723c1f6209ef08904a2505efc"
+  integrity sha512-5gM78jtNkuXvcwPzR6jTFbaskFpmZzKZNxzQdICOOrsAnF7iiPxy0sAHLj885PRrU1FWVD3RC2qZsHqFfoe3/Q==
+
 "@nestjs/jwt@^11.0.0":
   version "11.0.0"
   resolved "https://registry.yarnpkg.com/@nestjs/jwt/-/jwt-11.0.0.tgz#aef1590e70830c70fba0f59e9b17314dc4d36822"

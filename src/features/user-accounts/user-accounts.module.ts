@@ -6,7 +6,6 @@ import { User, UserSchema } from './domain/user.entity';
 import { UsersRepository } from './infrastructure/users.repository';
 import { BcryptService } from './app/facades/bcrypt.service';
 import { AuthController } from './api/auth.controller';
-import { AuthService } from './app/auth.service';
 import { EmailService } from './app/facades/email.service';
 import { CustomJwtService } from './app/facades/custom-jwt.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -20,10 +19,15 @@ import { ConfirmEmailRegistrationUseCase } from './app/auth.use-cases/confirm-em
 import { ResendRegistrationEmailUseCase } from './app/auth.use-cases/resend-registration-email.use-case';
 import { SendRecoverPasswordEmailUseCase } from './app/auth.use-cases/send-recover-password-email.use-case';
 import { SetNewPasswordUseCase } from './app/auth.use-cases/set-new-password.use-case';
+import { CheckIfUserIsAbleToLoginUseCase } from './app/users.use-cases/check-user-able-login.use-case';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
 const strategies = [JwtStrategy, LocalStrategy, BasicStrategy];
-const usersUseCases = [CreateUserUseCase, DeleteUserUseCase];
+const usersUseCases = [
+  CreateUserUseCase,
+  DeleteUserUseCase,
+  CheckIfUserIsAbleToLoginUseCase,
+];
 const authUseCases = [
   LoginUseCases,
   ConfirmEmailRegistrationUseCase,
@@ -43,7 +47,6 @@ const authUseCases = [
   providers: [
     UsersQueryRepository,
     UsersRepository,
-    AuthService,
     ...adapters,
     ...strategies,
     ...usersUseCases,

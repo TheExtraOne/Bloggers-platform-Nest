@@ -1,19 +1,16 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UsersRepository } from '../infrastructure/users.repository';
-import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
-import { BcryptService } from './facades/bcrypt.service';
+import { UsersRepository } from '../../infrastructure/users.repository';
+import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
+import { BcryptService } from '../facades/bcrypt.service';
 
 @Injectable()
-export class AuthService {
+export class CheckIfUserIsAbleToLoginUseCase {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}
 
-  async checkIfUserIsAbleToLogin(
-    loginOrEmail: string,
-    password: string,
-  ): Promise<string> {
+  async execute(loginOrEmail: string, password: string): Promise<string> {
     const user =
       await this.usersRepository.findUserByLoginOrEmail(loginOrEmail);
     // Check that such user exists

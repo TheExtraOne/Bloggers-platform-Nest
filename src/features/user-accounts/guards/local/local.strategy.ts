@@ -1,11 +1,13 @@
 import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthService } from '../../app/auth.service';
+import { CheckIfUserIsAbleToLoginUseCase } from '../../app/users.use-cases/check-user-able-login.use-case';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
-  constructor(private authService: AuthService) {
+  constructor(
+    private checkIfUserIsAbleToLoginUseCase: CheckIfUserIsAbleToLoginUseCase,
+  ) {
     super({
       usernameField: 'loginOrEmail',
     });
@@ -17,7 +19,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     password: string,
   ): Promise<{ userId: string }> {
     // Empty string validation is now handled by LocalAuthGuard
-    const userId = await this.authService.checkIfUserIsAbleToLogin(
+    const userId = await this.checkIfUserIsAbleToLoginUseCase.execute(
       loginOrEmail,
       password,
     );

@@ -1,21 +1,28 @@
-import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogModelType } from '../../domain/blog.entity';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { CreateBlogInputDto } from '../../api/input-dto/blogs.input-dto';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-@Injectable()
-export class CreateBlogUseCase {
+export class CreateBlogCommand {
+  constructor(public dto: CreateBlogInputDto) {}
+}
+
+@CommandHandler(CreateBlogCommand)
+export class CreateBlogUseCase
+  implements ICommandHandler<CreateBlogCommand, string>
+{
   constructor(
     @InjectModel(Blog.name) private BlogModel: BlogModelType,
     private readonly blogsRepository: BlogsRepository,
   ) {}
 
-  async execute(dto: CreateBlogInputDto): Promise<string> {
+  async execute(command: CreateBlogCommand): Promise<string> {
+    const { name, description, websiteUrl } = command.dto;
     const newBlog = this.BlogModel.createInstance({
-      name: dto.name,
-      description: dto.description,
-      websiteUrl: dto.websiteUrl,
+      name,
+      description,
+      websiteUrl,
     });
     await this.blogsRepository.save(newBlog);
 

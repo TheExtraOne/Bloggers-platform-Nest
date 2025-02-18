@@ -15,6 +15,7 @@ import { PostsTestManager } from './managers/posts-test-manager';
 import { BlogsTestManager } from './managers/blogs-test-manager';
 import { AuthTestManager } from './managers/auth-test-manager';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { CqrsModule } from '@nestjs/cqrs';
 
 export const initSettings = async (
   ttl: number = 1000,
@@ -34,6 +35,7 @@ export const initSettings = async (
           limit, // Lower limit to test rate limiting
         },
       ]),
+      CqrsModule.forRoot(),
       UserAccountsModule,
       BloggersPlatformModule,
       TestingModule,

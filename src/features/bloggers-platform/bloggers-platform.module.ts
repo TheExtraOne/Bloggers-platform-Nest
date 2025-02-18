@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { BlogsController } from './api/blogs.controller';
-import { BlogsService } from './app/blogs.service';
 import { BlogsQueryRepository } from './infrastructure/query/blogs.query-repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Blog, BlogSchema } from './domain/blog.entity';
@@ -15,8 +14,14 @@ import { DeleteBlogUseCase } from './app/blogs.use-cases/delete-blog.use-case';
 import { CreatePostUseCase } from './app/posts.use-cases/create-post.use-case';
 import { UpdatePostUseCase } from './app/posts.use-cases/update-post.use-case';
 import { DeletePostUseCase } from './app/posts.use-cases/delete-post.use-case';
+import { GetBlogUseCase } from './app/blogs.use-cases/get-blog.use-case';
 
-const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
+const blogsUseCases = [
+  CreateBlogUseCase,
+  UpdateBlogUseCase,
+  DeleteBlogUseCase,
+  GetBlogUseCase,
+];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
 
 @Module({
@@ -34,7 +39,6 @@ const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
   ],
   controllers: [BlogsController, PostsController],
   providers: [
-    BlogsService,
     BlogsQueryRepository,
     BlogsRepository,
     PostsRepository,

@@ -9,6 +9,7 @@ import { BloggersPlatformModule } from './features/bloggers-platform/bloggers-pl
 import { ConfigModule } from '@nestjs/config';
 import { CoreModule } from './core/core-module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
         limit: +SETTINGS.LIMIT,
       },
     ]),
+    CqrsModule.forRoot(),
     UserAccountsModule,
     TestingModule,
     BloggersPlatformModule,

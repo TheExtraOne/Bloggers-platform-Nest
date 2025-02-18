@@ -2,19 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostModelType } from '../../domain/post.entity';
 import { CreatePostInputDto } from '../../api/input-dto/posts.input-dto';
-import { BlogsService } from '../blogs.service';
 import { PostsRepository } from '../../infrastructure/posts.repository';
+import { GetBlogUseCase } from '../blogs.use-cases/get-blog.use-case';
 
 @Injectable()
 export class CreatePostUseCase {
   constructor(
     @InjectModel(Post.name) private PostModel: PostModelType,
-    private readonly blogsService: BlogsService,
+    private readonly getBlogUseCase: GetBlogUseCase,
     private readonly postsRepository: PostsRepository,
   ) {}
 
   async execute(dto: CreatePostInputDto): Promise<string> {
-    const blog = await this.blogsService.getBlogById(dto.blogId);
+    const blog = await this.getBlogUseCase.execute(dto.blogId);
     const blogName = blog.name;
 
     const newPost = this.PostModel.createInstance({
