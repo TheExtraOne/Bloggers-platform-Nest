@@ -81,7 +81,7 @@ export class Comment {
   }
 
   /**
-   * Marks the blog as deleted
+   * Marks the comment as deleted
    * Throws an error if already deleted
    * @throws {Error} If the entity is already deleted
    */

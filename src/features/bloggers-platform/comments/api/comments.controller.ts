@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../../../user-accounts/guards/jwt/jwt-auth.guard';
 import { UpdateCommentInputDto } from './input-dto/comment.input.dto';
 import { CurrentUserId } from '../../../user-accounts/guards/decorators/current-user-id.decorator';
 import { UpdateCommentCommand } from '../app/command.use-cases/update-comment.use-case';
+import { DeleteCommentCommand } from '../app/command.use-cases/delete-comment.use-case';
 
 @Controller(PATHS.COMMENTS)
 export class CommentsController {
@@ -43,10 +44,13 @@ export class CommentsController {
     );
   }
 
-  //   @Delete(':id')
-  //   @UseGuards(BasicAuthGuard)
-  //   @HttpCode(HttpStatus.NO_CONTENT)
-  //   async deletePostById(@Param('id') id: string): Promise<void> {
-  //     return await this.commandBus.execute(new DeletePostCommand(id));
-  //   }
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteCommentById(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+  ): Promise<void> {
+    return await this.commandBus.execute(new DeleteCommentCommand(id, userId));
+  }
 }
