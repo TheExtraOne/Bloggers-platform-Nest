@@ -16,14 +16,14 @@ export class CommentsQueryRepository {
 
   async findCommentById(id: string): Promise<CommentsViewDto> {
     if (!ObjectId.isValid(id))
-      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+      throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
 
     const comment = await this.CommentModel.findOne({
       _id: new ObjectId(id),
       deletedAt: null,
     });
 
-    if (!comment) throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+    if (!comment) throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
 
     return CommentsViewDto.mapToView(comment);
   }

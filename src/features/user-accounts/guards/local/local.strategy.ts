@@ -18,6 +18,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     loginOrEmail: string,
     password: string,
   ): Promise<{ userId: string }> {
+    // TODO: move outside of the strategy?
     // Empty string validation is now handled by LocalAuthGuard
     const userId = await this.checkIfUserIsAbleToLoginUseCase.execute(
       loginOrEmail,

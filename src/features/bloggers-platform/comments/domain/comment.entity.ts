@@ -6,6 +6,7 @@ import {
   CommentatorInfo,
 } from './commentator-info.schema';
 import { LikesInfoSchema, LikesInfo } from './likes-info.schema';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 
 // Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
@@ -91,17 +92,13 @@ export class Comment {
     this.deletedAt = new Date();
   }
 
-  // /**
-  //  * Updates the post instance with new data
-  //  * @param {UpdatePostDto} dto - The data transfer object for post updates
-  //  */
-  // update(dto: UpdatePostDto) {
-  //   this.title = dto.title;
-  //   this.shortDescription = dto.shortDescription;
-  //   this.content = dto.content;
-  //   this.blogId = dto.blogId;
-  //   this.blogName = dto.blogName;
-  // }
+  /**
+   * Updates the comment instance with new data
+   * @param {UpdateCommentDto} dto - The data transfer object for comment updates
+   */
+  update(dto: UpdateCommentDto) {
+    this.content = dto.content;
+  }
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);

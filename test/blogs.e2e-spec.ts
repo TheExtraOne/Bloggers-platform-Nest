@@ -3,7 +3,6 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { PATHS } from '../src/constants';
 import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
-import { initSettings } from './helpers/init-settings';
 import { deleteAllData } from './helpers/delete-all-data';
 import { BlogsTestManager } from './helpers/managers/blogs-test-manager';
 import { PaginatedViewDto } from '../src/core/dto/base.paginated-view.dto';
@@ -14,6 +13,7 @@ import {
 import { BlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
 import { CreatePostInputDto } from '../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
 import { PostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { TestSettingsInitializer } from './helpers/init-settings';
 
 describe('Blogs Controller (e2e)', () => {
   let app: INestApplication;
@@ -21,7 +21,7 @@ describe('Blogs Controller (e2e)', () => {
   let blogsTestManager: BlogsTestManager;
 
   beforeAll(async () => {
-    const result = await initSettings();
+    const result = await new TestSettingsInitializer().init();
     app = result.app;
     httpServer = result.httpServer;
     blogsTestManager = result.blogsTestManager;

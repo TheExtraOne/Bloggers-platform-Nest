@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { initSettings } from './helpers/init-settings';
+import { TestSettingsInitializer } from './helpers/init-settings';
 import { AuthTestManager } from './helpers/managers/auth-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
 import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
@@ -18,7 +18,7 @@ describe('Auth Controller (e2e)', () => {
   let jwtService: JwtService;
 
   beforeAll(async () => {
-    const result = await initSettings();
+    const result = await new TestSettingsInitializer().init();
     app = result.app;
     authTestManager = result.authTestManager;
     usersTestManager = result.userTestManger;
@@ -430,7 +430,10 @@ describe('Rate Limiting', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    const result = await initSettings(+SETTINGS.TTL, +SETTINGS.LIMIT);
+    const result = await new TestSettingsInitializer().init(
+      +SETTINGS.TTL,
+      +SETTINGS.LIMIT,
+    );
     app = result.app;
     authTestManager = result.authTestManager;
     usersTestManager = result.userTestManger;

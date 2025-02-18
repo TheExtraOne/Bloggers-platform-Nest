@@ -56,6 +56,7 @@ export class BlogsController {
     @Param('id') id: string,
     @Query() query: GetPostsQueryParams,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+    // Checking if blog exists
     await this.blogsQueryRepository.findBlogById(id);
     return this.postsQueryRepository.findAllPostsForBlogId(id, query);
   }
@@ -78,6 +79,7 @@ export class BlogsController {
     @Param('id') id: string,
     @Body() postDto: CreatePostFromBlogInputDto,
   ): Promise<PostsViewDto> {
+    // Checking if blog exists
     await this.blogsQueryRepository.findBlogById(id);
     const postId = await this.commandBus.execute(
       new CreatePostCommand({
@@ -94,14 +96,14 @@ export class BlogsController {
   async updateBlogById(
     @Param('id') id: string,
     @Body() updateBlogDto: UpdateBlogInputDto,
-  ) {
+  ): Promise<void> {
     return this.commandBus.execute(new UpdateBlogCommand(id, updateBlogDto));
   }
 
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBlogById(@Param('id') id: string) {
+  async deleteBlogById(@Param('id') id: string): Promise<void> {
     return this.commandBus.execute(new DeleteBlogCommand(id));
   }
 }

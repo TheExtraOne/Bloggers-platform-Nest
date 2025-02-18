@@ -17,60 +17,64 @@ import { AuthTestManager } from './managers/auth-test-manager';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CqrsModule } from '@nestjs/cqrs';
 
-export const initSettings = async (
-  ttl: number = 1000,
-  limit: number = 50,
-  // Passing a callback which will be received by the module builder, if we want to change the settings of the test module
-  addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
-) => {
-  const mongoUri = await startMongoMemoryServer();
+export class TestSettingsInitializer {
+  private readonly defaultTtl = 1000;
+  private readonly defaultLimit = 50;
 
-  const testingModuleBuilder = Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot(),
-      MongooseModule.forRoot(mongoUri),
-      ThrottlerModule.forRoot([
-        {
-          ttl, // 1 second for tests
-          limit, // Lower limit to test rate limiting
-        },
-      ]),
-      CqrsModule.forRoot(),
-      UserAccountsModule,
-      BloggersPlatformModule,
-      TestingModule,
-      CoreModule,
-    ],
-  })
-    .overrideProvider(EmailService)
-    .useClass(EmailServiceMock);
+  async init(
+    ttl: number = this.defaultTtl,
+    limit: number = this.defaultLimit,
+    addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
+  ) {
+    const mongoUri = await startMongoMemoryServer();
 
-  if (addSettingsToModuleBuilder) {
-    addSettingsToModuleBuilder(testingModuleBuilder);
+    const testingModuleBuilder = Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot(),
+        MongooseModule.forRoot(mongoUri),
+        ThrottlerModule.forRoot([
+          {
+            ttl,
+            limit,
+          },
+        ]),
+        CqrsModule.forRoot(),
+        UserAccountsModule,
+        BloggersPlatformModule,
+        TestingModule,
+        CoreModule,
+      ],
+    })
+      .overrideProvider(EmailService)
+      .useClass(EmailServiceMock);
+
+    if (addSettingsToModuleBuilder) {
+      addSettingsToModuleBuilder(testingModuleBuilder);
+    }
+
+    const testingAppModule = await testingModuleBuilder.compile();
+    const app = testingAppModule.createNestApplication();
+
+    appSetup(app);
+    await app.init();
+
+    const httpServer = app.getHttpServer();
+    const userTestManger = new UsersTestManager(app);
+    const postsTestManager = new PostsTestManager(app);
+    const blogsTestManager = new BlogsTestManager(app);
+    const authTestManager = new AuthTestManager(app);
+    const emailServiceMock = testingAppModule.get<EmailServiceMock>(EmailService);
+
+    await deleteAllData(app);
+
+    return {
+      app,
+      httpServer,
+      userTestManger,
+      postsTestManager,
+      blogsTestManager,
+      authTestManager,
+      emailServiceMock,
+    };
   }
-
-  const testingAppModule = await testingModuleBuilder.compile();
-  const app = testingAppModule.createNestApplication();
-
-  appSetup(app);
-  await app.init();
-
-  const httpServer = app.getHttpServer();
-  const userTestManger = new UsersTestManager(app);
-  const postsTestManager = new PostsTestManager(app);
-  const blogsTestManager = new BlogsTestManager(app);
-  const authTestManager = new AuthTestManager(app);
-  const emailServiceMock = testingAppModule.get<EmailServiceMock>(EmailService);
-
-  await deleteAllData(app);
-
-  return {
-    app,
-    httpServer,
-    userTestManger,
-    postsTestManager,
-    blogsTestManager,
-    authTestManager,
-    emailServiceMock,
-  };
-};
+}

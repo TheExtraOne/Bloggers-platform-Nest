@@ -2,7 +2,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { CreateUserInputDto } from '../src/features/user-accounts/api/input-dto/users.input-dto';
 import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
-import { initSettings } from './helpers/init-settings';
+import { TestSettingsInitializer } from './helpers/init-settings';
 import { deleteAllData } from './helpers/delete-all-data';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
 import { UserViewDto } from '../src/features/user-accounts/api/view-dto/users.view-dto';
@@ -16,7 +16,7 @@ describe('Users Controller (e2e)', () => {
   let httpServer: App;
 
   beforeAll(async () => {
-    const result = await initSettings();
+    const result = await new TestSettingsInitializer().init();
     app = result.app;
     userTestManager = result.userTestManger;
     httpServer = result.httpServer;

@@ -3,7 +3,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { PATHS } from '../src/constants';
 import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
-import { initSettings } from './helpers/init-settings';
+import { TestSettingsInitializer } from './helpers/init-settings';
 import { deleteAllData } from './helpers/delete-all-data';
 import { PostsTestManager } from './helpers/managers/posts-test-manager';
 import { BlogsTestManager } from './helpers/managers/blogs-test-manager';
@@ -23,7 +23,7 @@ describe('Posts Controller (e2e)', () => {
   let validPost: CreatePostInputDto;
 
   beforeAll(async () => {
-    const result = await initSettings();
+    const result = await new TestSettingsInitializer().init();
     app = result.app;
     httpServer = result.httpServer;
     postsTestManager = result.postsTestManager;

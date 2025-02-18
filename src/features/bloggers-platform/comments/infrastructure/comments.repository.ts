@@ -1,25 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { CommentDocument } from '../domain/comment.entity';
+import {
+  Comment,
+  CommentDocument,
+  CommentModelType,
+} from '../domain/comment.entity';
+import { ObjectId } from 'mongodb';
+import { NotFoundException } from '@nestjs/common';
+import { ERRORS } from '../../../../constants';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class CommentsRepository {
-  // constructor(@InjectModel(Comment.name) private CommentModel: CommentModelType) {}
+  constructor(
+    @InjectModel(Comment.name) private CommentModel: CommentModelType,
+  ) {}
 
   async save(comment: CommentDocument): Promise<void> {
     await comment.save();
   }
 
-  // async findPostById(id: string): Promise<CommentDocument> {
-  //   if (!ObjectId.isValid(id))
-  //     throw new NotFoundException(ERRORS.POST_NOT_FOUND);
+  async findCommentById(id: string): Promise<CommentDocument> {
+    if (!ObjectId.isValid(id))
+      throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
 
-  //   const post = await this.PostModel.findOne({
-  //     _id: new ObjectId(id),
-  //     deletedAt: null,
-  //   });
+    const comment = await this.CommentModel.findOne({
+      _id: new ObjectId(id),
+      deletedAt: null,
+    });
 
-  //   if (!post) throw new NotFoundException(ERRORS.POST_NOT_FOUND);
+    if (!comment) throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
 
-  //   return post;
-  // }
+    return comment;
+  }
 }

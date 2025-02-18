@@ -47,7 +47,7 @@ export class UserController {
     const { userId, confirmationCode } =
       await this.createUserUseCase.execute(createUserDto);
 
-    // Confirm email if user was created manually
+    // Send confirm email if user was created manually
     await this.confirmEmailRegistrationUseCase.execute({
       code: confirmationCode,
     });

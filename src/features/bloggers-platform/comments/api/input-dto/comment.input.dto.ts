@@ -6,3 +6,9 @@ export class CreateCommentInputDto {
   @Length(20, 300)
   content: string;
 }
+
+export class UpdateCommentInputDto {
+  @IsStringWithTrim()
+  @Length(20, 300)
+  content: string;
+}

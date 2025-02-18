@@ -21,10 +21,11 @@ import { DeletePostUseCase } from './posts/app/posts.use-cases/delete-post.use-c
 import { UpdatePostUseCase } from './posts/app/posts.use-cases/update-post.use-case';
 import { Post, PostSchema } from './posts/domain/post.entity';
 import { CommentsController } from './comments/api/comments.controller';
+import { UpdateCommentUseCase } from './comments/app/command.use-cases/update-comment.use-case';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
-const commentsUseCases = [CreateCommentUseCase];
+const commentsUseCases = [CreateCommentUseCase, UpdateCommentUseCase];
 
 @Module({
   imports: [
