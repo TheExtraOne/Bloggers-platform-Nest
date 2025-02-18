@@ -18,6 +18,7 @@ export const SETTINGS = {
 export const PATHS = {
   AUTH: 'auth',
   BLOGS: 'blogs',
+  COMMENTS: 'comments',
   POSTS: 'posts',
   USERS: 'users',
   TESTING: 'testing',

@@ -20,6 +20,7 @@ import { CreatePostUseCase } from './posts/app/posts.use-cases/create-post.use-c
 import { DeletePostUseCase } from './posts/app/posts.use-cases/delete-post.use-case';
 import { UpdatePostUseCase } from './posts/app/posts.use-cases/update-post.use-case';
 import { Post, PostSchema } from './posts/domain/post.entity';
+import { CommentsController } from './comments/api/comments.controller';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -43,7 +44,7 @@ const commentsUseCases = [CreateCommentUseCase];
     ]),
     UserAccountsModule,
   ],
-  controllers: [BlogsController, PostsController],
+  controllers: [BlogsController, PostsController, CommentsController],
   providers: [
     BlogsService,
     BlogsQueryRepository,
