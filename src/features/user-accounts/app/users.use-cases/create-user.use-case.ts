@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { UsersRepository } from '../infrastructure/users.repository';
-import { CreateUserInputDto } from '../api/input-dto/users.input-dto';
+import { UsersRepository } from '../../infrastructure/users.repository';
+import { CreateUserInputDto } from '../../api/input-dto/users.input-dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument, UserModelType } from '../domain/user.entity';
-import { BcryptService } from './bcrypt.service';
+import { User, UserModelType } from '../../domain/user.entity';
+import { BcryptService } from '../bcrypt.service';
 import { ObjectId } from 'mongodb';
-import { EmailService } from './email.service';
+import { EmailService } from '../email.service';
 
 type TExtension = {
   field: string | null;
@@ -13,7 +13,7 @@ type TExtension = {
 };
 
 @Injectable()
-export class UserService {
+export class CreateUserUseCase {
   constructor(
     @InjectModel(User.name) private UserModel: UserModelType,
     private readonly usersRepository: UsersRepository,
@@ -21,7 +21,7 @@ export class UserService {
     private readonly emailService: EmailService,
   ) {}
 
-  async createUser(
+  async execute(
     dto: CreateUserInputDto,
   ): Promise<{ userId: string; confirmationCode: string }> {
     // Check if user with such email and login exists
@@ -59,14 +59,6 @@ export class UserService {
       userId: newUser._id.toString(),
       confirmationCode: confirmationCode,
     };
-  }
-
-  async deleteUser(id: string): Promise<void> {
-    const user: UserDocument = await this.usersRepository.findUserById(id);
-
-    user.makeDeleted();
-
-    await this.usersRepository.save(user);
   }
 
   private async checkIfFieldIsUnique({

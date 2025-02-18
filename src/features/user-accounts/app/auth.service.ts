@@ -1,15 +1,12 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserService } from './users.service';
 import { CreateUserInputDto } from '../api/input-dto/users.input-dto';
 import { ConfirmRegistrationInputDto } from '../api/input-dto/confirm-registration.input-dto';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { UserDocument } from '../domain/user.entity';
-import { ERRORS } from '../../../constants';
 import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
 import { ResendRegistrationInputDto } from '../api/input-dto/resend-registration.input-dto';
 import { ObjectId } from 'mongodb';
@@ -20,11 +17,12 @@ import { PasswordRecoveryStatus } from '../domain/password-recovery.schema';
 import { NewPasswordInputDto } from '../api/input-dto/new-password.input-dto';
 import { BcryptService } from './bcrypt.service';
 import { CustomJwtService, TOKEN_TYPE } from './custom-jwt.service';
+import { CreateUserUseCase } from './users.use-cases/create-user.use-case';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
+    private readonly createUserUseCase: CreateUserUseCase,
     private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
     private readonly bcryptService: BcryptService,
@@ -73,7 +71,7 @@ export class AuthService {
     userId: string;
     confirmationCode: string;
   }> {
-    return await this.userService.createUser(dto);
+    return await this.createUserUseCase.execute(dto);
   }
 
   async confirmRegistration(dto: ConfirmRegistrationInputDto): Promise<void> {

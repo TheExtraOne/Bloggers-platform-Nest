@@ -15,16 +15,18 @@ import { UsersQueryRepository } from '../infrastructure/query/users.query-reposi
 import { GetUsersQueryParams } from './input-dto/get-users.query-params.input-dto';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated-view.dto';
 import { UserViewDto } from './view-dto/users.view-dto';
-import { UserService } from '../app/users.service';
 import { PATHS } from '../../../constants';
 import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
 import { AuthService } from '../app/auth.service';
+import { CreateUserUseCase } from '../app/users.use-cases/create-user.use-case';
+import { DeleteUserUseCase } from '../app/users.use-cases/delete-user.use-case';
 
 @UseGuards(BasicAuthGuard)
 @Controller(PATHS.USERS)
 export class UserController {
   constructor(
-    private readonly userService: UserService,
+    private readonly createUserUseCase: CreateUserUseCase,
+    private readonly deleteUserUseCase: DeleteUserUseCase,
     private readonly authService: AuthService,
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
@@ -43,7 +45,7 @@ export class UserController {
     @Body() createUserDto: CreateUserInputDto,
   ): Promise<UserViewDto> {
     const { userId, confirmationCode } =
-      await this.userService.createUser(createUserDto);
+      await this.createUserUseCase.execute(createUserDto);
 
     // Confirm email if user was created manually
     await this.authService.confirmRegistration({ code: confirmationCode });
@@ -54,6 +56,6 @@ export class UserController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteUser(@Param('id') id: string): Promise<void> {
-    await this.userService.deleteUser(id);
+    await this.deleteUserUseCase.execute(id);
   }
 }
