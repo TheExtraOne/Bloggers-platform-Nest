@@ -14,14 +14,9 @@ import { DeleteBlogUseCase } from './app/blogs.use-cases/delete-blog.use-case';
 import { CreatePostUseCase } from './app/posts.use-cases/create-post.use-case';
 import { UpdatePostUseCase } from './app/posts.use-cases/update-post.use-case';
 import { DeletePostUseCase } from './app/posts.use-cases/delete-post.use-case';
-import { GetBlogUseCase } from './app/blogs.use-cases/get-blog.use-case';
+import { BlogsService } from './app/blog-service';
 
-const blogsUseCases = [
-  CreateBlogUseCase,
-  UpdateBlogUseCase,
-  DeleteBlogUseCase,
-  GetBlogUseCase,
-];
+const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
 
 @Module({
@@ -39,6 +34,7 @@ const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
   ],
   controllers: [BlogsController, PostsController],
   providers: [
+    BlogsService,
     BlogsQueryRepository,
     BlogsRepository,
     PostsRepository,

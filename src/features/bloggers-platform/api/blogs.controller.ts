@@ -25,18 +25,16 @@ import { PostsQueryRepository } from '../infrastructure/query/posts.query-reposi
 import { CreatePostFromBlogInputDto } from './input-dto/posts.input-dto';
 import { PaginatedViewDto } from '../../../core/dto/base.paginated-view.dto';
 import { BasicAuthGuard } from 'src/features/user-accounts/guards/basic/basic-auth.guard';
-import { UpdateBlogUseCase } from '../app/blogs.use-cases/update-blog.use-case';
-import { DeleteBlogUseCase } from '../app/blogs.use-cases/delete-blog.use-case';
 import { CreatePostUseCase } from '../app/posts.use-cases/create-post.use-case';
 import { CreateBlogCommand } from '../app/blogs.use-cases/create-blog.use-case';
 import { CommandBus } from '@nestjs/cqrs';
+import { DeleteBlogCommand } from '../app/blogs.use-cases/delete-blog.use-case';
+import { UpdateBlogCommand } from '../app/blogs.use-cases/update-blog.use-case';
 
 @Controller(PATHS.BLOGS)
 export class BlogsController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly updateBlogUseCase: UpdateBlogUseCase,
-    private readonly deleteBlogUseCase: DeleteBlogUseCase,
     private readonly createPostUseCase: CreatePostUseCase,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
@@ -96,13 +94,13 @@ export class BlogsController {
     @Param('id') id: string,
     @Body() updateBlogDto: UpdateBlogInputDto,
   ) {
-    return this.updateBlogUseCase.execute(id, updateBlogDto);
+    return this.commandBus.execute(new UpdateBlogCommand(id, updateBlogDto));
   }
 
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlogById(@Param('id') id: string) {
-    return this.deleteBlogUseCase.execute(id);
+    return this.commandBus.execute(new DeleteBlogCommand(id));
   }
 }

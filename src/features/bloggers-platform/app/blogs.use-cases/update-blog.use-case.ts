@@ -1,12 +1,22 @@
-import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { UpdateBlogInputDto } from '../../api/input-dto/blogs.input-dto';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-@Injectable()
-export class UpdateBlogUseCase {
+export class UpdateBlogCommand {
+  constructor(
+    public readonly id: string,
+    public readonly dto: UpdateBlogInputDto,
+  ) {}
+}
+
+@CommandHandler(UpdateBlogCommand)
+export class UpdateBlogUseCase
+  implements ICommandHandler<UpdateBlogCommand, void>
+{
   constructor(private readonly blogsRepository: BlogsRepository) {}
 
-  async execute(id: string, dto: UpdateBlogInputDto): Promise<void> {
+  async execute(command: UpdateBlogCommand): Promise<void> {
+    const { id, dto } = command;
     const blog = await this.blogsRepository.findBlogById(id);
     blog.update({
       name: dto.name,
