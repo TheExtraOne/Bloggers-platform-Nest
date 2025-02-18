@@ -31,6 +31,7 @@ import { CurrentUserId } from 'src/features/user-accounts/guards/decorators/curr
 import { CreateCommentCommand } from '../app/command.use-cases/create-comment.use-case';
 import { CommentsQueryRepository } from '../infrastructure/query/comments.query-repository';
 import { CommentsViewDto } from './view-dto/comment.view-dto';
+import { GetCommentsQueryParams } from './input-dto/get-comments.query-params.input-dto';
 
 @Controller(PATHS.POSTS)
 export class PostsController {
@@ -50,6 +51,19 @@ export class PostsController {
   @Get(':id')
   async getPostById(@Param('id') id: string): Promise<PostsViewDto> {
     return await this.postsQueryRepository.findPostById(id);
+  }
+
+  @Get(':id/comments')
+  async getAllCommentsForPostId(
+    @Param('id') id: string,
+    @Query() query: GetCommentsQueryParams,
+  ): Promise<PaginatedViewDto<CommentsViewDto[]>> {
+    const post = await this.postsQueryRepository.findPostById(id);
+
+    return await this.commentsQueryRepository.findAllCommentsForPostId(
+      post.id,
+      query,
+    );
   }
 
   @Post()

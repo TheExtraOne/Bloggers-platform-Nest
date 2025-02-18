@@ -4,6 +4,9 @@ import { ERRORS } from '../../../../constants';
 import { ObjectId } from 'mongodb';
 import { Comment, CommentModelType } from '../../domain/comment.entity';
 import { CommentsViewDto } from '../../api/view-dto/comment.view-dto';
+import { GetCommentsQueryParams } from '../../api/input-dto/get-comments.query-params.input-dto';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
+import { FilterQuery } from 'mongoose';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -51,31 +54,31 @@ export class CommentsQueryRepository {
   //   });
   // }
 
-  // async findAllPostsForBlogId(
-  //   blogId: string,
-  //   query: GetPostsQueryParams,
-  // ): Promise<PaginatedViewDto<PostsViewDto[]>> {
-  //   // Creating filter
-  //   const filter: FilterQuery<Post> = {
-  //     deletedAt: null,
-  //     blogId,
-  //   };
+  async findAllCommentsForPostId(
+    postId: string,
+    query: GetCommentsQueryParams,
+  ): Promise<PaginatedViewDto<CommentsViewDto[]>> {
+    // Creating filter
+    const filter: FilterQuery<Comment> = {
+      deletedAt: null,
+      postId,
+    };
 
-  //   // Getting posts
-  //   const posts = await this.PostModel.find(filter)
-  //     .sort({ [query.sortBy]: query.sortDirection })
-  //     .skip(query.calculateSkip())
-  //     .limit(query.pageSize);
+    // Getting comments
+    const comments = await this.CommentModel.find(filter)
+      .sort({ [query.sortBy]: query.sortDirection })
+      .skip(query.calculateSkip())
+      .limit(query.pageSize);
 
-  //   const totalCount = await this.PostModel.countDocuments(filter);
+    const totalCount = await this.CommentModel.countDocuments(filter);
 
-  //   const items = posts.map((post) => PostsViewDto.mapToView(post));
+    const items = comments.map((comment) => CommentsViewDto.mapToView(comment));
 
-  //   return PaginatedViewDto.mapToView({
-  //     items,
-  //     totalCount,
-  //     page: query.pageNumber,
-  //     size: query.pageSize,
-  //   });
-  // }
+    return PaginatedViewDto.mapToView({
+      items,
+      totalCount,
+      page: query.pageNumber,
+      size: query.pageSize,
+    });
+  }
 }

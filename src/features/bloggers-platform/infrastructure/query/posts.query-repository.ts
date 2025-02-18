@@ -14,14 +14,14 @@ export class PostsQueryRepository {
 
   async findPostById(id: string): Promise<PostsViewDto> {
     if (!ObjectId.isValid(id))
-      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+      throw new NotFoundException(ERRORS.POST_NOT_FOUND);
 
     const post = await this.PostModel.findOne({
       _id: new ObjectId(id),
       deletedAt: null,
     });
 
-    if (!post) throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+    if (!post) throw new NotFoundException(ERRORS.POST_NOT_FOUND);
 
     return PostsViewDto.mapToView(post);
   }
