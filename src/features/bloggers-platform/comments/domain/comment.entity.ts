@@ -99,6 +99,14 @@ export class Comment {
   update(dto: UpdateCommentDto) {
     this.content = dto.content;
   }
+
+  updateLikesCount(likesCount: number) {
+    this.likesInfo.likesCount = likesCount;
+  }
+
+  updateDislikesCount(dislikesCount: number) {
+    this.likesInfo.dislikesCount = dislikesCount;
+  }
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);

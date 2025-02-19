@@ -29,4 +29,5 @@ export const ERRORS = {
   BLOG_NOT_FOUND: 'Blog not found',
   POST_NOT_FOUND: 'Post not found',
   COMMENT_NOT_FOUND: 'Comment not found',
+  LIKE_NOT_FOUND: 'Like not found',
 };

@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
+// TODO: remove likesCount and dislikesCount. Will do a request to DB to get count of likes and dislikes
 @Schema({
   _id: false,
 })
