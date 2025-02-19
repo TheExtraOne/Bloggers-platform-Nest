@@ -1,9 +1,10 @@
+import { LikeStatus } from 'src/features/bloggers-platform/likes/domain/like.entity';
 import { PostDocument } from '../../domain/post.entity';
 
 type TExtendedLikesInfo = {
   likesCount: number;
   dislikesCount: number;
-  myStatus: 'Like' | 'Dislike' | 'None';
+  myStatus: LikeStatus;
   newestLikes: { addedAt: Date; userId: string; login: string }[];
 };
 export class PostsViewDto {
@@ -29,7 +30,7 @@ export class PostsViewDto {
     dto.extendedLikesInfo = {
       likesCount: 0,
       dislikesCount: 0,
-      myStatus: 'None',
+      myStatus: LikeStatus.None,
       newestLikes: [],
     };
 

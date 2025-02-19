@@ -2,6 +2,11 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import {
+  ExtendedLikesInfo,
+  ExtendedLikesInfoSchema,
+} from './extended-likes.schema';
+import { NewestLikes } from './newestLikes.schema';
 
 // Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
@@ -65,6 +70,13 @@ export class Post {
   deletedAt: Date | null;
 
   /**
+   * Likes info for the post
+   * @type {ExtendedLikesInfo}
+   */
+  @Prop({ type: ExtendedLikesInfoSchema, required: true })
+  extendedLikesInfo: ExtendedLikesInfo;
+
+  /**
    * Factory method to create a Post instance
    * @param {CreatePostDto} dto - The data transfer object for post creation
    * @returns {PostDocument} The created post document
@@ -76,6 +88,11 @@ export class Post {
     post.content = dto.content;
     post.blogId = dto.blogId;
     post.blogName = dto.blogName;
+    post.extendedLikesInfo = {
+      likesCount: 0,
+      dislikesCount: 0,
+      newestLikes: [],
+    };
 
     return post as PostDocument;
   }
@@ -102,6 +119,21 @@ export class Post {
     this.content = dto.content;
     this.blogId = dto.blogId;
     this.blogName = dto.blogName;
+  }
+
+  updateLikesCount(likesCount: number) {
+    this.extendedLikesInfo.likesCount = likesCount;
+  }
+
+  updateDislikesCount(dislikesCount: number) {
+    this.extendedLikesInfo.dislikesCount = dislikesCount;
+  }
+
+  updateNewestLikes(newestLikes: NewestLikes) {
+    this.extendedLikesInfo.newestLikes.push(newestLikes);
+    if (this.extendedLikesInfo.newestLikes.length > 3) {
+      this.extendedLikesInfo.newestLikes.shift();
+    }
   }
 }
 

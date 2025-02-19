@@ -47,4 +47,13 @@ export class LikesRepository {
 
     return dislikes;
   }
+
+  async findLikesByAuthorId(authorId: string): Promise<LikeDocument[]> {
+    const likes = await this.LikeModel.find({
+      authorId,
+      deletedAt: null,
+    });
+
+    return likes;
+  }
 }

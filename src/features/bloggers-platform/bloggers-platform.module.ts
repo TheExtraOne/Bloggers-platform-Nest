@@ -26,6 +26,7 @@ import { DeleteCommentUseCase } from './comments/app/command.use-cases/delete-co
 import { UpdateLikeStatusUseCase } from './likes/app/likes.use-cases/update-like-status.use-case';
 import { LikesRepository } from './likes/infrastructure/likes.repository';
 import { Like, LikeSchema } from './likes/domain/like.entity';
+import { GetUserStatusUseCase } from './likes/app/likes.use-cases/get-user-status.use-case';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -34,7 +35,7 @@ const commentsUseCases = [
   UpdateCommentUseCase,
   DeleteCommentUseCase,
 ];
-const likesUseCases = [UpdateLikeStatusUseCase];
+const likesUseCases = [UpdateLikeStatusUseCase, GetUserStatusUseCase];
 
 @Module({
   imports: [

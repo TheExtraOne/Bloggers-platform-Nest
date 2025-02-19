@@ -47,6 +47,7 @@ export class UpdateLikeStatusUseCase
       post = await this.postsRepository.findPostById(parentId);
     }
 
+    const user = await this.usersRepository.findUserById(userId);
     // Check if user already liked the entity
     const like = await this.likesRepository.findLikeByUserIdAndParentId(
       userId,
@@ -62,13 +63,18 @@ export class UpdateLikeStatusUseCase
 
       like.update({ status: updateLikeStatusDto.likeStatus });
       await this.likesRepository.save(like);
-      await this.updateLikesAmount(parentId, comment, post);
+      await this.updateLikesAmount({
+        parentId,
+        comment,
+        post,
+        userId,
+        login: user.login,
+      });
 
       return;
     }
 
     // If there is no like, then creating new like
-    const user = await this.usersRepository.findUserById(userId);
     const newLike = this.LikeModel.createInstance({
       authorLogin: user.login,
       authorId: userId,
@@ -77,14 +83,28 @@ export class UpdateLikeStatusUseCase
     });
 
     await this.likesRepository.save(newLike);
-    await this.updateLikesAmount(parentId, comment, post);
+    await this.updateLikesAmount({
+      parentId,
+      comment,
+      post,
+      userId,
+      login: user.login,
+    });
   }
 
-  private async updateLikesAmount(
-    parentId: string,
-    comment: CommentDocument | null,
-    post: PostDocument | null,
-  ) {
+  private async updateLikesAmount({
+    parentId,
+    comment,
+    post,
+    userId,
+    login,
+  }: {
+    parentId: string;
+    comment: CommentDocument | null;
+    post: PostDocument | null;
+    userId: string;
+    login: string;
+  }) {
     // TODO: refactor, make one call for getting likes and dislikes
     // Count likes and dislikes for the entity
     const likes = await this.likesRepository.findLikesByParentId(parentId);
@@ -94,7 +114,7 @@ export class UpdateLikeStatusUseCase
     const amountOfDislikes = dislikes.length;
     console.log(amountOfLikes, amountOfDislikes);
 
-    //Update amount of likes for the entity
+    // Update amount of likes for the entity
     if (comment) {
       console.log('HI');
       comment.updateLikesCount(amountOfLikes);
@@ -102,9 +122,11 @@ export class UpdateLikeStatusUseCase
 
       await this.commentsRepository.save(comment!);
     }
-    // if (entityType === 'post') {
-    //   post!.update({ likes: post!.likes + 1 });
-    //   await this.postsRepository.save(post!);
-    // }
+    if (post) {
+      post.updateLikesCount(amountOfLikes);
+      post.updateDislikesCount(amountOfDislikes);
+      post.updateNewestLikes({ userId, login, addedAt: new Date() });
+      await this.postsRepository.save(post!);
+    }
   }
 }

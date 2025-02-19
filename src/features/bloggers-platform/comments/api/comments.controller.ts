@@ -20,6 +20,7 @@ import { UpdateCommentCommand } from '../app/command.use-cases/update-comment.us
 import { DeleteCommentCommand } from '../app/command.use-cases/delete-comment.use-case';
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
 import { UpdateLikeStatusCommand } from '../../likes/app/likes.use-cases/update-like-status.use-case';
+import { GetUserStatusCommand } from '../../likes/app/likes.use-cases/get-user-status.use-case';
 
 @Controller(PATHS.COMMENTS)
 export class CommentsController {
@@ -30,7 +31,22 @@ export class CommentsController {
 
   @Get(':id')
   async getCommentById(@Param('id') id: string): Promise<CommentsViewDto> {
-    return await this.commentsQueryRepository.findCommentById(id);
+    const mappedComment =
+      await this.commentsQueryRepository.findCommentById(id);
+
+    // TODO: add optional jwt auth
+    const myStatus = await this.commandBus.execute(
+      new GetUserStatusCommand(mappedComment.commentatorInfo.userId, id),
+    );
+    const enrichedComment = {
+      ...mappedComment,
+      likesInfo: {
+        ...mappedComment.likesInfo,
+        myStatus,
+      },
+    };
+
+    return enrichedComment;
   }
 
   @Put(':id')
