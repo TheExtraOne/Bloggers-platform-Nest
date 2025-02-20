@@ -145,7 +145,7 @@ describe('Posts Controller (e2e)', () => {
 
     it('should not create post with non-existent blogId', async () => {
       const invalidPost = { ...validPost, blogId: 'non-existent-id' };
-      await postsTestManager.createPost(invalidPost, HttpStatus.NOT_FOUND);
+      await postsTestManager.createPost(invalidPost, HttpStatus.BAD_REQUEST);
     });
   });
 

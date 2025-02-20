@@ -445,7 +445,6 @@ describe('Rate Limiting', () => {
 
   afterAll(async () => {
     await app.close();
-    await app.close();
     await stopMongoMemoryServer();
   });
 
