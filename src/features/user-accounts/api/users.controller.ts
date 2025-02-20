@@ -19,15 +19,16 @@ import { PATHS } from '../../../constants';
 import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
 import { CreateUserUseCase } from '../app/users.use-cases/create-user.use-case';
 import { DeleteUserUseCase } from '../app/users.use-cases/delete-user.use-case';
-import { ConfirmEmailRegistrationUseCase } from '../app/auth.use-cases/confirm-email-registration.use-case';
+import { ConfirmEmailRegistrationCommand } from '../app/auth.use-cases/confirm-email-registration.use-case';
+import { CommandBus } from '@nestjs/cqrs';
 
 @UseGuards(BasicAuthGuard)
 @Controller(PATHS.USERS)
 export class UserController {
   constructor(
+    private readonly commandBus: CommandBus,
     private readonly createUserUseCase: CreateUserUseCase,
     private readonly deleteUserUseCase: DeleteUserUseCase,
-    private readonly confirmEmailRegistrationUseCase: ConfirmEmailRegistrationUseCase,
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
@@ -48,9 +49,9 @@ export class UserController {
       await this.createUserUseCase.execute(createUserDto);
 
     // Send confirm email if user was created manually
-    await this.confirmEmailRegistrationUseCase.execute({
-      code: confirmationCode,
-    });
+    await this.commandBus.execute(
+      new ConfirmEmailRegistrationCommand({ code: confirmationCode }),
+    );
 
     return await this.usersQueryRepository.findUserById(userId);
   }

@@ -3,15 +3,21 @@ import { ConfirmRegistrationInputDto } from '../../api/input-dto/confirm-registr
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { UserDocument } from '../../domain/user.entity';
 import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-// TODO: add command handler
-@Injectable()
-export class ConfirmEmailRegistrationUseCase {
+export class ConfirmEmailRegistrationCommand {
+  constructor(public readonly dto: ConfirmRegistrationInputDto) {}
+}
+
+@CommandHandler(ConfirmEmailRegistrationCommand)
+export class ConfirmEmailRegistrationUseCase
+  implements ICommandHandler<ConfirmEmailRegistrationCommand, void>
+{
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  async execute(dto: ConfirmRegistrationInputDto): Promise<void> {
+  async execute(command: ConfirmEmailRegistrationCommand): Promise<void> {
     const user: UserDocument | null =
-      await this.usersRepository.findUserByConfirmationCode(dto.code);
+      await this.usersRepository.findUserByConfirmationCode(command.dto.code);
     // Check if user with such confirmationCode exist
     if (!user)
       throw new BadRequestException([

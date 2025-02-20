@@ -4,16 +4,22 @@ import { UserDocument } from '../../domain/user.entity';
 import { PasswordRecoveryStatus } from '../../domain/password-recovery.schema';
 import { NewPasswordInputDto } from '../../api/input-dto/new-password.input-dto';
 import { BcryptService } from '../facades/bcrypt.service';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-// TODO: add command handler
-@Injectable()
-export class SetNewPasswordUseCase {
+export class SetNewPasswordCommand {
+  constructor(public readonly dto: NewPasswordInputDto) {}
+}
+
+@CommandHandler(SetNewPasswordCommand)
+export class SetNewPasswordUseCase
+  implements ICommandHandler<SetNewPasswordCommand>
+{
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}
 
-  async execute(dto: NewPasswordInputDto): Promise<void> {
+  async execute({ dto }: SetNewPasswordCommand): Promise<void> {
     const user: UserDocument | null =
       await this.usersRepository.findUserByPasswordRecoveryCode(
         dto.recoveryCode,

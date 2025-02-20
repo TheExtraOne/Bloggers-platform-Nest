@@ -6,18 +6,24 @@ import { ResendRegistrationInputDto } from '../../api/input-dto/resend-registrat
 import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { EmailService } from '../facades/email.service';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-// TODO: add command handler
-@Injectable()
-export class ResendRegistrationEmailUseCase {
+export class ResendRegistrationEmailCommand {
+  constructor(public readonly dto: ResendRegistrationInputDto) {}
+}
+
+@CommandHandler(ResendRegistrationEmailCommand)
+export class ResendRegistrationEmailUseCase
+  implements ICommandHandler<ResendRegistrationEmailCommand, void>
+{
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
   ) {}
 
-  async execute(dto: ResendRegistrationInputDto): Promise<void> {
+  async execute(command: ResendRegistrationEmailCommand): Promise<void> {
     const user: UserDocument | null =
-      await this.usersRepository.findUserByLoginOrEmail(dto.email);
+      await this.usersRepository.findUserByLoginOrEmail(command.dto.email);
     // Check if user with such email exists
     if (!user)
       throw new BadRequestException([
@@ -48,7 +54,7 @@ export class ResendRegistrationEmailUseCase {
 
     // Send confirmation letter
     this.emailService.sendRegistrationMail({
-      email: dto.email,
+      email: command.dto.email,
       confirmationCode: newConfirmationCode,
     });
   }

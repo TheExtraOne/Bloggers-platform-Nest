@@ -6,18 +6,24 @@ import { add } from 'date-fns';
 import { EmailService } from '../facades/email.service';
 import { PasswordRecoveryInputDto } from '../../api/input-dto/password-recovery.input-dto';
 import { PasswordRecoveryStatus } from '../../domain/password-recovery.schema';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-// TODO: add command handler
-@Injectable()
-export class SendRecoverPasswordEmailUseCase {
+export class SendRecoverPasswordEmailCommand {
+  constructor(public readonly dto: PasswordRecoveryInputDto) {}
+}
+
+@CommandHandler(SendRecoverPasswordEmailCommand)
+export class SendRecoverPasswordEmailUseCase
+  implements ICommandHandler<SendRecoverPasswordEmailCommand, void>
+{
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
   ) {}
 
-  async execute(dto: PasswordRecoveryInputDto): Promise<void> {
+  async execute(command: SendRecoverPasswordEmailCommand): Promise<void> {
     const user: UserDocument | null =
-      await this.usersRepository.findUserByLoginOrEmail(dto.email);
+      await this.usersRepository.findUserByLoginOrEmail(command.dto.email);
     // Even if current email is not registered (for prevent user's email detection)
     if (!user) return;
 
@@ -36,7 +42,7 @@ export class SendRecoverPasswordEmailUseCase {
 
     // Send recovery password letter
     this.emailService.sendRecoveryPasswordMail({
-      userEmail: dto.email,
+      userEmail: command.dto.email,
       recoveryCode: newRecoveryCode,
     });
   }
