@@ -68,7 +68,7 @@ export class PostsController {
         const like = userLikes?.find((like) => like.parentId === post.id);
         return {
           ...post,
-          likesInfo: {
+          extendedLikesInfo: {
             ...post.extendedLikesInfo,
             myStatus: (like?.status as LikeStatus) ?? LikeStatus.None,
           },
