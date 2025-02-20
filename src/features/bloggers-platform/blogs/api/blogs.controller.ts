@@ -32,14 +32,12 @@ import { PostsQueryRepository } from '../../posts/infrastructure/query/posts.que
 import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
 import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
-import { LikesRepository } from '../../likes/infrastructure/likes.repository';
-import { LikeStatus } from '../../likes/domain/like.entity';
+import { EnrichPostsWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-posts-with-likes.use-case';
 
 @Controller(PATHS.BLOGS)
 export class BlogsController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly likesRepository: LikesRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
@@ -56,7 +54,6 @@ export class BlogsController {
     return this.blogsQueryRepository.findBlogById(id);
   }
 
-  // TODO: refactor
   @Get(':id/posts')
   @UseGuards(JwtOptionalAuthGuard)
   async getPostsByBlogId(
@@ -64,29 +61,19 @@ export class BlogsController {
     @Query() query: GetPostsQueryParams,
     @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
-    // Checking if blog exists
+    // Check if blog exists
     await this.blogsQueryRepository.findBlogById(id);
-    const mappedPaginatedPosts =
-      await this.postsQueryRepository.findAllPostsForBlogId(id, query);
 
-    // If theres no jwt - returning default (NONE) status
-    if (!userId) return mappedPaginatedPosts;
+    // Get posts for the blog
+    const posts = await this.postsQueryRepository.findAllPostsForBlogId(
+      id,
+      query,
+    );
 
-    const userLikes = await this.likesRepository.findAllLikesByAuthorId(userId);
-    // Add user's like status to each post
-    return {
-      ...mappedPaginatedPosts,
-      items: mappedPaginatedPosts.items.map((post) => {
-        const like = userLikes?.find((like) => like.parentId === post.id);
-        return {
-          ...post,
-          extendedLikesInfo: {
-            ...post.extendedLikesInfo,
-            myStatus: (like?.status as LikeStatus) ?? LikeStatus.None,
-          },
-        };
-      }),
-    };
+    // Enrich posts with user's like status
+    return this.commandBus.execute(
+      new EnrichPostsWithLikesCommand(posts, userId),
+    );
   }
 
   @Post()

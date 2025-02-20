@@ -41,6 +41,7 @@ import {
   EntityType,
   UpdateLikeStatusCommand,
 } from '../../likes/app/likes.use-cases/update-like-status.use-case';
+import { EnrichPostsWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-posts-with-likes.use-case';
 
 @Controller(PATHS.POSTS)
 export class PostsController {
@@ -51,33 +52,19 @@ export class PostsController {
     private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
-  // TODO: refactor
   @Get()
   @UseGuards(JwtOptionalAuthGuard)
   async getAllPosts(
     @Query() query: GetPostsQueryParams,
     @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
-    const mappedPaginatedPosts = await this.postsQueryRepository.findAll(query);
-    // If theres no jwt - returning default (NONE) status
-    if (!userId) return mappedPaginatedPosts;
+    // Get all posts
+    const posts = await this.postsQueryRepository.findAll(query);
 
-    // Getting user's likes
-    const userLikes = await this.likesRepository.findAllLikesByAuthorId(userId);
-    // Add user's like status to each post
-    return {
-      ...mappedPaginatedPosts,
-      items: mappedPaginatedPosts.items.map((post) => {
-        const like = userLikes?.find((like) => like.parentId === post.id);
-        return {
-          ...post,
-          extendedLikesInfo: {
-            ...post.extendedLikesInfo,
-            myStatus: (like?.status as LikeStatus) ?? LikeStatus.None,
-          },
-        };
-      }),
-    };
+    // Enrich posts with user's like status
+    return this.commandBus.execute(
+      new EnrichPostsWithLikesCommand(posts, userId),
+    );
   }
 
   // TODO: refactor
