@@ -17,8 +17,8 @@ import { PaginatedViewDto } from '../../../core/dto/base.paginated-view.dto';
 import { UserViewDto } from './view-dto/users.view-dto';
 import { PATHS } from '../../../constants';
 import { BasicAuthGuard } from '../guards/basic/basic-auth.guard';
-import { CreateUserUseCase } from '../app/users.use-cases/create-user.use-case';
-import { DeleteUserUseCase } from '../app/users.use-cases/delete-user.use-case';
+import { CreateUserCommand } from '../app/users.use-cases/create-user.use-case';
+import { DeleteUserCommand } from '../app/users.use-cases/delete-user.use-case';
 import { ConfirmEmailRegistrationCommand } from '../app/auth.use-cases/confirm-email-registration.use-case';
 import { CommandBus } from '@nestjs/cqrs';
 
@@ -27,8 +27,6 @@ import { CommandBus } from '@nestjs/cqrs';
 export class UserController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly createUserUseCase: CreateUserUseCase,
-    private readonly deleteUserUseCase: DeleteUserUseCase,
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
@@ -45,8 +43,9 @@ export class UserController {
   async createUser(
     @Body() createUserDto: CreateUserInputDto,
   ): Promise<UserViewDto> {
-    const { userId, confirmationCode } =
-      await this.createUserUseCase.execute(createUserDto);
+    const { userId, confirmationCode } = await this.commandBus.execute(
+      new CreateUserCommand(createUserDto),
+    );
 
     // Send confirm email if user was created manually
     await this.commandBus.execute(
@@ -59,6 +58,6 @@ export class UserController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteUser(@Param('id') id: string): Promise<void> {
-    await this.deleteUserUseCase.execute(id);
+    await this.commandBus.execute(new DeleteUserCommand(id));
   }
 }

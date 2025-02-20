@@ -1,17 +1,27 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException } from '@nestjs/common';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
 import { BcryptService } from '../facades/bcrypt.service';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-// TODO: add command handler
-@Injectable()
-export class CheckIfUserIsAbleToLoginUseCase {
+export class CheckIfUserIsAbleToLoginCommand {
+  constructor(
+    public loginOrEmail: string,
+    public password: string,
+  ) {}
+}
+
+@CommandHandler(CheckIfUserIsAbleToLoginCommand)
+export class CheckIfUserIsAbleToLoginUseCase
+  implements ICommandHandler<CheckIfUserIsAbleToLoginCommand, string>
+{
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}
 
-  async execute(loginOrEmail: string, password: string): Promise<string> {
+  async execute(command: CheckIfUserIsAbleToLoginCommand): Promise<string> {
+    const { loginOrEmail, password } = command;
     const user =
       await this.usersRepository.findUserByLoginOrEmail(loginOrEmail);
     // Check that such user exists

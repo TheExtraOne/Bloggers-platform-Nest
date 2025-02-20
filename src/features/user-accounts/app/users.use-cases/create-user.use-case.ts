@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { CreateUserInputDto } from '../../api/input-dto/users.input-dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -6,15 +6,19 @@ import { User, UserModelType } from '../../domain/user.entity';
 import { BcryptService } from '../facades/bcrypt.service';
 import { ObjectId } from 'mongodb';
 import { EmailService } from '../facades/email.service';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 type TExtension = {
   field: string | null;
   message: string;
 };
 
-// TODO: add command handler
-@Injectable()
-export class CreateUserUseCase {
+export class CreateUserCommand {
+  constructor(public readonly dto: CreateUserInputDto) {}
+}
+
+@CommandHandler(CreateUserCommand)
+export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
   constructor(
     @InjectModel(User.name) private UserModel: UserModelType,
     private readonly usersRepository: UsersRepository,
@@ -23,8 +27,9 @@ export class CreateUserUseCase {
   ) {}
 
   async execute(
-    dto: CreateUserInputDto,
+    command: CreateUserCommand,
   ): Promise<{ userId: string; confirmationCode: string }> {
+    const { dto } = command;
     // Check if user with such email and login exists
     const isUnique = await this.checkIfFieldIsUnique({
       email: dto.email,

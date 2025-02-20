@@ -22,7 +22,7 @@ import { CurrentUserId } from '../guards/decorators/current-user-id.decorator';
 import { MeViewDto } from './view-dto/me.view-dto';
 import { ThrottlerGuard, SkipThrottle } from '@nestjs/throttler';
 import { LoginCommand } from '../app/auth.use-cases/login.use-cases';
-import { CreateUserUseCase } from '../app/users.use-cases/create-user.use-case';
+import { CreateUserCommand } from '../app/users.use-cases/create-user.use-case';
 import { ConfirmEmailRegistrationCommand } from '../app/auth.use-cases/confirm-email-registration.use-case';
 import { ResendRegistrationEmailCommand } from '../app/auth.use-cases/resend-registration-email.use-case';
 import { SendRecoverPasswordEmailCommand } from '../app/auth.use-cases/send-recover-password-email.use-case';
@@ -34,7 +34,6 @@ import { CommandBus } from '@nestjs/cqrs';
 export class AuthController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly createUserUseCase: CreateUserUseCase,
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
@@ -78,7 +77,7 @@ export class AuthController {
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   async createUser(@Body() dto: CreateUserInputDto): Promise<void> {
-    await this.createUserUseCase.execute(dto);
+    await this.commandBus.execute(new CreateUserCommand(dto));
   }
 
   @Post('registration-confirmation')
