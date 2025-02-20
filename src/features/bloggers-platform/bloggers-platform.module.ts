@@ -27,6 +27,7 @@ import { UpdateLikeStatusUseCase } from './likes/app/likes.use-cases/update-like
 import { LikesRepository } from './likes/infrastructure/likes.repository';
 import { Like, LikeSchema } from './likes/domain/like.entity';
 import { GetUserStatusUseCase } from './likes/app/likes.use-cases/get-user-status.use-case';
+import { BlogIdExistsRule } from './posts/api/input-dto/posts.input-dto';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -73,6 +74,7 @@ const likesUseCases = [UpdateLikeStatusUseCase, GetUserStatusUseCase];
     ...postsUseCases,
     ...commentsUseCases,
     ...likesUseCases,
+    BlogIdExistsRule,
   ],
 })
 export class BloggersPlatformModule {}

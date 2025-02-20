@@ -12,12 +12,12 @@ import { BlogsRepository } from '../../../blogs/infrastructure/blogs.repository'
 // TODO: move outside
 @ValidatorConstraint({ name: 'BlogIdExists', async: true })
 @Injectable()
-export class BlogIdExists implements ValidatorConstraintInterface {
+export class BlogIdExistsRule implements ValidatorConstraintInterface {
   constructor(private blogsRepository: BlogsRepository) {}
 
   async validate(blogId: string) {
     try {
-      await this.blogsRepository.findBlogById(blogId);
+      const blog = await this.blogsRepository.findBlogById(blogId);
     } catch (e) {
       return false;
     }
@@ -29,6 +29,18 @@ export class BlogIdExists implements ValidatorConstraintInterface {
     return `Blog with id ${args.value} doesn't exist`;
   }
 }
+
+// export function BlogIdExists(validationOptions?: ValidationOptions) {
+//   return function (object: any, propertyName: string) {
+//     registerDecorator({
+//       name: 'UserBlogIdExistsExists',
+//       target: object.constructor,
+//       propertyName: propertyName,
+//       options: validationOptions,
+//       validator: UserExistsRule,
+//     });
+//   };
+// }
 
 export class CreatePostInputDto {
   @IsStringWithTrim()
@@ -44,7 +56,7 @@ export class CreatePostInputDto {
   content: string;
 
   @IsStringWithTrim()
-  @Validate(BlogIdExists)
+  @Validate(BlogIdExistsRule)
   blogId: string;
 }
 
