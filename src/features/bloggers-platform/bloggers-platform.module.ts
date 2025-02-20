@@ -29,6 +29,8 @@ import { Like, LikeSchema } from './likes/domain/like.entity';
 import { GetUserStatusUseCase } from './likes/app/likes.use-cases/get-user-status.use-case';
 import { BlogIdExistsRule } from './posts/api/input-dto/posts.input-dto';
 import { EnrichPostsWithLikesUseCase } from './likes/app/likes.use-cases/enrich-posts-with-likes.use-case';
+import { EnrichPostWithLikeUseCase } from './likes/app/likes.use-cases/enrich-post-with-like.use-case';
+import { EnrichCommentsWithLikesUseCase } from './likes/app/likes.use-cases/enrich-comments-with-likes.use-case';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -41,6 +43,8 @@ const likesUseCases = [
   UpdateLikeStatusUseCase,
   GetUserStatusUseCase,
   EnrichPostsWithLikesUseCase,
+  EnrichPostWithLikeUseCase,
+  EnrichCommentsWithLikesUseCase,
 ];
 
 @Module({

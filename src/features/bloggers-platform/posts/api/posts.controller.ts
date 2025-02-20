@@ -32,8 +32,6 @@ import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comment
 import { CreatePostCommand } from '../app/posts.use-cases/create-post.use-case';
 import { DeletePostCommand } from '../app/posts.use-cases/delete-post.use-case';
 import { UpdatePostCommand } from '../app/posts.use-cases/update-post.use-case';
-import { LikeStatus } from '../../likes/domain/like.entity';
-import { LikesRepository } from '../../likes/infrastructure/likes.repository';
 import { JwtOptionalAuthGuard } from 'src/features/user-accounts/guards/jwt/jwt-optional-auth.guard';
 import { CurrentOptionalUserId } from 'src/features/user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
@@ -42,13 +40,14 @@ import {
   UpdateLikeStatusCommand,
 } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 import { EnrichPostsWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-posts-with-likes.use-case';
+import { EnrichPostWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-post-with-like.use-case';
+import { EnrichCommentsWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-comments-with-likes.use-case';
 
 @Controller(PATHS.POSTS)
 export class PostsController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly postsQueryRepository: PostsQueryRepository,
-    private readonly likesRepository: LikesRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
@@ -67,31 +66,19 @@ export class PostsController {
     );
   }
 
-  // TODO: refactor
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   async getPostById(
     @Param('id') id: string,
     @CurrentOptionalUserId() userId: string | null,
   ): Promise<PostsViewDto> {
+    // Get post by id
     const post = await this.postsQueryRepository.findPostById(id);
-    // If theres no jwt - returning default (NONE) status
-    if (!userId) return post;
 
-    const like = await this.likesRepository.findLikeByAuthorIdAndParentId(
-      userId,
-      id,
-    );
-    return {
-      ...post,
-      extendedLikesInfo: {
-        ...post.extendedLikesInfo,
-        myStatus: (like?.status as LikeStatus) ?? LikeStatus.None,
-      },
-    };
+    // Enrich post with user's like status
+    return this.commandBus.execute(new EnrichPostWithLikeCommand(post, userId));
   }
 
-  // TODO: refactor
   @Get(':id/comments')
   @UseGuards(JwtOptionalAuthGuard)
   async getAllCommentsForPostId(
@@ -99,32 +86,20 @@ export class PostsController {
     @CurrentOptionalUserId() userId: string | null,
     @Query() query: GetCommentsQueryParams,
   ): Promise<PaginatedViewDto<CommentsViewDto[]>> {
+    // Check if post exists
     const post = await this.postsQueryRepository.findPostById(id);
 
-    const mappedPaginatedComments =
+    // Get comments for the post
+    const comments =
       await this.commentsQueryRepository.findAllCommentsForPostId(
         post.id,
         query,
       );
-    // If theres no jwt - returning default (NONE) status
-    if (!userId) return mappedPaginatedComments;
 
-    // Get all user's likes
-    const userLikes = await this.likesRepository.findAllLikesByAuthorId(userId);
-    // Add user's like status to each comment
-    return {
-      ...mappedPaginatedComments,
-      items: mappedPaginatedComments.items.map((comment) => {
-        const like = userLikes?.find((like) => like.parentId === comment.id);
-        return {
-          ...comment,
-          likesInfo: {
-            ...comment.likesInfo,
-            myStatus: (like?.status as LikeStatus) ?? LikeStatus.None,
-          },
-        };
-      }),
-    };
+    // Enrich comments with user's like status
+    return this.commandBus.execute(
+      new EnrichCommentsWithLikesCommand(comments, userId),
+    );
   }
 
   @Post()
