@@ -76,6 +76,7 @@ export class UpdatePostInputDto {
   content: string;
 
   @IsStringWithTrim()
+  @BlogIdExists()
   blogId: string;
 }
 
