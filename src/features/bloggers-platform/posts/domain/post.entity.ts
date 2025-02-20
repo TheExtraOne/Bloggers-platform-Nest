@@ -129,11 +129,8 @@ export class Post {
     this.extendedLikesInfo.dislikesCount = dislikesCount;
   }
 
-  updateNewestLikes(newestLikes: NewestLikes) {
-    this.extendedLikesInfo.newestLikes.unshift(newestLikes);
-    if (this.extendedLikesInfo.newestLikes.length > 3) {
-      this.extendedLikesInfo.newestLikes.pop();
-    }
+  updateNewestLikes(newestLikes: NewestLikes[]) {
+    this.extendedLikesInfo.newestLikes = newestLikes;
   }
 }
 

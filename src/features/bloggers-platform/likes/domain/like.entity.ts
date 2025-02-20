@@ -1,13 +1,6 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 import { CreateLikeDto } from './dto/create-like.dto';
-// import { CreateCommentDto } from './dto/create-comment.dto';
-// import {
-//   CommentatorInfoSchema,
-//   CommentatorInfo,
-// } from './commentator-info.schema';
-// import { LikesInfoSchema, LikesInfo } from './likes-info.schema';
-// import { UpdateCommentDto } from './dto/update-comment.dto';
 
 export enum LikeStatus {
   Like = 'Like',
@@ -15,7 +8,7 @@ export enum LikeStatus {
   None = 'None',
 }
 
-// Flags for timestamps automatically will add createdAt and updatedAt fields
+// Flags for timestamps automatically will add addedAt and updatedAt fields
 /**
  * Like Entity Schema
  * This class represents the schema and behavior of a Like entity.
@@ -40,14 +33,14 @@ export class Like {
    * @type {string}
    */
   @Prop({ type: String, required: true })
-  authorLogin: string;
+  login: string;
 
   /**
-   * authorId who created a like
+   * userId who created a like
    * @type {string}
    */
   @Prop({ type: String, required: true })
-  authorId: string;
+  userId: string;
 
   /**
    * parentId of the content, to which the like was applied (post ot comment)
@@ -62,7 +55,7 @@ export class Like {
    * properties without @Prop for typescript so that they are in the class instance (or in instance methods)
    * @type {Date}
    */
-  createdAt: Date;
+  addedAt: Date;
   updatedAt: Date;
 
   /**
@@ -80,8 +73,8 @@ export class Like {
   static createInstance(dto: CreateLikeDto): LikeDocument {
     const like = new this();
     like.status = dto.status;
-    like.authorLogin = dto.authorLogin;
-    like.authorId = dto.authorId;
+    like.login = dto.login;
+    like.userId = dto.userId;
     like.parentId = dto.parentId;
 
     return like as LikeDocument;

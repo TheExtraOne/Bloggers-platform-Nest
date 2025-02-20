@@ -6,6 +6,7 @@ import {
   LikeStatus,
 } from '../domain/like.entity';
 import { InjectModel } from '@nestjs/mongoose';
+import { SortDirection } from 'src/core/dto/base.query-params.input-dto';
 
 @Injectable()
 export class LikesRepository {
@@ -16,11 +17,11 @@ export class LikesRepository {
   }
 
   async findLikeByAuthorIdAndParentId(
-    authorId: string,
+    userId: string,
     parentId: string,
   ): Promise<LikeDocument | null> {
     const like = await this.LikeModel.findOne({
-      authorId,
+      userId,
       parentId,
       deletedAt: null,
     });
@@ -38,6 +39,26 @@ export class LikesRepository {
     return likes;
   }
 
+  async getLikesByParentIdWithDateSort({
+    parentId,
+    sortDirection = SortDirection.Desc,
+    status = LikeStatus.Like,
+  }: {
+    parentId: string;
+    sortDirection?: SortDirection;
+    status?: LikeStatus;
+  }) {
+    const likes = await this.LikeModel.find({
+      parentId: parentId,
+      status: status,
+      deletedAt: null,
+    })
+      .sort({ addedAt: sortDirection === SortDirection.Asc ? 1 : -1 })
+      .lean();
+
+    return likes;
+  }
+
   async findDislikesByParentId(parentId: string): Promise<LikeDocument[]> {
     const dislikes = await this.LikeModel.find({
       parentId,
@@ -48,18 +69,18 @@ export class LikesRepository {
     return dislikes;
   }
 
-  async findLikesByAuthorId(authorId: string): Promise<LikeDocument[]> {
+  async findLikesByAuthorId(userId: string): Promise<LikeDocument[]> {
     const likes = await this.LikeModel.find({
-      authorId,
+      userId,
       deletedAt: null,
     });
 
     return likes;
   }
 
-  async findAllLikesByAuthorId(authorId: string): Promise<LikeDocument[]> {
+  async findAllLikesByAuthorId(userId: string): Promise<LikeDocument[]> {
     const likes = await this.LikeModel.find({
-      authorId,
+      userId,
       deletedAt: null,
     });
 

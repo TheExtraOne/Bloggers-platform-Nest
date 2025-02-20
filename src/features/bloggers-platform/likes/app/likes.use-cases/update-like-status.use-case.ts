@@ -69,13 +69,15 @@ export class UpdateLikeStatusUseCase
         post,
       });
 
+      if (post) await this.updateNewestLikes({ parentId, post });
+
       return;
     }
 
     // If there is no like, then creating new like
     const newLike = this.LikeModel.createInstance({
-      authorLogin: user.login,
-      authorId: userId,
+      login: user.login,
+      userId: userId,
       parentId,
       status: updateLikeStatusDto.likeStatus,
     });
@@ -86,15 +88,7 @@ export class UpdateLikeStatusUseCase
       comment,
       post,
     });
-    if (post && updateLikeStatusDto.likeStatus === LikeStatus.Like) {
-      post.updateNewestLikes({
-        userId,
-        login: user.login,
-        addedAt: new Date(),
-      });
-
-      await this.postsRepository.save(post!);
-    }
+    if (post) await this.updateNewestLikes({ parentId, post });
   }
 
   private async updateLikesAmount({
@@ -127,5 +121,29 @@ export class UpdateLikeStatusUseCase
 
       await this.postsRepository.save(post!);
     }
+  }
+
+  private async updateNewestLikes({
+    parentId,
+    post,
+  }: {
+    parentId: string;
+    post: PostDocument;
+  }) {
+    const likes = await this.likesRepository.getLikesByParentIdWithDateSort({
+      parentId,
+    });
+
+    if (!likes.length) {
+      post.updateNewestLikes([]);
+
+      await this.postsRepository.save(post);
+      return;
+    }
+
+    // Finding 3 latest likes
+    post.updateNewestLikes(likes.slice(0, 3));
+
+    await this.postsRepository.save(post);
   }
 }
