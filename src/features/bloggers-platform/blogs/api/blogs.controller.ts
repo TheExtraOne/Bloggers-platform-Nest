@@ -30,11 +30,16 @@ import { PostsViewDto } from '../../posts/api/view-dto/posts.view-dto';
 import { CreatePostCommand } from '../../posts/app/posts.use-cases/create-post.use-case';
 import { PostsQueryRepository } from '../../posts/infrastructure/query/posts.query-repository';
 import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
+import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
+import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
+import { LikesRepository } from '../../likes/infrastructure/likes.repository';
+import { LikeStatus } from '../../likes/domain/like.entity';
 
 @Controller(PATHS.BLOGS)
 export class BlogsController {
   constructor(
     private readonly commandBus: CommandBus,
+    private readonly likesRepository: LikesRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
@@ -51,14 +56,37 @@ export class BlogsController {
     return this.blogsQueryRepository.findBlogById(id);
   }
 
+  // TODO: refactor
   @Get(':id/posts')
+  @UseGuards(JwtOptionalAuthGuard)
   async getPostsByBlogId(
     @Param('id') id: string,
     @Query() query: GetPostsQueryParams,
+    @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
     // Checking if blog exists
     await this.blogsQueryRepository.findBlogById(id);
-    return this.postsQueryRepository.findAllPostsForBlogId(id, query);
+    const mappedPaginatedPosts =
+      await this.postsQueryRepository.findAllPostsForBlogId(id, query);
+
+    // If theres no jwt - returning default (NONE) status
+    if (!userId) return mappedPaginatedPosts;
+
+    const userLikes = await this.likesRepository.findAllLikesByAuthorId(userId);
+    // Add user's like status to each post
+    return {
+      ...mappedPaginatedPosts,
+      items: mappedPaginatedPosts.items.map((post) => {
+        const like = userLikes?.find((like) => like.parentId === post.id);
+        return {
+          ...post,
+          likesInfo: {
+            ...post.extendedLikesInfo,
+            myStatus: (like?.status as LikeStatus) ?? LikeStatus.None,
+          },
+        };
+      }),
+    };
   }
 
   @Post()

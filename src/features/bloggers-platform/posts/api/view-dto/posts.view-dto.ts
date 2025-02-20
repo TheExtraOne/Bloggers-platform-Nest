@@ -28,10 +28,10 @@ export class PostsViewDto {
     dto.blogId = post.blogId;
     dto.blogName = post.blogName;
     dto.extendedLikesInfo = {
-      likesCount: 0,
-      dislikesCount: 0,
+      likesCount: post.extendedLikesInfo.likesCount,
+      dislikesCount: post.extendedLikesInfo.dislikesCount,
       myStatus: LikeStatus.None,
-      newestLikes: [],
+      newestLikes: post.extendedLikesInfo.newestLikes,
     };
 
     return dto;

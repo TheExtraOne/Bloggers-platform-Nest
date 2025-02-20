@@ -15,7 +15,7 @@ export class LikesRepository {
     await like.save();
   }
 
-  async findLikeByUserIdAndParentId(
+  async findLikeByAuthorIdAndParentId(
     authorId: string,
     parentId: string,
   ): Promise<LikeDocument | null> {
@@ -49,6 +49,15 @@ export class LikesRepository {
   }
 
   async findLikesByAuthorId(authorId: string): Promise<LikeDocument[]> {
+    const likes = await this.LikeModel.find({
+      authorId,
+      deletedAt: null,
+    });
+
+    return likes;
+  }
+
+  async findAllLikesByAuthorId(authorId: string): Promise<LikeDocument[]> {
     const likes = await this.LikeModel.find({
       authorId,
       deletedAt: null,

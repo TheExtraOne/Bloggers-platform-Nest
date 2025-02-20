@@ -17,7 +17,7 @@ export class GetUserStatusUseCase
 
   async execute(command: GetUserStatusCommand): Promise<LikeStatus> {
     const { userId, entityId } = command;
-    const like = await this.likesRepository.findLikeByUserIdAndParentId(
+    const like = await this.likesRepository.findLikeByAuthorIdAndParentId(
       userId,
       entityId,
     );

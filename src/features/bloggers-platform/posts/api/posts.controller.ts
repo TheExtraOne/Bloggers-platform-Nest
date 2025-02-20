@@ -32,38 +32,109 @@ import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comment
 import { CreatePostCommand } from '../app/posts.use-cases/create-post.use-case';
 import { DeletePostCommand } from '../app/posts.use-cases/delete-post.use-case';
 import { UpdatePostCommand } from '../app/posts.use-cases/update-post.use-case';
+import { LikeStatus } from '../../likes/domain/like.entity';
+import { LikesRepository } from '../../likes/infrastructure/likes.repository';
+import { JwtOptionalAuthGuard } from 'src/features/user-accounts/guards/jwt/jwt-optional-auth.guard';
+import { CurrentOptionalUserId } from 'src/features/user-accounts/guards/decorators/current-optional-user-id.decorator';
+import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
+import { UpdateLikeStatusCommand } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 
 @Controller(PATHS.POSTS)
 export class PostsController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly likesRepository: LikesRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
+  // TODO: refactor
   @Get()
+  @UseGuards(JwtOptionalAuthGuard)
   async getAllPosts(
     @Query() query: GetPostsQueryParams,
+    @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PostsViewDto[]>> {
-    return await this.postsQueryRepository.findAll(query);
+    const mappedPaginatedPosts = await this.postsQueryRepository.findAll(query);
+    // If theres no jwt - returning default (NONE) status
+    if (!userId) return mappedPaginatedPosts;
+
+    // Getting user's likes
+    const userLikes = await this.likesRepository.findAllLikesByAuthorId(userId);
+    // Add user's like status to each post
+    return {
+      ...mappedPaginatedPosts,
+      items: mappedPaginatedPosts.items.map((post) => {
+        const like = userLikes?.find((like) => like.parentId === post.id);
+        return {
+          ...post,
+          likesInfo: {
+            ...post.extendedLikesInfo,
+            myStatus: (like?.status as LikeStatus) ?? LikeStatus.None,
+          },
+        };
+      }),
+    };
   }
 
+  // TODO: refactor
   @Get(':id')
-  async getPostById(@Param('id') id: string): Promise<PostsViewDto> {
-    return await this.postsQueryRepository.findPostById(id);
+  @UseGuards(JwtOptionalAuthGuard)
+  async getPostById(
+    @Param('id') id: string,
+    @CurrentOptionalUserId() userId: string | null,
+  ): Promise<PostsViewDto> {
+    const post = await this.postsQueryRepository.findPostById(id);
+    // If theres no jwt - returning default (NONE) status
+    if (!userId) return post;
+
+    const like = await this.likesRepository.findLikeByAuthorIdAndParentId(
+      userId,
+      id,
+    );
+    return {
+      ...post,
+      extendedLikesInfo: {
+        ...post.extendedLikesInfo,
+        myStatus: (like?.status as LikeStatus) ?? LikeStatus.None,
+      },
+    };
   }
 
+  // TODO: refactor
   @Get(':id/comments')
+  @UseGuards(JwtOptionalAuthGuard)
   async getAllCommentsForPostId(
     @Param('id') id: string,
+    @CurrentOptionalUserId() userId: string | null,
     @Query() query: GetCommentsQueryParams,
   ): Promise<PaginatedViewDto<CommentsViewDto[]>> {
     const post = await this.postsQueryRepository.findPostById(id);
 
-    return await this.commentsQueryRepository.findAllCommentsForPostId(
-      post.id,
-      query,
-    );
+    const mappedPaginatedComments =
+      await this.commentsQueryRepository.findAllCommentsForPostId(
+        post.id,
+        query,
+      );
+    // If theres no jwt - returning default (NONE) status
+    if (!userId) return mappedPaginatedComments;
+
+    // Get all user's likes
+    const userLikes = await this.likesRepository.findAllLikesByAuthorId(userId);
+    // Add user's like status to each comment
+    return {
+      ...mappedPaginatedComments,
+      items: mappedPaginatedComments.items.map((comment) => {
+        const like = userLikes?.find((like) => like.parentId === comment.id);
+        return {
+          ...comment,
+          likesInfo: {
+            ...comment.likesInfo,
+            myStatus: (like?.status as LikeStatus) ?? LikeStatus.None,
+          },
+        };
+      }),
+    };
   }
 
   @Post()
@@ -99,6 +170,19 @@ export class PostsController {
   ): Promise<void> {
     return await this.commandBus.execute(
       new UpdatePostCommand(id, updatePostDto),
+    );
+  }
+
+  @Put(':id/like-status')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateLikeStatus(
+    @Param('id') id: string,
+    @CurrentUserId() userId: string,
+    @Body() updateLikeStatusDto: UpdateLikeStatusInputDto,
+  ): Promise<void> {
+    return await this.commandBus.execute(
+      new UpdateLikeStatusCommand(id, userId, updateLikeStatusDto, 'post'),
     );
   }
 

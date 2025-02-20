@@ -21,6 +21,8 @@ import { DeleteCommentCommand } from '../app/command.use-cases/delete-comment.us
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
 import { UpdateLikeStatusCommand } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 import { GetUserStatusCommand } from '../../likes/app/likes.use-cases/get-user-status.use-case';
+import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
+import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 
 @Controller(PATHS.COMMENTS)
 export class CommentsController {
@@ -29,15 +31,23 @@ export class CommentsController {
     private readonly commandBus: CommandBus,
   ) {}
 
+  // TODO: refactor
   @Get(':id')
-  async getCommentById(@Param('id') id: string): Promise<CommentsViewDto> {
+  @UseGuards(JwtOptionalAuthGuard)
+  async getCommentById(
+    @Param('id') id: string,
+    @CurrentOptionalUserId() userId: string | null,
+  ): Promise<CommentsViewDto> {
     const mappedComment =
       await this.commentsQueryRepository.findCommentById(id);
 
-    // TODO: add optional jwt auth
+    // JWT is optional, if there is no JWT - returning with default (NONE) status
+    if (!userId) return mappedComment;
+
     const myStatus = await this.commandBus.execute(
-      new GetUserStatusCommand(mappedComment.commentatorInfo.userId, id),
+      new GetUserStatusCommand(userId, id),
     );
+
     const enrichedComment = {
       ...mappedComment,
       likesInfo: {

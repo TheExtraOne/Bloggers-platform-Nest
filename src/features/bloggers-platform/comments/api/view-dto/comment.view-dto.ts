@@ -1,3 +1,4 @@
+import { LikeStatus } from 'src/features/bloggers-platform/likes/domain/like.entity';
 import { CommentDocument } from '../../domain/comment.entity';
 
 type TCommentatorInfo = {
@@ -7,7 +8,7 @@ type TCommentatorInfo = {
 type TLikesInfo = {
   likesCount: number;
   dislikesCount: number;
-  myStatus: 'Like' | 'Dislike' | 'None';
+  myStatus: LikeStatus;
 };
 
 export class CommentsViewDto {
@@ -27,7 +28,7 @@ export class CommentsViewDto {
     dto.likesInfo = {
       likesCount: comment.likesInfo.likesCount,
       dislikesCount: comment.likesInfo.dislikesCount,
-      myStatus: 'None',
+      myStatus: LikeStatus.None,
     };
 
     return dto;

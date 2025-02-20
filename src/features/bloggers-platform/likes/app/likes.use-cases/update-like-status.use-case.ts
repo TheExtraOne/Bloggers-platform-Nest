@@ -3,7 +3,7 @@ import { UpdateLikeStatusInputDto } from '../../api/input-dto/update-like-input.
 import { CommentsRepository } from '../../../comments/infrastructure/comments.repository';
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 import { LikesRepository } from '../../infrastructure/likes.repository';
-import { Like, LikeModelType } from '../../domain/like.entity';
+import { Like, LikeModelType, LikeStatus } from '../../domain/like.entity';
 import { UsersRepository } from 'src/features/user-accounts/infrastructure/users.repository';
 import { InjectModel } from '@nestjs/mongoose';
 import { CommentDocument } from 'src/features/bloggers-platform/comments/domain/comment.entity';
@@ -49,7 +49,7 @@ export class UpdateLikeStatusUseCase
 
     const user = await this.usersRepository.findUserById(userId);
     // Check if user already liked the entity
-    const like = await this.likesRepository.findLikeByUserIdAndParentId(
+    const like = await this.likesRepository.findLikeByAuthorIdAndParentId(
       userId,
       parentId,
     );
@@ -67,8 +67,6 @@ export class UpdateLikeStatusUseCase
         parentId,
         comment,
         post,
-        userId,
-        login: user.login,
       });
 
       return;
@@ -87,23 +85,26 @@ export class UpdateLikeStatusUseCase
       parentId,
       comment,
       post,
-      userId,
-      login: user.login,
     });
+    if (post && updateLikeStatusDto.likeStatus === LikeStatus.Like) {
+      post.updateNewestLikes({
+        userId,
+        login: user.login,
+        addedAt: new Date(),
+      });
+
+      await this.postsRepository.save(post!);
+    }
   }
 
   private async updateLikesAmount({
     parentId,
     comment,
     post,
-    userId,
-    login,
   }: {
     parentId: string;
     comment: CommentDocument | null;
     post: PostDocument | null;
-    userId: string;
-    login: string;
   }) {
     // TODO: refactor, make one call for getting likes and dislikes
     // Count likes and dislikes for the entity
@@ -112,11 +113,9 @@ export class UpdateLikeStatusUseCase
       await this.likesRepository.findDislikesByParentId(parentId);
     const amountOfLikes = likes.length;
     const amountOfDislikes = dislikes.length;
-    console.log(amountOfLikes, amountOfDislikes);
 
     // Update amount of likes for the entity
     if (comment) {
-      console.log('HI');
       comment.updateLikesCount(amountOfLikes);
       comment.updateDislikesCount(amountOfDislikes);
 
@@ -125,7 +124,7 @@ export class UpdateLikeStatusUseCase
     if (post) {
       post.updateLikesCount(amountOfLikes);
       post.updateDislikesCount(amountOfDislikes);
-      post.updateNewestLikes({ userId, login, addedAt: new Date() });
+
       await this.postsRepository.save(post!);
     }
   }

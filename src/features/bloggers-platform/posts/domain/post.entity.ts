@@ -130,9 +130,9 @@ export class Post {
   }
 
   updateNewestLikes(newestLikes: NewestLikes) {
-    this.extendedLikesInfo.newestLikes.push(newestLikes);
+    this.extendedLikesInfo.newestLikes.unshift(newestLikes);
     if (this.extendedLikesInfo.newestLikes.length > 3) {
-      this.extendedLikesInfo.newestLikes.shift();
+      this.extendedLikesInfo.newestLikes.pop();
     }
   }
 }
