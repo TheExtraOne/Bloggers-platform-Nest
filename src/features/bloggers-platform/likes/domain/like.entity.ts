@@ -8,12 +8,16 @@ export enum LikeStatus {
   None = 'None',
 }
 
-// Flags for timestamps automatically will add addedAt and updatedAt fields
+// Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
  * Like Entity Schema
  * This class represents the schema and behavior of a Like entity.
  */
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: {
+    createdAt: 'addedAt',
+  },
+})
 export class Like {
   /**
    * Status of the like
