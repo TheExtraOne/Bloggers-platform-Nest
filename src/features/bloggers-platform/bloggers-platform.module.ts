@@ -30,7 +30,8 @@ import { EnrichPostsWithLikesUseCase } from './likes/app/likes.use-cases/enrich-
 import { EnrichPostWithLikeUseCase } from './likes/app/likes.use-cases/enrich-post-with-like.use-case';
 import { EnrichCommentsWithLikesUseCase } from './likes/app/likes.use-cases/enrich-comments-with-likes.use-case';
 import { EnrichCommentWithLikeUseCase } from './likes/app/likes.use-cases/enrich-comment-with-like.use-case';
-import { BlogIdExistsRule } from './posts/api/input-dto/posts.input-dto';
+import { LikesService } from './likes/app/likes.service';
+import { BlogIdExistsRule } from './decorators/blog-id-exists.decorator';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -75,6 +76,7 @@ const likesUseCases = [
     CommentsRepository,
     CommentsQueryRepository,
     LikesRepository,
+    LikesService,
     ...blogsUseCases,
     ...postsUseCases,
     ...commentsUseCases,

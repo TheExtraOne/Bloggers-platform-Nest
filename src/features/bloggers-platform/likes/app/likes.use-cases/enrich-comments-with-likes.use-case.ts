@@ -1,8 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentsViewDto } from '../../../comments/api/view-dto/comment.view-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
-import { LikesRepository } from '../../infrastructure/likes.repository';
-import { LikeStatus } from '../../domain/like.entity';
+import { LikesService } from '../likes.service';
 
 export class EnrichCommentsWithLikesCommand {
   constructor(
@@ -15,32 +14,12 @@ export class EnrichCommentsWithLikesCommand {
 export class EnrichCommentsWithLikesUseCase
   implements ICommandHandler<EnrichCommentsWithLikesCommand, PaginatedViewDto<CommentsViewDto[]>>
 {
-  constructor(private readonly likesRepository: LikesRepository) {}
+  constructor(private readonly likesService: LikesService) {}
 
   async execute(
     command: EnrichCommentsWithLikesCommand,
   ): Promise<PaginatedViewDto<CommentsViewDto[]>> {
     const { comments, userId } = command;
-
-    // If there's no jwt - returning default (NONE) status
-    if (!userId) return comments;
-
-    // Get all user's likes
-    const userLikes = await this.likesRepository.findAllLikesByAuthorId(userId);
-    
-    // Add user's like status to each comment
-    return {
-      ...comments,
-      items: comments.items.map((comment) => {
-        const like = userLikes?.find((like) => like.parentId === comment.id);
-        return {
-          ...comment,
-          likesInfo: {
-            ...comment.likesInfo,
-            myStatus: (like?.status as LikeStatus) ?? LikeStatus.None,
-          },
-        };
-      }),
-    };
+    return this.likesService.enrichMultipleEntitiesWithLikeStatus(comments, userId);
   }
 }
