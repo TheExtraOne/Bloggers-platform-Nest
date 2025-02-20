@@ -37,7 +37,10 @@ import { LikesRepository } from '../../likes/infrastructure/likes.repository';
 import { JwtOptionalAuthGuard } from 'src/features/user-accounts/guards/jwt/jwt-optional-auth.guard';
 import { CurrentOptionalUserId } from 'src/features/user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
-import { UpdateLikeStatusCommand } from '../../likes/app/likes.use-cases/update-like-status.use-case';
+import {
+  EntityType,
+  UpdateLikeStatusCommand,
+} from '../../likes/app/likes.use-cases/update-like-status.use-case';
 
 @Controller(PATHS.POSTS)
 export class PostsController {
@@ -182,7 +185,12 @@ export class PostsController {
     @Body() updateLikeStatusDto: UpdateLikeStatusInputDto,
   ): Promise<void> {
     return await this.commandBus.execute(
-      new UpdateLikeStatusCommand(id, userId, updateLikeStatusDto, 'post'),
+      new UpdateLikeStatusCommand(
+        id,
+        userId,
+        updateLikeStatusDto,
+        EntityType.Post,
+      ),
     );
   }
 

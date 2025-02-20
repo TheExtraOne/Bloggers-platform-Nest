@@ -19,7 +19,10 @@ import { CurrentUserId } from '../../../user-accounts/guards/decorators/current-
 import { UpdateCommentCommand } from '../app/command.use-cases/update-comment.use-case';
 import { DeleteCommentCommand } from '../app/command.use-cases/delete-comment.use-case';
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
-import { UpdateLikeStatusCommand } from '../../likes/app/likes.use-cases/update-like-status.use-case';
+import {
+  EntityType,
+  UpdateLikeStatusCommand,
+} from '../../likes/app/likes.use-cases/update-like-status.use-case';
 import { GetUserStatusCommand } from '../../likes/app/likes.use-cases/get-user-status.use-case';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
 import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
@@ -81,7 +84,12 @@ export class CommentsController {
     @Body() updateLikeStatusDto: UpdateLikeStatusInputDto,
   ): Promise<void> {
     return await this.commandBus.execute(
-      new UpdateLikeStatusCommand(id, userId, updateLikeStatusDto, 'comment'),
+      new UpdateLikeStatusCommand(
+        id,
+        userId,
+        updateLikeStatusDto,
+        EntityType.Comment,
+      ),
     );
   }
 

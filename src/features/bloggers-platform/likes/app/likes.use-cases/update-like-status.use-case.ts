@@ -3,22 +3,26 @@ import { UpdateLikeStatusInputDto } from '../../api/input-dto/update-like-input.
 import { CommentsRepository } from '../../../comments/infrastructure/comments.repository';
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 import { LikesRepository } from '../../infrastructure/likes.repository';
-import { Like, LikeModelType, LikeStatus } from '../../domain/like.entity';
+import { Like, LikeDocument, LikeModelType } from '../../domain/like.entity';
 import { UsersRepository } from 'src/features/user-accounts/infrastructure/users.repository';
 import { InjectModel } from '@nestjs/mongoose';
 import { CommentDocument } from 'src/features/bloggers-platform/comments/domain/comment.entity';
 import { PostDocument } from 'src/features/bloggers-platform/posts/domain/post.entity';
+
+export enum EntityType {
+  Comment = 'comment',
+  Post = 'post',
+}
 
 export class UpdateLikeStatusCommand {
   constructor(
     public readonly parentId: string,
     public readonly userId: string,
     public readonly updateLikeStatusDto: UpdateLikeStatusInputDto,
-    public readonly entityType: 'comment' | 'post',
+    public readonly entityType: EntityType,
   ) {}
 }
 
-// TODO: refactor, make methods smaller
 @CommandHandler(UpdateLikeStatusCommand)
 export class UpdateLikeStatusUseCase
   implements ICommandHandler<UpdateLikeStatusCommand>
@@ -33,62 +37,115 @@ export class UpdateLikeStatusUseCase
 
   async execute(command: UpdateLikeStatusCommand): Promise<void> {
     const { parentId, entityType, userId, updateLikeStatusDto } = command;
-    let comment: CommentDocument | null = null;
-    let post: PostDocument | null = null;
 
-    // Check if there is such comment or post
-    if (entityType !== 'comment' && entityType !== 'post') {
-      throw new Error('Entity type must be either "comment" or "post"');
-    }
-    if (entityType === 'comment') {
-      comment = await this.commentsRepository.findCommentById(parentId);
-    }
-    if (entityType === 'post') {
-      post = await this.postsRepository.findPostById(parentId);
-    }
-
-    const user = await this.usersRepository.findUserById(userId);
-    // Check if user already liked the entity
-    const like = await this.likesRepository.findLikeByAuthorIdAndParentId(
-      userId,
+    const { comment, post } = await this.validateAndGetEntity(
       parentId,
+      entityType,
     );
+    const user = await this.validateAndGetUser(userId);
 
-    // If there is like, then updating status
-    if (like) {
-      // if the status hasn't changed, then returning
-      if (like.status === updateLikeStatusDto.likeStatus) {
-        return;
-      }
+    const existingLike =
+      await this.likesRepository.findLikeByAuthorIdAndParentId(
+        userId,
+        parentId,
+      );
 
-      like.update({ status: updateLikeStatusDto.likeStatus });
-      await this.likesRepository.save(like);
-      await this.updateLikesAmount({
+    if (existingLike) {
+      await this.handleExistingLike(
+        existingLike,
+        updateLikeStatusDto,
         parentId,
         comment,
         post,
-      });
+      );
+    } else {
+      await this.handleNewLike(
+        user,
+        parentId,
+        updateLikeStatusDto,
+        comment,
+        post,
+      );
+    }
+  }
 
-      if (post) await this.updateNewestLikes({ parentId, post });
+  private async validateAndGetEntity(
+    parentId: string,
+    entityType: EntityType,
+  ): Promise<{
+    comment: CommentDocument | null;
+    post: PostDocument | null;
+  }> {
+    if (entityType !== EntityType.Comment && entityType !== EntityType.Post) {
+      throw new Error('Entity type must be either "comment" or "post"');
+    }
 
+    let comment: CommentDocument | null = null;
+    let post: PostDocument | null = null;
+
+    if (entityType === EntityType.Comment) {
+      comment = await this.commentsRepository.findCommentById(parentId);
+      if (!comment) {
+        throw new Error('Comment not found');
+      }
+    } else {
+      post = await this.postsRepository.findPostById(parentId);
+      if (!post) {
+        throw new Error('Post not found');
+      }
+    }
+
+    return { comment, post };
+  }
+
+  private async validateAndGetUser(userId: string) {
+    const user = await this.usersRepository.findUserById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
+  }
+
+  private async handleExistingLike(
+    like: LikeDocument,
+    updateLikeStatusDto: UpdateLikeStatusInputDto,
+    parentId: string,
+    comment: CommentDocument | null,
+    post: PostDocument | null,
+  ): Promise<void> {
+    if (like.status === updateLikeStatusDto.likeStatus) {
       return;
     }
 
-    // If there is no like, then creating new like
+    like.update({ status: updateLikeStatusDto.likeStatus });
+    await this.likesRepository.save(like);
+    await this.updateLikesAmount({ parentId, comment, post });
+
+    if (post) {
+      await this.updateNewestLikes({ parentId, post });
+    }
+  }
+
+  private async handleNewLike(
+    user: any,
+    parentId: string,
+    updateLikeStatusDto: UpdateLikeStatusInputDto,
+    comment: CommentDocument | null,
+    post: PostDocument | null,
+  ): Promise<void> {
     const newLike = this.LikeModel.createInstance({
       login: user.login,
-      userId: userId,
+      userId: user.id,
       parentId,
       status: updateLikeStatusDto.likeStatus,
     });
 
     await this.likesRepository.save(newLike);
-    await this.updateLikesAmount({
-      parentId,
-      comment,
-      post,
-    });
-    if (post) await this.updateNewestLikes({ parentId, post });
+    await this.updateLikesAmount({ parentId, comment, post });
+
+    if (post) {
+      await this.updateNewestLikes({ parentId, post });
+    }
   }
 
   private async updateLikesAmount({
@@ -99,27 +156,25 @@ export class UpdateLikeStatusUseCase
     parentId: string;
     comment: CommentDocument | null;
     post: PostDocument | null;
-  }) {
-    // TODO: refactor, make one call for getting likes and dislikes
-    // Count likes and dislikes for the entity
-    const likes = await this.likesRepository.findLikesByParentId(parentId);
-    const dislikes =
-      await this.likesRepository.findDislikesByParentId(parentId);
+  }): Promise<void> {
+    const [likes, dislikes] = await Promise.all([
+      this.likesRepository.findLikesByParentId(parentId),
+      this.likesRepository.findDislikesByParentId(parentId),
+    ]);
+
     const amountOfLikes = likes.length;
     const amountOfDislikes = dislikes.length;
 
-    // Update amount of likes for the entity
     if (comment) {
       comment.updateLikesCount(amountOfLikes);
       comment.updateDislikesCount(amountOfDislikes);
-
-      await this.commentsRepository.save(comment!);
+      await this.commentsRepository.save(comment);
     }
+
     if (post) {
       post.updateLikesCount(amountOfLikes);
       post.updateDislikesCount(amountOfDislikes);
-
-      await this.postsRepository.save(post!);
+      await this.postsRepository.save(post);
     }
   }
 
