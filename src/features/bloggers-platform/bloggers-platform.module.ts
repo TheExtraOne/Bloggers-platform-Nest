@@ -26,25 +26,21 @@ import { DeleteCommentUseCase } from './comments/app/command.use-cases/delete-co
 import { UpdateLikeStatusUseCase } from './likes/app/likes.use-cases/update-like-status.use-case';
 import { LikesRepository } from './likes/infrastructure/likes.repository';
 import { Like, LikeSchema } from './likes/domain/like.entity';
-import { GetUserStatusUseCase } from './likes/app/likes.use-cases/get-user-status.use-case';
-import { BlogIdExistsRule } from './posts/api/input-dto/posts.input-dto';
 import { EnrichPostsWithLikesUseCase } from './likes/app/likes.use-cases/enrich-posts-with-likes.use-case';
 import { EnrichPostWithLikeUseCase } from './likes/app/likes.use-cases/enrich-post-with-like.use-case';
 import { EnrichCommentsWithLikesUseCase } from './likes/app/likes.use-cases/enrich-comments-with-likes.use-case';
+import { EnrichCommentWithLikeUseCase } from './likes/app/likes.use-cases/enrich-comment-with-like.use-case';
+import { BlogIdExistsRule } from './posts/api/input-dto/posts.input-dto';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
-const commentsUseCases = [
-  CreateCommentUseCase,
-  UpdateCommentUseCase,
-  DeleteCommentUseCase,
-];
+const commentsUseCases = [CreateCommentUseCase, UpdateCommentUseCase, DeleteCommentUseCase];
 const likesUseCases = [
   UpdateLikeStatusUseCase,
-  GetUserStatusUseCase,
   EnrichPostsWithLikesUseCase,
   EnrichPostWithLikeUseCase,
   EnrichCommentsWithLikesUseCase,
+  EnrichCommentWithLikeUseCase,
 ];
 
 @Module({

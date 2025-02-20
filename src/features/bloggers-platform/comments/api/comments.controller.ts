@@ -23,9 +23,9 @@ import {
   EntityType,
   UpdateLikeStatusCommand,
 } from '../../likes/app/likes.use-cases/update-like-status.use-case';
-import { GetUserStatusCommand } from '../../likes/app/likes.use-cases/get-user-status.use-case';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
 import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
+import { EnrichCommentWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-comment-with-like.use-case';
 
 @Controller(PATHS.COMMENTS)
 export class CommentsController {
@@ -34,32 +34,19 @@ export class CommentsController {
     private readonly commandBus: CommandBus,
   ) {}
 
-  // TODO: refactor
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   async getCommentById(
     @Param('id') id: string,
     @CurrentOptionalUserId() userId: string | null,
   ): Promise<CommentsViewDto> {
-    const mappedComment =
-      await this.commentsQueryRepository.findCommentById(id);
+    // Get comment by id
+    const comment = await this.commentsQueryRepository.findCommentById(id);
 
-    // JWT is optional, if there is no JWT - returning with default (NONE) status
-    if (!userId) return mappedComment;
-
-    const myStatus = await this.commandBus.execute(
-      new GetUserStatusCommand(userId, id),
+    // Enrich comment with user's like status
+    return this.commandBus.execute(
+      new EnrichCommentWithLikeCommand(comment, userId),
     );
-
-    const enrichedComment = {
-      ...mappedComment,
-      likesInfo: {
-        ...mappedComment.likesInfo,
-        myStatus,
-      },
-    };
-
-    return enrichedComment;
   }
 
   @Put(':id')
