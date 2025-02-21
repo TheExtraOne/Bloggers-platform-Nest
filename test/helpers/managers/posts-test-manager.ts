@@ -8,6 +8,7 @@ import {
 import { PostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 import { CreateCommentInputDto } from '../../../src/features/bloggers-platform/comments/api/input-dto/comment.input.dto';
 import { CommentsViewDto } from '../../../src/features/bloggers-platform/comments/api/view-dto/comment.view-dto';
+import { UpdateLikeStatusInputDto } from '../../../src/features/bloggers-platform/likes/api/input-dto/update-like-input.dto';
 
 export class PostsTestManager {
   constructor(private app: INestApplication) {}
@@ -70,6 +71,22 @@ export class PostsTestManager {
     return posts;
   }
 
+  async getPostById(
+    id: string,
+    accessToken?: string,
+    statusCode: number = HttpStatus.OK,
+  ): Promise<PostsViewDto> {
+    const req = request(this.app.getHttpServer())
+      .get(`/${PATHS.POSTS}/${id}`);
+
+    if (accessToken) {
+      req.set('Authorization', `Bearer ${accessToken}`);
+    }
+
+    const response = await req.expect(statusCode);
+    return response.body;
+  }
+
   async createComment(
     postId: string,
     dto: CreateCommentInputDto,
@@ -100,5 +117,18 @@ export class PostsTestManager {
       .expect(statusCode);
 
     return response.body;
+  }
+
+  async updatePostLikeStatus(
+    id: string,
+    updateLikeStatusDto: UpdateLikeStatusInputDto,
+    accessToken: string,
+    expectedStatusCode = HttpStatus.NO_CONTENT,
+  ): Promise<void> {
+    await request(this.app.getHttpServer())
+      .put(`/${PATHS.POSTS}/${id}/like-status`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send(updateLikeStatusDto)
+      .expect(expectedStatusCode);
   }
 }

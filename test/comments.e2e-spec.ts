@@ -271,7 +271,7 @@ describe('Comments Controller (e2e)', () => {
   describe('GET /comments/:id', () => {
     it('should get comment by id', async () => {
       const response =
-        await commentsTestManager.getCommentById(createdCommentId);
+        await commentsTestManager.getCommentById(createdCommentId, accessToken);
       expect(response).toEqual({
         id: expect.any(String),
         content: validComment.content,
@@ -289,7 +289,7 @@ describe('Comments Controller (e2e)', () => {
     });
 
     it('should return 404 if comment not found', async () => {
-      await commentsTestManager.getCommentById('507f1f77bcf86cd799439011', 404);
+      await commentsTestManager.getCommentById('507f1f77bcf86cd799439011', accessToken, 404);
     });
   });
 
@@ -302,7 +302,7 @@ describe('Comments Controller (e2e)', () => {
       );
 
       const updatedComment =
-        await commentsTestManager.getCommentById(createdCommentId);
+        await commentsTestManager.getCommentById(createdCommentId, accessToken);
       expect(updatedComment.content).toBe(validUpdateComment.content);
     });
 
@@ -378,7 +378,7 @@ describe('Comments Controller (e2e)', () => {
   describe('DELETE /comments/:id', () => {
     it('should delete comment', async () => {
       await commentsTestManager.deleteComment(createdCommentId, accessToken);
-      await commentsTestManager.getCommentById(createdCommentId, 404);
+      await commentsTestManager.getCommentById(createdCommentId, accessToken, 404);
     });
 
     it('should return 401 if user is not authenticated', async () => {
