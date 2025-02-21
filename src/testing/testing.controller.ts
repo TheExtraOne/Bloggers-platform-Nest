@@ -2,6 +2,7 @@ import { Controller, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { PATHS } from '../constants';
+import { DeleteAllDataSwagger } from './swagger';
 
 @Controller(PATHS.TESTING)
 export class TestingController {
@@ -11,6 +12,7 @@ export class TestingController {
 
   @Delete('all-data')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @DeleteAllDataSwagger()
   async deleteAll() {
     const collections = await this.databaseConnection.listCollections();
 

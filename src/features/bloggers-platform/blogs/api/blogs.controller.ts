@@ -33,6 +33,15 @@ import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-reposi
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
 import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { EnrichPostsWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-posts-with-likes.use-case';
+import {
+  GetAllBlogsSwagger,
+  GetBlogByIdSwagger,
+  GetBlogPostsSwagger,
+  CreateBlogSwagger,
+  CreateBlogPostSwagger,
+  UpdateBlogSwagger,
+  DeleteBlogSwagger,
+} from './swagger';
 
 @Controller(PATHS.BLOGS)
 export class BlogsController {
@@ -43,6 +52,7 @@ export class BlogsController {
   ) {}
 
   @Get()
+  @GetAllBlogsSwagger()
   async getAllBlogs(
     @Query() query: GetBlogsQueryParams,
   ): Promise<PaginatedViewDto<BlogsViewDto[]>> {
@@ -50,12 +60,14 @@ export class BlogsController {
   }
 
   @Get(':id')
+  @GetBlogByIdSwagger()
   async getBlogById(@Param('id') id: string): Promise<BlogsViewDto> {
     return this.blogsQueryRepository.findBlogById(id);
   }
 
   @Get(':id/posts')
   @UseGuards(JwtOptionalAuthGuard)
+  @GetBlogPostsSwagger()
   async getPostsByBlogId(
     @Param('id') id: string,
     @Query() query: GetPostsQueryParams,
@@ -79,6 +91,7 @@ export class BlogsController {
   @Post()
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.CREATED)
+  @CreateBlogSwagger()
   async createBlog(
     @Body() createBlogDto: CreateBlogInputDto,
   ): Promise<BlogsViewDto> {
@@ -90,6 +103,7 @@ export class BlogsController {
 
   @Post(':id/posts')
   @UseGuards(BasicAuthGuard)
+  @CreateBlogPostSwagger()
   async createPostByBlogId(
     @Param('id') id: string,
     @Body() postDto: CreatePostFromBlogInputDto,
@@ -108,6 +122,7 @@ export class BlogsController {
   @Put(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UpdateBlogSwagger()
   async updateBlogById(
     @Param('id') id: string,
     @Body() updateBlogDto: UpdateBlogInputDto,
@@ -118,6 +133,7 @@ export class BlogsController {
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @DeleteBlogSwagger()
   async deleteBlogById(@Param('id') id: string): Promise<void> {
     return this.commandBus.execute(new DeleteBlogCommand(id));
   }

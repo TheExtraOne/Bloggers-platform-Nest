@@ -42,6 +42,16 @@ import {
 import { EnrichPostsWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-posts-with-likes.use-case';
 import { EnrichPostWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-post-with-like.use-case';
 import { EnrichCommentsWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-comments-with-likes.use-case';
+import {
+  GetAllPostsSwagger,
+  GetPostByIdSwagger,
+  GetPostCommentsSwagger,
+  CreatePostSwagger,
+  CreatePostCommentSwagger,
+  UpdatePostSwagger,
+  UpdatePostLikeStatusSwagger,
+  DeletePostSwagger,
+} from './swagger';
 
 @Controller(PATHS.POSTS)
 export class PostsController {
@@ -53,6 +63,7 @@ export class PostsController {
 
   @Get()
   @UseGuards(JwtOptionalAuthGuard)
+  @GetAllPostsSwagger()
   async getAllPosts(
     @Query() query: GetPostsQueryParams,
     @CurrentOptionalUserId() userId: string | null,
@@ -68,6 +79,7 @@ export class PostsController {
 
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
+  @GetPostByIdSwagger()
   async getPostById(
     @Param('id') id: string,
     @CurrentOptionalUserId() userId: string | null,
@@ -81,6 +93,7 @@ export class PostsController {
 
   @Get(':id/comments')
   @UseGuards(JwtOptionalAuthGuard)
+  @GetPostCommentsSwagger()
   async getAllCommentsForPostId(
     @Param('id') id: string,
     @CurrentOptionalUserId() userId: string | null,
@@ -105,6 +118,7 @@ export class PostsController {
   @Post()
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.CREATED)
+  @CreatePostSwagger()
   async createPost(@Body() dto: CreatePostInputDto): Promise<PostsViewDto> {
     const postId = await this.commandBus.execute(new CreatePostCommand(dto));
 
@@ -114,6 +128,7 @@ export class PostsController {
   @Post(':id/comments')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
+  @CreatePostCommentSwagger()
   async createCommentByPostId(
     @CurrentUserId() userId: string,
     @Param('id') id: string,
@@ -129,6 +144,7 @@ export class PostsController {
   @Put(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UpdatePostSwagger()
   async updatePostById(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostInputDto,
@@ -141,6 +157,7 @@ export class PostsController {
   @Put(':id/like-status')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UpdatePostLikeStatusSwagger()
   async updateLikeStatus(
     @Param('id') id: string,
     @CurrentUserId() userId: string,
@@ -159,6 +176,7 @@ export class PostsController {
   @Delete(':id')
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @DeletePostSwagger()
   async deletePostById(@Param('id') id: string): Promise<void> {
     return await this.commandBus.execute(new DeletePostCommand(id));
   }

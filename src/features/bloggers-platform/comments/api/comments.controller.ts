@@ -26,6 +26,12 @@ import {
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
 import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { EnrichCommentWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-comment-with-like.use-case';
+import {
+  GetCommentByIdSwagger,
+  UpdateCommentSwagger,
+  UpdateCommentLikeStatusSwagger,
+  DeleteCommentSwagger,
+} from './swagger';
 
 @Controller(PATHS.COMMENTS)
 export class CommentsController {
@@ -36,6 +42,7 @@ export class CommentsController {
 
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
+  @GetCommentByIdSwagger()
   async getCommentById(
     @Param('id') id: string,
     @CurrentOptionalUserId() userId: string | null,
@@ -52,6 +59,7 @@ export class CommentsController {
   @Put(':id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UpdateCommentSwagger()
   async updateCommentById(
     @Param('id') id: string,
     @CurrentUserId() userId: string,
@@ -65,6 +73,7 @@ export class CommentsController {
   @Put(':id/like-status')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UpdateCommentLikeStatusSwagger()
   async updateLikeStatus(
     @Param('id') id: string,
     @CurrentUserId() userId: string,
@@ -83,6 +92,7 @@ export class CommentsController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
+  @DeleteCommentSwagger()
   async deleteCommentById(
     @CurrentUserId() userId: string,
     @Param('id') id: string,
