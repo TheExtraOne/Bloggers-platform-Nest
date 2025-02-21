@@ -28,6 +28,15 @@ import { ResendRegistrationEmailCommand } from '../app/auth.use-cases/resend-reg
 import { SendRecoverPasswordEmailCommand } from '../app/auth.use-cases/send-recover-password-email.use-case';
 import { SetNewPasswordCommand } from '../app/auth.use-cases/set-new-password.use-case';
 import { CommandBus } from '@nestjs/cqrs';
+import {
+  GetMeSwagger,
+  LoginSwagger,
+  RegistrationSwagger,
+  RegistrationConfirmationSwagger,
+  RegistrationEmailResendingSwagger,
+  PasswordRecoverySwagger,
+  NewPasswordSwagger,
+} from './swagger';
 
 @UseGuards(ThrottlerGuard)
 @Controller(PATHS.AUTH)
@@ -40,6 +49,7 @@ export class AuthController {
   @SkipThrottle()
   @Get('me')
   @UseGuards(JwtAuthGuard)
+  @GetMeSwagger()
   async getUserInformation(
     @CurrentUserId() userId: string,
   ): Promise<MeViewDto> {
@@ -58,6 +68,7 @@ export class AuthController {
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
+  @LoginSwagger()
   async login(
     @CurrentUserId() userId: string,
     @Res({ passthrough: true }) response: Response,
@@ -76,12 +87,14 @@ export class AuthController {
 
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RegistrationSwagger()
   async createUser(@Body() dto: CreateUserInputDto): Promise<void> {
     await this.commandBus.execute(new CreateUserCommand(dto));
   }
 
   @Post('registration-confirmation')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RegistrationConfirmationSwagger()
   async confirmRegistration(
     @Body() dto: ConfirmRegistrationInputDto,
   ): Promise<void> {
@@ -90,6 +103,7 @@ export class AuthController {
 
   @Post('registration-email-resending')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RegistrationEmailResendingSwagger()
   async registrationEmailResending(
     @Body() dto: ResendRegistrationInputDto,
   ): Promise<void> {
@@ -98,12 +112,14 @@ export class AuthController {
 
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @PasswordRecoverySwagger()
   async passwordRecovery(@Body() dto: PasswordRecoveryInputDto): Promise<void> {
     await this.commandBus.execute(new SendRecoverPasswordEmailCommand(dto));
   }
 
   @Post('new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @NewPasswordSwagger()
   async newPassword(@Body() dto: NewPasswordInputDto): Promise<void> {
     await this.commandBus.execute(new SetNewPasswordCommand(dto));
   }
