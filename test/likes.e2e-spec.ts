@@ -152,5 +152,61 @@ describe('Likes (e2e)', () => {
         HttpStatus.NOT_FOUND,
       );
     });
+
+    it('should handle multiple users liking and changing status of a comment', async () => {
+      // Create a comment on the post
+      const comment = await postsTestManager.createComment(
+        post.id,
+        { content: 'This is a test comment that is long enough to meet the minimum length requirement.' },
+        accessToken,
+      );
+
+      // First user likes the comment
+      await commentsTestManager.updateCommentLikeStatus(
+        comment.id,
+        { likeStatus: LikeStatus.Like },
+        accessToken,
+      );
+
+      // Create second user
+      await usersTestManager.createUser({
+        login: 'user2',
+        password: 'password2',
+        email: 'user2@example.com',
+      });
+
+      // Login as second user
+      const user2LoginResponse = await authTestManager.login({
+        loginOrEmail: 'user2',
+        password: 'password2',
+      });
+      const user2AccessToken = user2LoginResponse.accessToken;
+
+      // Second user dislikes the comment
+      await commentsTestManager.updateCommentLikeStatus(
+        comment.id,
+        { likeStatus: LikeStatus.Dislike },
+        user2AccessToken,
+      );
+
+      // Verify comment has 1 like and 1 dislike
+      let updatedComment = await commentsTestManager.getCommentById(comment.id, user2AccessToken);
+      expect(updatedComment.likesInfo.likesCount).toBe(1);
+      expect(updatedComment.likesInfo.dislikesCount).toBe(1);
+      expect(updatedComment.likesInfo.myStatus).toBe(LikeStatus.Dislike);
+
+      // First user changes their like to None
+      await commentsTestManager.updateCommentLikeStatus(
+        comment.id,
+        { likeStatus: LikeStatus.None },
+        accessToken,
+      );
+
+      // Verify final state: 0 likes, 1 dislike
+      updatedComment = await commentsTestManager.getCommentById(comment.id, accessToken);
+      expect(updatedComment.likesInfo.likesCount).toBe(0);
+      expect(updatedComment.likesInfo.dislikesCount).toBe(1);
+      expect(updatedComment.likesInfo.myStatus).toBe(LikeStatus.None);
+    });
   });
 });
