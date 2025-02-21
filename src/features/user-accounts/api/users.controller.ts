@@ -21,8 +21,7 @@ import { CreateUserCommand } from '../app/users.use-cases/create-user.use-case';
 import { DeleteUserCommand } from '../app/users.use-cases/delete-user.use-case';
 import { ConfirmEmailRegistrationCommand } from '../app/auth.use-cases/confirm-email-registration.use-case';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiResponse, ApiBasicAuth, ApiParam } from '@nestjs/swagger';
-import { APIErrorResult } from '../../../types';
+import { GetAllUsersSwagger, CreateUserSwagger, DeleteUserSwagger } from './swagger';
 
 @UseGuards(BasicAuthGuard)
 @Controller(PATHS.USERS)
@@ -34,16 +33,7 @@ export class UserController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiBasicAuth('basicAuth')
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Successfully retrieved users.',
-    type: PaginatedViewDto<UserViewDto[]>,
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Unauthorized',
-  })
+  @GetAllUsersSwagger()
   async getAllUsers(
     @Query() query: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<UserViewDto[]>> {
@@ -52,21 +42,7 @@ export class UserController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiBasicAuth('basicAuth')
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Successfully created user.',
-    type: UserViewDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Bad Request',
-    type: APIErrorResult,
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Unauthorized',
-  })
+  @CreateUserSwagger()
   async createUser(
     @Body() createUserDto: CreateUserInputDto,
   ): Promise<UserViewDto> {
@@ -84,23 +60,7 @@ export class UserController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiBasicAuth('basicAuth')
-  @ApiParam({
-    name: 'id',
-    type: String,
-  })
-  @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
-    description: 'Successfully deleted user.',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Unauthorized',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Not Found',
-  })
+  @DeleteUserSwagger()
   async deleteUser(@Param('id') id: string): Promise<void> {
     await this.commandBus.execute(new DeleteUserCommand(id));
   }

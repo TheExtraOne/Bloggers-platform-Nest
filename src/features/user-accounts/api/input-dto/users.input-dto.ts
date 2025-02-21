@@ -1,10 +1,14 @@
 import { IsEmail, IsNotEmpty, Length, Matches } from 'class-validator';
 import { IsStringWithTrim } from '../../../../core/decorators/is-not-empty-string';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserInputDto {
   @IsStringWithTrim()
   @Length(3, 10)
   @Matches(/^[a-zA-Z0-9_-]*$/)
+  @ApiProperty({
+    description: 'Must be unique',
+  })
   login: string;
 
   @IsStringWithTrim()
@@ -14,5 +18,8 @@ export class CreateUserInputDto {
   @IsEmail()
   @IsNotEmpty()
   @Matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+  @ApiProperty({
+    description: 'Must be unique',
+  })
   email: string;
 }
