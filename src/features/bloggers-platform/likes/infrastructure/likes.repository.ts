@@ -86,4 +86,41 @@ export class LikesRepository {
 
     return likes;
   }
+
+  async getLikesAndDislikesCount(parentId: string): Promise<{ likesCount: number; dislikesCount: number }> {
+    const [result] = await this.LikeModel.aggregate([
+      {
+        $match: {
+          parentId,
+          deletedAt: null,
+        },
+      },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          likesCount: {
+            $sum: {
+              $cond: [{ $eq: ['$_id', LikeStatus.Like] }, '$count', 0],
+            },
+          },
+          dislikesCount: {
+            $sum: {
+              $cond: [{ $eq: ['$_id', LikeStatus.Dislike] }, '$count', 0],
+            },
+          },
+        },
+      },
+    ]) || { likesCount: 0, dislikesCount: 0 };
+
+    return {
+      likesCount: result?.likesCount ?? 0,
+      dislikesCount: result?.dislikesCount ?? 0,
+    };
+  }
 }

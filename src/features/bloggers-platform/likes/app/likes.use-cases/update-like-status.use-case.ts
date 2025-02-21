@@ -157,23 +157,17 @@ export class UpdateLikeStatusUseCase
     comment: CommentDocument | null;
     post: PostDocument | null;
   }): Promise<void> {
-    const [likes, dislikes] = await Promise.all([
-      this.likesRepository.findLikesByParentId(parentId),
-      this.likesRepository.findDislikesByParentId(parentId),
-    ]);
-
-    const amountOfLikes = likes.length;
-    const amountOfDislikes = dislikes.length;
+    const { likesCount, dislikesCount } = await this.likesRepository.getLikesAndDislikesCount(parentId);
 
     if (comment) {
-      comment.updateLikesCount(amountOfLikes);
-      comment.updateDislikesCount(amountOfDislikes);
+      comment.updateLikesCount(likesCount);
+      comment.updateDislikesCount(dislikesCount);
       await this.commentsRepository.save(comment);
     }
 
     if (post) {
-      post.updateLikesCount(amountOfLikes);
-      post.updateDislikesCount(amountOfDislikes);
+      post.updateLikesCount(likesCount);
+      post.updateDislikesCount(dislikesCount);
       await this.postsRepository.save(post);
     }
   }
