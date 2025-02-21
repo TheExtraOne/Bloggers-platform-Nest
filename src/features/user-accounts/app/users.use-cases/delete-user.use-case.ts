@@ -1,9 +1,11 @@
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { UserDocument } from '../../domain/user.entity';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-export class DeleteUserCommand {
-  constructor(public id: string) {}
+export class DeleteUserCommand extends Command<void> {
+  constructor(public id: string) {
+    super();
+  }
 }
 
 @CommandHandler(DeleteUserCommand)

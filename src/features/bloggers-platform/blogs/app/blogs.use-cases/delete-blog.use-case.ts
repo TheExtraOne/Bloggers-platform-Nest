@@ -1,8 +1,10 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 
-export class DeleteBlogCommand {
-  constructor(public id: string) {}
+export class DeleteBlogCommand extends Command<void> {
+  constructor(public id: string) {
+    super();
+  }
 }
 
 @CommandHandler(DeleteBlogCommand)

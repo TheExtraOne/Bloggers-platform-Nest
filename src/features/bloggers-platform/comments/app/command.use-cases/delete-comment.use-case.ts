@@ -1,12 +1,14 @@
 import { ForbiddenException } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 
-export class DeleteCommentCommand {
+export class DeleteCommentCommand extends Command<void> {
   constructor(
     public commentId: string,
     public userId: string,
-  ) {}
+  ) {
+    super();
+  }
 }
 
 @CommandHandler(DeleteCommentCommand)

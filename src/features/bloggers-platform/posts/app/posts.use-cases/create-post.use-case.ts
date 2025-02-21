@@ -1,12 +1,14 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostModelType } from '../../domain/post.entity';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsService } from 'src/features/bloggers-platform/blogs/app/blog-service';
 import { CreatePostInputDto } from '../../api/input-dto/posts.input-dto';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 
-export class CreatePostCommand {
-  constructor(public readonly dto: CreatePostInputDto) {}
+export class CreatePostCommand extends Command<string> {
+  constructor(public readonly dto: CreatePostInputDto) {
+    super();
+  }
 }
 
 @CommandHandler(CreatePostCommand)

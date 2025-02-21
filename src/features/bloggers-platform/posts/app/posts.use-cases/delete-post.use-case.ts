@@ -1,8 +1,10 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 
-export class DeletePostCommand {
-  constructor(public id: string) {}
+export class DeletePostCommand extends Command<void> {
+  constructor(public id: string) {
+    super();
+  }
 }
 
 @CommandHandler(DeletePostCommand)

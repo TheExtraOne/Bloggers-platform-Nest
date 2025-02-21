@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateLikeStatusInputDto } from '../../api/input-dto/update-like-input.dto';
 import { CommentsRepository } from '../../../comments/infrastructure/comments.repository';
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
@@ -14,13 +14,15 @@ export enum EntityType {
   Post = 'post',
 }
 
-export class UpdateLikeStatusCommand {
+export class UpdateLikeStatusCommand extends Command<void> {
   constructor(
     public readonly parentId: string,
     public readonly userId: string,
     public readonly updateLikeStatusDto: UpdateLikeStatusInputDto,
     public readonly entityType: EntityType,
-  ) {}
+  ) {
+    super();
+  }
 }
 
 @CommandHandler(UpdateLikeStatusCommand)
@@ -157,7 +159,8 @@ export class UpdateLikeStatusUseCase
     comment: CommentDocument | null;
     post: PostDocument | null;
   }): Promise<void> {
-    const { likesCount, dislikesCount } = await this.likesRepository.getLikesAndDislikesCount(parentId);
+    const { likesCount, dislikesCount } =
+      await this.likesRepository.getLikesAndDislikesCount(parentId);
 
     if (comment) {
       comment.updateLikesCount(likesCount);

@@ -6,15 +6,20 @@ import { User, UserModelType } from '../../domain/user.entity';
 import { BcryptService } from '../facades/bcrypt.service';
 import { ObjectId } from 'mongodb';
 import { EmailService } from '../facades/email.service';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 type TExtension = {
   field: string | null;
   message: string;
 };
 
-export class CreateUserCommand {
-  constructor(public readonly dto: CreateUserInputDto) {}
+export class CreateUserCommand extends Command<{
+  userId: string;
+  confirmationCode: string;
+}> {
+  constructor(public readonly dto: CreateUserInputDto) {
+    super();
+  }
 }
 
 @CommandHandler(CreateUserCommand)
@@ -31,13 +36,13 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
   ): Promise<{ userId: string; confirmationCode: string }> {
     const { dto } = command;
     // Check if user with such email and login exists
-    const isUnique = await this.checkIfFieldIsUnique({
+    const validationErrors = await this.checkIfFieldIsUnique({
       email: dto.email,
       login: dto.login,
     });
 
-    if (isUnique.length > 0) {
-      throw new BadRequestException(isUnique);
+    if (validationErrors.length > 0) {
+      throw new BadRequestException(validationErrors);
     }
 
     // Hash the password

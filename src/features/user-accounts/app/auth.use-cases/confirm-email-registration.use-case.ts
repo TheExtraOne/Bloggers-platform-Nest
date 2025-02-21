@@ -3,10 +3,12 @@ import { ConfirmRegistrationInputDto } from '../../api/input-dto/confirm-registr
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { UserDocument } from '../../domain/user.entity';
 import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-export class ConfirmEmailRegistrationCommand {
-  constructor(public readonly dto: ConfirmRegistrationInputDto) {}
+export class ConfirmEmailRegistrationCommand extends Command<void> {
+  constructor(public readonly dto: ConfirmRegistrationInputDto) {
+    super();
+  }
 }
 
 @CommandHandler(ConfirmEmailRegistrationCommand)

@@ -1,14 +1,16 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateCommentInputDto } from '../../api/input-dto/comment.input.dto';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
 
-export class UpdateCommentCommand {
+export class UpdateCommentCommand extends Command<void> {
   constructor(
     public commentId: string,
     public userId: string,
     public dto: UpdateCommentInputDto,
-  ) {}
+  ) {
+    super();
+  }
 }
 
 @CommandHandler(UpdateCommentCommand)

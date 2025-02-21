@@ -6,10 +6,12 @@ import { add } from 'date-fns';
 import { EmailService } from '../facades/email.service';
 import { PasswordRecoveryInputDto } from '../../api/input-dto/password-recovery.input-dto';
 import { PasswordRecoveryStatus } from '../../domain/password-recovery.schema';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-export class SendRecoverPasswordEmailCommand {
-  constructor(public readonly dto: PasswordRecoveryInputDto) {}
+export class SendRecoverPasswordEmailCommand extends Command<void> {
+  constructor(public readonly dto: PasswordRecoveryInputDto) {
+    super();
+  }
 }
 
 @CommandHandler(SendRecoverPasswordEmailCommand)

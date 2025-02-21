@@ -17,7 +17,7 @@ export function swaggerSetup(app: INestApplication) {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('', app, document, {
+  SwaggerModule.setup('swagger', app, document, {
     customSiteTitle: 'Blogger Swagger',
   });
 }

@@ -4,10 +4,12 @@ import { UserDocument } from '../../domain/user.entity';
 import { PasswordRecoveryStatus } from '../../domain/password-recovery.schema';
 import { NewPasswordInputDto } from '../../api/input-dto/new-password.input-dto';
 import { BcryptService } from '../facades/bcrypt.service';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-export class SetNewPasswordCommand {
-  constructor(public readonly dto: NewPasswordInputDto) {}
+export class SetNewPasswordCommand extends Command<void> {
+  constructor(public readonly dto: NewPasswordInputDto) {
+    super();
+  }
 }
 
 @CommandHandler(SetNewPasswordCommand)

@@ -6,10 +6,12 @@ import { ResendRegistrationInputDto } from '../../api/input-dto/resend-registrat
 import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { EmailService } from '../facades/email.service';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-export class ResendRegistrationEmailCommand {
-  constructor(public readonly dto: ResendRegistrationInputDto) {}
+export class ResendRegistrationEmailCommand extends Command<void> {
+  constructor(public readonly dto: ResendRegistrationInputDto) {
+    super();
+  }
 }
 
 @CommandHandler(ResendRegistrationEmailCommand)

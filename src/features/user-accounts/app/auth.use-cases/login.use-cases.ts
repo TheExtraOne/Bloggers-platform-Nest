@@ -1,9 +1,14 @@
 import { ObjectId } from 'mongodb';
 import { CustomJwtService, TOKEN_TYPE } from '../facades/custom-jwt.service';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-export class LoginCommand {
-  constructor(public readonly userId: string) {}
+export class LoginCommand extends Command<{
+  accessToken: string;
+  refreshToken: string;
+}> {
+  constructor(public readonly userId: string) {
+    super();
+  }
 }
 
 @CommandHandler(LoginCommand)

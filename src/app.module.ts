@@ -10,6 +10,8 @@ import { ConfigModule } from '@nestjs/config';
 import { CoreModule } from './core/core-module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CqrsModule } from '@nestjs/cqrs';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -21,6 +23,10 @@ import { CqrsModule } from '@nestjs/cqrs';
         limit: +SETTINGS.LIMIT,
       },
     ]),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'swagger-static'),
+      serveRoot: process.env.NODE_ENV === 'development' ? '/' : '/swagger',
+    }),
     CqrsModule.forRoot(),
     UserAccountsModule,
     TestingModule,

@@ -2,13 +2,15 @@ import { UnauthorizedException } from '@nestjs/common';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
 import { BcryptService } from '../facades/bcrypt.service';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-export class CheckIfUserIsAbleToLoginCommand {
+export class CheckIfUserIsAbleToLoginCommand extends Command<string> {
   constructor(
     public loginOrEmail: string,
     public password: string,
-  ) {}
+  ) {
+    super();
+  }
 }
 
 @CommandHandler(CheckIfUserIsAbleToLoginCommand)

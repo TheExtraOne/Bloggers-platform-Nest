@@ -1,12 +1,14 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsViewDto } from '../../../posts/api/view-dto/posts.view-dto';
 import { LikesService } from '../likes.service';
 
-export class EnrichPostWithLikeCommand {
+export class EnrichPostWithLikeCommand extends Command<PostsViewDto> {
   constructor(
     public readonly post: PostsViewDto,
     public readonly userId: string | null,
-  ) {}
+  ) {
+    super();
+  }
 }
 
 @CommandHandler(EnrichPostWithLikeCommand)
