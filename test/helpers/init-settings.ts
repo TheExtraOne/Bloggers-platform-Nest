@@ -1,3 +1,4 @@
+import { configModule } from '../../src/config.module';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { appSetup } from '../../src/setup/app.setup';
 import { UsersTestManager } from './managers/users-test-manager';
@@ -6,7 +7,6 @@ import { EmailService } from '../../src/features/user-accounts/app/facades/email
 import { EmailServiceMock } from '../mock/email-service.mock';
 import { startMongoMemoryServer } from './mongodb-memory-server';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
 import { UserAccountsModule } from '../../src/features/user-accounts/user-accounts.module';
 import { BloggersPlatformModule } from '../../src/features/bloggers-platform/bloggers-platform.module';
 import { TestingModule } from '../../src/testing/testing.module';
@@ -31,7 +31,7 @@ export class TestSettingsInitializer {
 
     const testingModuleBuilder = Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot(),
+        configModule,
         MongooseModule.forRoot(mongoUri),
         ThrottlerModule.forRoot([
           {
@@ -65,7 +65,8 @@ export class TestSettingsInitializer {
     const blogsTestManager = new BlogsTestManager(app);
     const authTestManager = new AuthTestManager(app);
     const commentsTestManager = new CommentsTestManager(app);
-    const emailServiceMock = testingAppModule.get<EmailServiceMock>(EmailService);
+    const emailServiceMock =
+      testingAppModule.get<EmailServiceMock>(EmailService);
 
     await deleteAllData(app);
 

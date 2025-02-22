@@ -1,3 +1,5 @@
+// Import config module must be on the top
+import { configModule } from './config.module';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -6,7 +8,6 @@ import { UserAccountsModule } from './features/user-accounts/user-accounts.modul
 import { SETTINGS } from './constants';
 import { TestingModule } from './testing/testing.module';
 import { BloggersPlatformModule } from './features/bloggers-platform/bloggers-platform.module';
-import { ConfigModule } from '@nestjs/config';
 import { CoreModule } from './core/core-module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -15,7 +16,7 @@ import { join } from 'path';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    configModule,
     MongooseModule.forRoot(SETTINGS.MONGODB_URI),
     ThrottlerModule.forRoot([
       {
@@ -25,7 +26,7 @@ import { join } from 'path';
     ]),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'swagger-static'),
-      serveRoot: process.env.NODE_ENV === 'development' ? '/' : '/swagger',
+      serveRoot: process.env.SHOW_SWAGGER ? '/swagger' : '/',
     }),
     CqrsModule.forRoot(),
     UserAccountsModule,

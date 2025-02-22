@@ -25,7 +25,7 @@ export function swaggerSetup(app: INestApplication) {
 }
 
 export async function generateSwaggerStaticFiles(serverUrl: string) {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.SHOW_SWAGGER) {
     // write swagger ui files
     get(`${serverUrl}/swagger/swagger-ui-bundle.js`, function (response) {
       response.pipe(createWriteStream('swagger-static/swagger-ui-bundle.js'));
