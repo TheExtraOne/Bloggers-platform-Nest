@@ -1,5 +1,4 @@
 export const SETTINGS = {
-  PORT: process.env.PORT ?? 3000,
   MONGODB_URI: process.env.MONGODB_URI ?? 'mongodb://localhost:27017',
   MAIL_PASSWORD: process.env.MAIL_PASSWORD as string,
   JWT_SECRET: process.env.JWT_SECRET as string,

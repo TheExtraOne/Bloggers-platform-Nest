@@ -13,11 +13,19 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { CoreConfig } from './core/core.config';
 
 @Module({
   imports: [
     configModule,
-    MongooseModule.forRoot(SETTINGS.MONGODB_URI),
+    MongooseModule.forRootAsync({
+      useFactory: (coreConfig: CoreConfig) => {
+        const uri = coreConfig.mongodbUri;
+
+        return { uri };
+      },
+      inject: [CoreConfig],
+    }),
     ThrottlerModule.forRoot([
       {
         ttl: +SETTINGS.TTL,

@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { get } from 'http';
 import { createWriteStream } from 'fs';
+import { CoreConfig } from '../core/core.config';
 
 export function swaggerSetup(app: INestApplication) {
   const config = new DocumentBuilder()
@@ -24,8 +25,13 @@ export function swaggerSetup(app: INestApplication) {
   });
 }
 
-export async function generateSwaggerStaticFiles(serverUrl: string) {
-  if (process.env.SHOW_SWAGGER) {
+export async function generateSwaggerStaticFiles(
+  serverUrl: string,
+  app: INestApplication,
+) {
+  const coreConfig = app.get<CoreConfig>(CoreConfig);
+
+  if (coreConfig.showSwagger) {
     // write swagger ui files
     get(`${serverUrl}/swagger/swagger-ui-bundle.js`, function (response) {
       response.pipe(createWriteStream('swagger-static/swagger-ui-bundle.js'));

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { SETTINGS } from '../../../../constants';
+import { ConfigService } from '@nestjs/config';
 
 export enum TOKEN_TYPE {
   AC_TOKEN = 'AC_TOKEN',
@@ -9,7 +9,10 @@ export enum TOKEN_TYPE {
 
 @Injectable()
 export class CustomJwtService {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async createToken({
     payload,
@@ -23,20 +26,20 @@ export class CustomJwtService {
     switch (type) {
       case TOKEN_TYPE.AC_TOKEN:
         token = await this.jwtService.signAsync(payload, {
-          expiresIn: SETTINGS.AC_EXPIRY,
-          secret: SETTINGS.AC_SECRET,
+          expiresIn: this.configService.get<string | number>('AC_EXPIRY'),
+          secret: this.configService.get<string>('AC_SECRET'),
         });
         break;
       case TOKEN_TYPE.R_TOKEN:
         token = await this.jwtService.signAsync(payload, {
-          expiresIn: SETTINGS.RT_EXPIRY,
-          secret: SETTINGS.RT_SECRET,
+          expiresIn: this.configService.get<string | number>('RT_EXPIRY'),
+          secret: this.configService.get<string>('RT_SECRET'),
         });
         break;
       default:
         token = await this.jwtService.signAsync(payload, {
-          expiresIn: SETTINGS.JWT_EXPIRY,
-          secret: SETTINGS.JWT_SECRET,
+          expiresIn: this.configService.get<string | number>('JWT_EXPIRY'),
+          secret: this.configService.get<string>('JWT_SECRET'),
         });
         break;
     }

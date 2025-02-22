@@ -1,19 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { appSetup } from './setup/app.setup';
-import { SETTINGS } from './constants';
 import { generateSwaggerStaticFiles } from './setup/swagger.setup';
-
-const serverUrl = `http://localhost:${SETTINGS.PORT}`;
+import { CoreConfig } from './core/core.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const coreConfig = app.get<CoreConfig>(CoreConfig);
+  const port = coreConfig.port;
+
   appSetup(app);
-  await app.listen(SETTINGS.PORT, () => {
-    console.log('Server is running on port ' + SETTINGS.PORT);
+
+  await app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
   });
 
-  await generateSwaggerStaticFiles(serverUrl);
+  await generateSwaggerStaticFiles(`http://localhost:${port}`, app);
 }
 
 bootstrap();
