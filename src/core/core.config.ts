@@ -1,12 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  IsBoolean,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  validateSync,
-} from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
 import { configValidationUtility } from './config-validation.utility';
 
 export enum Environments {
@@ -52,4 +46,20 @@ export class CoreConfig {
   showSwagger: boolean = configValidationUtility.convertStringToBoolean(
     this.configService.get('SHOW_SWAGGER'),
   ) as boolean;
+
+  @IsNumber(
+    {},
+    {
+      message: 'Set Env variable TTL, example: 10000',
+    },
+  )
+  ttl: number = Number(this.configService.get('TTL'));
+
+  @IsNumber(
+    {},
+    {
+      message: 'Set Env variable LIMIT, example: 5',
+    },
+  )
+  limit: number = Number(this.configService.get('LIMIT'));
 }

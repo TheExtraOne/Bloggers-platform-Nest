@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import nodemailer from 'nodemailer';
-import { SETTINGS } from '../../../../constants';
+import { UserAccountsConfig } from '../../user-account.config';
 
 // TODO: "@nestjs-modules/mailer"?
 @Injectable()
 export class EmailService {
+  constructor(private readonly userAccountsConfig: UserAccountsConfig) {}
+
   sendRegistrationMail({
     email,
     confirmationCode,
@@ -58,7 +60,7 @@ export class EmailService {
       service: 'Mail.ru',
       auth: {
         user: 'kate_blogs_posts_it_incubator@mail.ru',
-        pass: SETTINGS.MAIL_PASSWORD,
+        pass: this.userAccountsConfig.mailPassword,
       },
     });
 

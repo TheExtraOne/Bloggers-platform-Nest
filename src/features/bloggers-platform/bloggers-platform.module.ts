@@ -35,7 +35,11 @@ import { BlogIdExistsRule } from './decorators/blog-id-exists.decorator';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
-const commentsUseCases = [CreateCommentUseCase, UpdateCommentUseCase, DeleteCommentUseCase];
+const commentsUseCases = [
+  CreateCommentUseCase,
+  UpdateCommentUseCase,
+  DeleteCommentUseCase,
+];
 const likesUseCases = [
   UpdateLikeStatusUseCase,
   EnrichPostsWithLikesUseCase,

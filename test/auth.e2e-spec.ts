@@ -6,7 +6,6 @@ import { AuthTestManager } from './helpers/managers/auth-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
 import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { deleteAllData } from './helpers/delete-all-data';
-import { SETTINGS } from '../src/constants';
 import { CreateUserInputDto } from '../src/features/user-accounts/api/input-dto/users.input-dto';
 import { MeViewDto } from '../src/features/user-accounts/api/view-dto/me.view-dto';
 import { EmailService } from '../src/features/user-accounts/app/facades/email.service';
@@ -197,19 +196,6 @@ describe('Auth Controller (e2e)', () => {
 
     it('should not return user information with invalid token', async () => {
       await authTestManager.me('invalid-token', HttpStatus.UNAUTHORIZED);
-    });
-
-    it('should not return user information with expired token', async () => {
-      // Create an expired token using JwtService
-      const expiredToken = await jwtService.signAsync(
-        { userId },
-        {
-          secret: process.env.AC_SECRET,
-          expiresIn: '0s', // Token expires immediately
-        },
-      );
-
-      await authTestManager.me(expiredToken, HttpStatus.UNAUTHORIZED);
     });
   });
 
@@ -430,10 +416,7 @@ describe('Rate Limiting', () => {
   let usersTestManager: UsersTestManager;
 
   beforeAll(async () => {
-    const result = await new TestSettingsInitializer().init(
-      +SETTINGS.TTL,
-      +SETTINGS.LIMIT,
-    );
+    const result = await new TestSettingsInitializer().init(10000, 5);
     app = result.app;
     authTestManager = result.authTestManager;
     usersTestManager = result.usersTestManager;

@@ -20,6 +20,7 @@ import { ResendRegistrationEmailUseCase } from './app/auth.use-cases/resend-regi
 import { SendRecoverPasswordEmailUseCase } from './app/auth.use-cases/send-recover-password-email.use-case';
 import { SetNewPasswordUseCase } from './app/auth.use-cases/set-new-password.use-case';
 import { CheckIfUserIsAbleToLoginUseCase } from './app/users.use-cases/check-user-able-login.use-case';
+import { UserAccountsConfig } from './user-account.config';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
 const strategies = [JwtStrategy, LocalStrategy, BasicStrategy];
@@ -47,6 +48,7 @@ const authUseCases = [
   providers: [
     UsersQueryRepository,
     UsersRepository,
+    UserAccountsConfig,
     ...adapters,
     ...strategies,
     ...usersUseCases,

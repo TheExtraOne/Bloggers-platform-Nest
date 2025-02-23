@@ -5,7 +5,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserAccountsModule } from './features/user-accounts/user-accounts.module';
-import { SETTINGS } from './constants';
 import { TestingModule } from './testing/testing.module';
 import { BloggersPlatformModule } from './features/bloggers-platform/bloggers-platform.module';
 import { CoreModule } from './core/core-module';
@@ -26,15 +25,27 @@ import { CoreConfig } from './core/core.config';
       },
       inject: [CoreConfig],
     }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: +SETTINGS.TTL,
-        limit: +SETTINGS.LIMIT,
+    ThrottlerModule.forRootAsync({
+      useFactory: (coreConfig: CoreConfig) => {
+        return [
+          {
+            ttl: coreConfig.ttl,
+            limit: coreConfig.limit,
+          },
+        ];
       },
-    ]),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'swagger-static'),
-      serveRoot: process.env.SHOW_SWAGGER ? '/swagger' : '/',
+      inject: [CoreConfig],
+    }),
+    ServeStaticModule.forRootAsync({
+      useFactory: (coreConfig: CoreConfig) => {
+        return [
+          {
+            rootPath: join(__dirname, '..', 'swagger-static'),
+            serveRoot: coreConfig.showSwagger ? '/swagger' : '/',
+          },
+        ];
+      },
+      inject: [CoreConfig],
     }),
     CqrsModule.forRoot(),
     UserAccountsModule,

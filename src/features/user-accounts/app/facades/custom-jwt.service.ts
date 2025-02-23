@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { UserAccountsConfig } from '../../user-account.config';
 
 export enum TOKEN_TYPE {
   AC_TOKEN = 'AC_TOKEN',
@@ -11,7 +11,7 @@ export enum TOKEN_TYPE {
 export class CustomJwtService {
   constructor(
     private jwtService: JwtService,
-    private readonly configService: ConfigService,
+    private readonly userAccountsConfig: UserAccountsConfig,
   ) {}
 
   async createToken({
@@ -26,20 +26,20 @@ export class CustomJwtService {
     switch (type) {
       case TOKEN_TYPE.AC_TOKEN:
         token = await this.jwtService.signAsync(payload, {
-          expiresIn: this.configService.get<string | number>('AC_EXPIRY'),
-          secret: this.configService.get<string>('AC_SECRET'),
+          expiresIn: this.userAccountsConfig.acExpiry,
+          secret: this.userAccountsConfig.acSecret,
         });
         break;
       case TOKEN_TYPE.R_TOKEN:
         token = await this.jwtService.signAsync(payload, {
-          expiresIn: this.configService.get<string | number>('RT_EXPIRY'),
-          secret: this.configService.get<string>('RT_SECRET'),
+          expiresIn: this.userAccountsConfig.rtExpiry,
+          secret: this.userAccountsConfig.rtSecret,
         });
         break;
       default:
         token = await this.jwtService.signAsync(payload, {
-          expiresIn: this.configService.get<string | number>('JWT_EXPIRY'),
-          secret: this.configService.get<string>('JWT_SECRET'),
+          expiresIn: this.userAccountsConfig.jwtExpiry,
+          secret: this.userAccountsConfig.jwtSecret,
         });
         break;
     }
