@@ -38,10 +38,12 @@ import {
   PasswordRecoverySwagger,
   NewPasswordSwagger,
   RefreshTokenSwagger,
+  LogoutSwagger,
 } from './swagger';
 import { JwtRefreshGuard } from '../guards/jwt/jwt-refresh.guard';
 import { CurrentUserDeviceIdAndUserId } from '../guards/decorators/current-user-device-id-and-id.decorator';
 import { RefreshTokenCommand } from '../app/auth.use-cases/refresh-token.use-cases';
+import { DeleteSessionCommand } from '../app/sessions.use-cases/delete-session.use-case';
 
 @UseGuards(ThrottlerGuard)
 @Controller(PATHS.AUTH)
@@ -114,6 +116,20 @@ export class AuthController {
     });
 
     return { accessToken };
+  }
+
+  @SkipThrottle()
+  @Post('logout')
+  @UseGuards(JwtRefreshGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @LogoutSwagger()
+  async logout(
+    @CurrentUserDeviceIdAndUserId()
+    { userId, deviceId }: { userId: string; deviceId: string },
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    await this.commandBus.execute(new DeleteSessionCommand(deviceId));
+    response.clearCookie('refreshToken');
   }
 
   @Post('registration')

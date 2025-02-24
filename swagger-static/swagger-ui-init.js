@@ -331,6 +331,37 @@ window.onload = function() {
           ]
         }
       },
+      "/auth/logout": {
+        "post": {
+          "description": "Terminates the current user session and invalidates the refresh token",
+          "operationId": "AuthController_logout",
+          "parameters": [],
+          "responses": {
+            "204": {
+              "description": "User has been successfully logged out"
+            },
+            "401": {
+              "description": "JWT refresh token is missing, expired or invalid",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/APIErrorResultResponse"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "bearer": []
+            }
+          ],
+          "summary": "Logout user from the system",
+          "tags": [
+            "Auth"
+          ]
+        }
+      },
       "/auth/registration": {
         "post": {
           "description": "Creates a new user account. An email with confirmation code will be sent.",
