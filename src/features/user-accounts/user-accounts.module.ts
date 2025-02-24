@@ -26,6 +26,7 @@ import { RefreshTokenUseCases } from './app/auth.use-cases/refresh-token.use-cas
 import { CreateSessionUseCase } from './app/sessions.use-cases/create-session.use-case';
 import { Session, SessionSchema } from './domain/session.entity';
 import { SessionsRepository } from './infrastructure/sessions.repository';
+import { UpdateSessionTimeUseCase } from './app/sessions.use-cases/update-session-time.use-case';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
 const strategies = [
@@ -47,6 +48,7 @@ const authUseCases = [
   SetNewPasswordUseCase,
   RefreshTokenUseCases,
   CreateSessionUseCase,
+  UpdateSessionTimeUseCase,
 ];
 
 @Module({

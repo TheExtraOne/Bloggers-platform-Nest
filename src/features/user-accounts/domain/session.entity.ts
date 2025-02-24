@@ -93,13 +93,15 @@ export class Session {
     this.deletedAt = new Date();
   }
 
-  // /**
-  //  * Updates the user instance with new data
-  //  * @param {string} passwordHash - Hashed password of the user
-  //  */
-  // updateLoginPassword({ passwordHash }: { passwordHash: string }) {
-  //   this.passwordHash = passwordHash;
-  // }
+  /**
+   * Updates the session instance with new data
+   * @param {string} exp - expiration date
+   * @param {string} iat - issue date
+   */
+  updateSessionTime({ exp, iat }: { exp: string; iat: string }) {
+    this.expirationDate = exp;
+    this.lastActiveDate = iat;
+  }
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);
