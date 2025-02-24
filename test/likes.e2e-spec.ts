@@ -43,11 +43,14 @@ describe('Likes (e2e)', () => {
     });
 
     // Login to get access token
-    const loginResponse = await authTestManager.login({
-      loginOrEmail: 'user1',
-      password: 'password1',
-    });
-    accessToken = loginResponse.accessToken;
+    const loginResponse = await authTestManager.login(
+      {
+        loginOrEmail: 'user1',
+        password: 'password1',
+      },
+      HttpStatus.OK,
+    );
+    accessToken = loginResponse.body.accessToken;
 
     // Create a blog
     blog = await blogsTestManager.createBlog({
@@ -180,7 +183,7 @@ describe('Likes (e2e)', () => {
         loginOrEmail: 'user2',
         password: 'password2',
       });
-      const user2AccessToken = user2LoginResponse.accessToken;
+      const user2AccessToken = user2LoginResponse.body.accessToken;
 
       // Second user dislikes the comment
       await commentsTestManager.updateCommentLikeStatus(

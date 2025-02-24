@@ -101,29 +101,44 @@ describe('Auth Controller (e2e)', () => {
   });
 
   describe('POST /auth/login', () => {
-    const validUser = {
-      login: 'testuser',
-      password: 'password123',
-      email: 'test@example.com',
-    };
-
-    beforeEach(async () => {
-      // Create confirmed user
-      await usersTestManager.createUser(validUser, HttpStatus.CREATED);
-    });
-
     it('should login with valid credentials and return access token', async () => {
+      const user = {
+        login: 'testuser',
+        password: 'password123',
+        email: 'test@example.com',
+      };
+
+      await usersTestManager.createUser(user);
+
       const response = await authTestManager.login(
-        { loginOrEmail: validUser.login, password: validUser.password },
+        {
+          loginOrEmail: user.login,
+          password: user.password,
+        },
         HttpStatus.OK,
       );
 
-      expect(response.accessToken).toBeDefined();
+      expect(response.body).toHaveProperty('accessToken');
+      expect(typeof response.body.accessToken).toBe('string');
+      expect(response.headers['set-cookie']).toBeDefined();
+      expect(
+        response.headers['set-cookie'].some((cookie: string) =>
+          cookie.startsWith('refreshToken='),
+        ),
+      ).toBe(true);
     });
 
     it('should not login with incorrect password', async () => {
+      const user = {
+        login: 'testuser',
+        password: 'password123',
+        email: 'test@example.com',
+      };
+
+      await usersTestManager.createUser(user);
+
       await authTestManager.login(
-        { loginOrEmail: validUser.login, password: 'wrongpassword' },
+        { loginOrEmail: user.login, password: 'wrongpassword' },
         HttpStatus.UNAUTHORIZED,
       );
     });
@@ -157,6 +172,82 @@ describe('Auth Controller (e2e)', () => {
     });
   });
 
+  describe('POST /auth/refresh-token', () => {
+    const validUser = {
+      login: 'testuser',
+      password: 'password123',
+      email: 'test@example.com',
+    };
+    let refreshTokenCookie: string;
+    let accessToken: string;
+
+    beforeEach(async () => {
+      // Create confirmed user
+      await usersTestManager.createUser(validUser);
+
+      // Login to get initial tokens
+      const loginResponse = await authTestManager.login(
+        {
+          loginOrEmail: validUser.login,
+          password: validUser.password,
+        },
+        HttpStatus.OK,
+      );
+
+      // Extract tokens
+      accessToken = loginResponse.body.accessToken;
+      const cookies = loginResponse.headers['set-cookie'];
+      refreshTokenCookie = cookies[0]; // Take the first cookie which should be the refresh token
+
+      expect(accessToken).toBeDefined();
+      expect(refreshTokenCookie).toBeDefined();
+
+      // Add delay to ensure refresh token has different timestamp
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    });
+
+    it('should refresh tokens with valid refresh token', async () => {
+      const response = await authTestManager
+        .refreshToken(refreshTokenCookie)
+        .expect(HttpStatus.OK);
+
+      // Check response structure
+      expect(response.body).toHaveProperty('accessToken');
+
+      // Check that new refresh token is set in cookies
+      const cookies = response.headers['set-cookie'];
+
+      const newRefreshTokenCookie = cookies[0];
+      expect(newRefreshTokenCookie).toBeDefined();
+      expect(newRefreshTokenCookie).not.toEqual(refreshTokenCookie);
+    });
+
+    it('should fail with 401 if refresh token is missing', async () => {
+      await authTestManager.refreshToken().expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should fail with 401 if refresh token is invalid', async () => {
+      await authTestManager
+        .refreshToken('refreshToken=invalid.token.here')
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should fail with 401 if refresh token is expired', async () => {
+      // Create an expired token
+      const expiredToken = await jwtService.signAsync(
+        { userId: 'some-user-id', deviceId: 'some-device-id' },
+        {
+          secret: process.env.RT_SECRET,
+          expiresIn: '0s',
+        },
+      );
+
+      await authTestManager
+        .refreshToken(`refreshToken=${expiredToken}`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+  });
+
   describe('GET /auth/me', () => {
     const validUser = {
       login: 'testuser',
@@ -179,7 +270,7 @@ describe('Auth Controller (e2e)', () => {
         { loginOrEmail: validUser.login, password: validUser.password },
         HttpStatus.OK,
       );
-      accessToken = loginResponse.accessToken;
+      accessToken = loginResponse.body.accessToken;
     });
 
     it('should return user information with valid token', async () => {
@@ -233,7 +324,7 @@ describe('Auth Controller (e2e)', () => {
         { loginOrEmail: validUser.login, password: validUser.password },
         HttpStatus.OK,
       );
-      expect(loginResponse).toHaveProperty('accessToken');
+      expect(loginResponse.body).toHaveProperty('accessToken');
     });
 
     it('should not confirm registration with invalid code', async () => {
@@ -385,7 +476,7 @@ describe('Auth Controller (e2e)', () => {
         { loginOrEmail: validUser.login, password: newPassword },
         HttpStatus.OK,
       );
-      expect(loginResponse).toHaveProperty('accessToken');
+      expect(loginResponse.body).toHaveProperty('accessToken');
     });
 
     it('should not set new password with invalid recovery code', async () => {
@@ -478,14 +569,14 @@ describe('Rate Limiting', () => {
     await usersTestManager.createUser(validUser, HttpStatus.CREATED);
 
     // Login to get access token
-    const { accessToken } = await authTestManager.login(
+    const response = await authTestManager.login(
       { loginOrEmail: validUser.login, password: validUser.password },
       HttpStatus.OK,
     );
 
     // Make multiple requests to /auth/me
     for (let i = 0; i < 10; i++) {
-      await authTestManager.me(accessToken, HttpStatus.OK);
+      await authTestManager.me(response.body.accessToken, HttpStatus.OK);
     }
   });
 });

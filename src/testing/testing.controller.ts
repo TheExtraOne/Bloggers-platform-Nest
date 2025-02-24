@@ -20,9 +20,5 @@ export class TestingController {
       this.databaseConnection.collection(collection.name).deleteMany({}),
     );
     await Promise.all(promises);
-
-    return {
-      status: 'succeeded',
-    };
   }
 }

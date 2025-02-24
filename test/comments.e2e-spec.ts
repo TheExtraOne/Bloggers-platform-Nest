@@ -53,12 +53,14 @@ describe('Comments Controller (e2e)', () => {
     };
     await userTestManager.createUser(userDto);
 
-    // Login
-    const loginResponse = await authTestManager.login({
-      loginOrEmail: userDto.login,
-      password: userDto.password,
-    });
-    accessToken = loginResponse.accessToken;
+    const loginResponse = await authTestManager.login(
+      {
+        loginOrEmail: userDto.login,
+        password: userDto.password,
+      },
+      HttpStatus.OK,
+    );
+    accessToken = loginResponse.body.accessToken;
 
     // Create a blog
     validBlog = {
@@ -270,8 +272,10 @@ describe('Comments Controller (e2e)', () => {
 
   describe('GET /comments/:id', () => {
     it('should get comment by id', async () => {
-      const response =
-        await commentsTestManager.getCommentById(createdCommentId, accessToken);
+      const response = await commentsTestManager.getCommentById(
+        createdCommentId,
+        accessToken,
+      );
       expect(response).toEqual({
         id: expect.any(String),
         content: validComment.content,
@@ -289,7 +293,11 @@ describe('Comments Controller (e2e)', () => {
     });
 
     it('should return 404 if comment not found', async () => {
-      await commentsTestManager.getCommentById('507f1f77bcf86cd799439011', accessToken, 404);
+      await commentsTestManager.getCommentById(
+        '507f1f77bcf86cd799439011',
+        accessToken,
+        404,
+      );
     });
   });
 
@@ -301,8 +309,10 @@ describe('Comments Controller (e2e)', () => {
         accessToken,
       );
 
-      const updatedComment =
-        await commentsTestManager.getCommentById(createdCommentId, accessToken);
+      const updatedComment = await commentsTestManager.getCommentById(
+        createdCommentId,
+        accessToken,
+      );
       expect(updatedComment.content).toBe(validUpdateComment.content);
     });
 
@@ -352,15 +362,18 @@ describe('Comments Controller (e2e)', () => {
       };
       await userTestManager.createUser(anotherUserDto);
 
-      const anotherUserLogin = await authTestManager.login({
-        loginOrEmail: anotherUserDto.login,
-        password: anotherUserDto.password,
-      });
+      const anotherUserLogin = await authTestManager.login(
+        {
+          loginOrEmail: anotherUserDto.login,
+          password: anotherUserDto.password,
+        },
+        HttpStatus.OK,
+      );
 
       await commentsTestManager.updateComment(
         createdCommentId,
         validUpdateComment,
-        anotherUserLogin.accessToken,
+        anotherUserLogin.body.accessToken,
         403,
       );
     });
@@ -378,7 +391,11 @@ describe('Comments Controller (e2e)', () => {
   describe('DELETE /comments/:id', () => {
     it('should delete comment', async () => {
       await commentsTestManager.deleteComment(createdCommentId, accessToken);
-      await commentsTestManager.getCommentById(createdCommentId, accessToken, 404);
+      await commentsTestManager.getCommentById(
+        createdCommentId,
+        accessToken,
+        404,
+      );
     });
 
     it('should return 401 if user is not authenticated', async () => {
@@ -399,14 +416,17 @@ describe('Comments Controller (e2e)', () => {
       await userTestManager.createUser(anotherUserDto);
 
       // Login as another user
-      const anotherUserLogin = await authTestManager.login({
-        loginOrEmail: anotherUserDto.login,
-        password: anotherUserDto.password,
-      });
+      const anotherUserLogin = await authTestManager.login(
+        {
+          loginOrEmail: anotherUserDto.login,
+          password: anotherUserDto.password,
+        },
+        HttpStatus.OK,
+      );
 
       await commentsTestManager.deleteComment(
         createdCommentId,
-        anotherUserLogin.accessToken,
+        anotherUserLogin.body.accessToken,
         403,
       );
     });

@@ -15,12 +15,10 @@ export class AuthTestManager {
     { loginOrEmail, password }: { loginOrEmail: string; password: string },
     statusCode: HttpStatus = HttpStatus.OK,
   ): Promise<any> {
-    const response = await request(this.app.getHttpServer())
+    return await request(this.app.getHttpServer())
       .post(`/${PATHS.AUTH}/login`)
       .send({ loginOrEmail, password })
       .expect(statusCode);
-
-    return response.body;
   }
 
   async me(
@@ -83,5 +81,17 @@ export class AuthTestManager {
       .post(`/${PATHS.AUTH}/new-password`)
       .send(dto)
       .expect(statusCode);
+  }
+
+  refreshToken(cookie?: string) {
+    const response = request(this.app.getHttpServer()).post(
+      `/${PATHS.AUTH}/refresh-token`,
+    );
+
+    if (cookie) {
+      response.set('Cookie', cookie);
+    }
+
+    return response;
   }
 }
