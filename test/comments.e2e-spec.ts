@@ -9,7 +9,7 @@ import { CreateBlogInputDto } from '../src/features/bloggers-platform/blogs/api/
 import { CreatePostInputDto } from '../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
 import { CreateCommentInputDto } from '../src/features/bloggers-platform/comments/api/input-dto/comment.input.dto';
 import { UpdateCommentInputDto } from '../src/features/bloggers-platform/comments/api/input-dto/comment.input.dto';
-import { CreateUserInputDto } from '../src/features/user-accounts/api/input-dto/users.input-dto';
+import { CreateUserInputDto } from '../src/features/user-accounts/users/api/input-dto/users.input-dto';
 import { HttpStatus } from '@nestjs/common';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
 import { AuthTestManager } from './helpers/managers/auth-test-manager';

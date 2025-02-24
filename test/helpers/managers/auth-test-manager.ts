@@ -2,11 +2,11 @@ import { INestApplication } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common';
 import request from 'supertest';
 import { PATHS } from '../../../src/constants';
-import { ConfirmRegistrationInputDto } from '../../../src/features/user-accounts/api/input-dto/confirm-registration.input-dto';
-import { NewPasswordInputDto } from '../../../src/features/user-accounts/api/input-dto/new-password.input-dto';
-import { PasswordRecoveryInputDto } from '../../../src/features/user-accounts/api/input-dto/password-recovery.input-dto';
-import { ResendRegistrationInputDto } from '../../../src/features/user-accounts/api/input-dto/resend-registration.input-dto';
-import { CreateUserInputDto } from '../../../src/features/user-accounts/api/input-dto/users.input-dto';
+import { ConfirmRegistrationInputDto } from '../../../src/features/user-accounts/auth/api/input-dto/confirm-registration.input-dto';
+import { NewPasswordInputDto } from '../../../src/features/user-accounts/auth/api/input-dto/new-password.input-dto';
+import { PasswordRecoveryInputDto } from '../../../src/features/user-accounts/auth/api/input-dto/password-recovery.input-dto';
+import { ResendRegistrationInputDto } from '../../../src/features/user-accounts/auth/api/input-dto/resend-registration.input-dto';
+import { CreateUserInputDto } from '../../../src/features/user-accounts/users/api/input-dto/users.input-dto';
 
 export class AuthTestManager {
   constructor(private readonly app: INestApplication) {}

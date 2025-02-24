@@ -4,10 +4,10 @@ import { CommentsRepository } from '../../../comments/infrastructure/comments.re
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 import { LikesRepository } from '../../infrastructure/likes.repository';
 import { Like, LikeDocument, LikeModelType } from '../../domain/like.entity';
-import { UsersRepository } from 'src/features/user-accounts/infrastructure/users.repository';
 import { InjectModel } from '@nestjs/mongoose';
-import { CommentDocument } from 'src/features/bloggers-platform/comments/domain/comment.entity';
-import { PostDocument } from 'src/features/bloggers-platform/posts/domain/post.entity';
+import { CommentDocument } from '../../../comments/domain/comment.entity';
+import { PostDocument } from '../../../posts/domain/post.entity';
+import { UsersRepository } from '../../../../user-accounts/users/infrastructure/users.repository';
 
 export enum EntityType {
   Comment = 'comment',

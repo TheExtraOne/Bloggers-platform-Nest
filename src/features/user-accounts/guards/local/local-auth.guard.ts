@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { plainToInstance } from 'class-transformer';
-import { LoginInputDto } from '../../api/input-dto/login.input-dto';
+import { LoginInputDto } from '../../auth/api/input-dto/login.input-dto';
 import { validate } from 'class-validator';
 import { ExecutionContext } from '@nestjs/common';
 

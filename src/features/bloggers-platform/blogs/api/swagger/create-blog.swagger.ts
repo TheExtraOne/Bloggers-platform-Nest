@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBasicAuth } from '@nestjs/swagger';
 import { BlogsViewDto } from '../view-dto/blogs.view-dto';
-import { APIErrorResultResponse } from '../../../../../features/user-accounts/api/swagger/create-user.swagger';
+import { APIErrorResultResponse } from '../../../../user-accounts/users/api/swagger';
 
 export const CreateBlogSwagger = () => {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {

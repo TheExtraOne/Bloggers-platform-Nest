@@ -1,13 +1,20 @@
 import { HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiParam, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
-import { APIErrorResultResponse } from '../../../../../features/user-accounts/api/swagger/create-user.swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBearerAuth,
+  ApiBody,
+} from '@nestjs/swagger';
+import { APIErrorResultResponse } from '../../../../../features/user-accounts/users/api/swagger';
 import { UpdateLikeStatusInputModel } from '../../../likes/api/swagger/like-status-input.schema';
 
 export const UpdateCommentLikeStatusSwagger = () => {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     ApiOperation({
       summary: 'Update comment like status',
-      description: 'Updates like status for a comment. Requires JWT authentication.',
+      description:
+        'Updates like status for a comment. Requires JWT authentication.',
     })(target, propertyKey, descriptor);
     ApiBearerAuth()(target, propertyKey, descriptor);
     ApiParam({

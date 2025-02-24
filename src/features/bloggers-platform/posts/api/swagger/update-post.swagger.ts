@@ -1,12 +1,18 @@
 import { HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiBasicAuth, ApiParam } from '@nestjs/swagger';
-import { APIErrorResultResponse } from '../../../../../features/user-accounts/api/swagger/create-user.swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiBasicAuth,
+  ApiParam,
+} from '@nestjs/swagger';
+import { APIErrorResultResponse } from '../../../../../features/user-accounts/users/api/swagger';
 
 export const UpdatePostSwagger = () => {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     ApiOperation({
       summary: 'Update post',
-      description: 'Updates an existing post by ID. Requires basic authentication.',
+      description:
+        'Updates an existing post by ID. Requires basic authentication.',
     })(target, propertyKey, descriptor);
     ApiBasicAuth('basicAuth')(target, propertyKey, descriptor);
     ApiParam({

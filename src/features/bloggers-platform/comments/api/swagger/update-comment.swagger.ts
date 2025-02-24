@@ -1,13 +1,20 @@
 import { HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiParam, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
-import { APIErrorResultResponse } from '../../../../../features/user-accounts/api/swagger/create-user.swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBearerAuth,
+  ApiBody,
+} from '@nestjs/swagger';
 import { CreateCommentInputModel } from './comment-input.schema';
+import { APIErrorResultResponse } from '../../../../user-accounts/users/api/swagger';
 
 export const UpdateCommentSwagger = () => {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     ApiOperation({
       summary: 'Update comment',
-      description: 'Updates a comment by ID. Only the owner can update their comment.',
+      description:
+        'Updates a comment by ID. Only the owner can update their comment.',
     })(target, propertyKey, descriptor);
     ApiBearerAuth()(target, propertyKey, descriptor);
     ApiParam({

@@ -3,7 +3,7 @@ import { CreateCommentInputDto } from '../../api/input-dto/comment.input.dto';
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 import { NotFoundException } from '@nestjs/common';
 import { ERRORS } from '../../../../../constants';
-import { UsersRepository } from '../../../../user-accounts/infrastructure/users.repository';
+import { UsersRepository } from '../../../../user-accounts/users/infrastructure/users.repository';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentModelType } from '../../domain/comment.entity';
 import { CommentsRepository } from '../../infrastructure/comments.repository';

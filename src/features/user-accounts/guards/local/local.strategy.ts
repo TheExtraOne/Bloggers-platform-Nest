@@ -1,8 +1,8 @@
 import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CheckIfUserIsAbleToLoginCommand } from '../../app/users.use-cases/check-user-able-login.use-case';
 import { CommandBus } from '@nestjs/cqrs';
+import { CheckIfUserIsAbleToLoginCommand } from '../../users/app/users.use-cases/check-user-able-login.use-case';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {

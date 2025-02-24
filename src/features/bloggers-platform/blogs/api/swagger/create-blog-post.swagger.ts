@@ -6,7 +6,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { PostViewModel } from '../../../posts/api/swagger/posts.schema';
-import { APIErrorResultResponse } from '../../../../../features/user-accounts/api/swagger/create-user.swagger';
+import { APIErrorResultResponse } from '../../../../user-accounts/users/api/swagger';
 
 export const CreateBlogPostSwagger = () => {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {

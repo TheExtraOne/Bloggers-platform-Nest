@@ -3,7 +3,6 @@ import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { appSetup } from '../../src/setup/app.setup';
 import { UsersTestManager } from './managers/users-test-manager';
 import { deleteAllData } from './delete-all-data';
-import { EmailService } from '../../src/features/user-accounts/app/facades/email.service';
 import { EmailServiceMock } from '../mock/email-service.mock';
 import { startMongoMemoryServer } from './mongodb-memory-server';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -17,6 +16,7 @@ import { AuthTestManager } from './managers/auth-test-manager';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CommentsTestManager } from './managers/comments-test-manager';
+import { EmailService } from '../../src/features/user-accounts/facades/email.service';
 
 export class TestSettingsInitializer {
   private readonly defaultTtl = 1000;
