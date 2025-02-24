@@ -7,8 +7,9 @@ import {
   HttpStatus,
   Body,
   Res,
+  Req,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { PATHS } from '../../../constants';
 import { CreateUserInputDto } from './input-dto/users.input-dto';
 import { ConfirmRegistrationInputDto } from './input-dto/confirm-registration.input-dto';
@@ -75,12 +76,16 @@ export class AuthController {
   @LoginSwagger()
   async login(
     @CurrentUserId() userId: string,
+    @Req() req: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ accessToken: string }> {
-    const { accessToken, refreshToken } = await this.commandBus.execute(
-      new LoginCommand(userId),
-    );
+    // Data for creating new session
+    const title = req.headers['user-agent'] || 'Unknown device';
+    const ip = req.socket.remoteAddress || req.ip || '::1';
 
+    const { accessToken, refreshToken } = await this.commandBus.execute(
+      new LoginCommand(userId, title, ip),
+    );
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,

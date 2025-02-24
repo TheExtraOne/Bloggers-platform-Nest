@@ -46,4 +46,13 @@ export class CustomJwtService {
 
     return token;
   }
+
+  async extractTimeFromRefreshToken(
+    token: string,
+  ): Promise<{ exp: number; iat: number }> {
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: this.userAccountsConfig.rtSecret,
+    });
+    return { exp: payload.exp, iat: payload.iat };
+  }
 }
