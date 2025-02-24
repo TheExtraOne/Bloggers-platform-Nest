@@ -10,8 +10,9 @@ import { EmailService } from './app/facades/email.service';
 import { CustomJwtService } from './app/facades/custom-jwt.service';
 import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './guards/local/local.strategy';
-import { JwtStrategy } from './guards/jwt/jwt.strategy';
+import { JwtStrategy } from './guards/jwt/jwt-auth.strategy';
 import { BasicStrategy } from './guards/basic/basic.strategy';
+import { JwtRefreshStrategy } from './guards/jwt/jwt-refresh.strategy';
 import { CreateUserUseCase } from './app/users.use-cases/create-user.use-case';
 import { DeleteUserUseCase } from './app/users.use-cases/delete-user.use-case';
 import { LoginUseCases } from './app/auth.use-cases/login.use-cases';
@@ -21,9 +22,15 @@ import { SendRecoverPasswordEmailUseCase } from './app/auth.use-cases/send-recov
 import { SetNewPasswordUseCase } from './app/auth.use-cases/set-new-password.use-case';
 import { CheckIfUserIsAbleToLoginUseCase } from './app/users.use-cases/check-user-able-login.use-case';
 import { UserAccountsConfig } from './user-account.config';
+import { RefreshTokenUseCases } from './app/auth.use-cases/refresh-token.use-cases';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
-const strategies = [JwtStrategy, LocalStrategy, BasicStrategy];
+const strategies = [
+  JwtStrategy,
+  LocalStrategy,
+  BasicStrategy,
+  JwtRefreshStrategy,
+];
 const usersUseCases = [
   CreateUserUseCase,
   DeleteUserUseCase,
@@ -35,6 +42,7 @@ const authUseCases = [
   ResendRegistrationEmailUseCase,
   SendRecoverPasswordEmailUseCase,
   SetNewPasswordUseCase,
+  RefreshTokenUseCases,
 ];
 
 @Module({

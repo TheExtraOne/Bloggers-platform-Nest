@@ -36,7 +36,11 @@ import {
   RegistrationEmailResendingSwagger,
   PasswordRecoverySwagger,
   NewPasswordSwagger,
+  RefreshTokenSwagger,
 } from './swagger';
+import { JwtRefreshGuard } from '../guards/jwt/jwt-refresh.guard';
+import { CurrentUserDeviceIdAndUserId } from '../guards/decorators/current-user-device-id-and-id.decorator';
+import { RefreshTokenCommand } from '../app/auth.use-cases/refresh-token.use-cases';
 
 @UseGuards(ThrottlerGuard)
 @Controller(PATHS.AUTH)
@@ -75,6 +79,28 @@ export class AuthController {
   ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.commandBus.execute(
       new LoginCommand(userId),
+    );
+
+    response.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+
+    return { accessToken };
+  }
+
+  @SkipThrottle()
+  @Post('refresh-token')
+  @UseGuards(JwtRefreshGuard)
+  @HttpCode(HttpStatus.OK)
+  @RefreshTokenSwagger()
+  async refreshToken(
+    @CurrentUserDeviceIdAndUserId()
+    { userId, deviceId }: { userId: string; deviceId: string },
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{ accessToken: string }> {
+    const { accessToken, refreshToken } = await this.commandBus.execute(
+      new RefreshTokenCommand(userId, deviceId),
     );
 
     response.cookie('refreshToken', refreshToken, {

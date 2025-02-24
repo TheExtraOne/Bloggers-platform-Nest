@@ -8,3 +8,4 @@ export * from './registration-confirmation.swagger';
 export * from './registration-email-resending.swagger';
 export * from './password-recovery.swagger';
 export * from './new-password.swagger';
+export * from './refresh-token.swagger';
