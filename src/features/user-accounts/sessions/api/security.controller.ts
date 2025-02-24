@@ -1,4 +1,12 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { PATHS } from '../../../../constants';
 import { CommandBus } from '@nestjs/cqrs';
 import { JwtRefreshGuard } from '../../guards/jwt/jwt-refresh.guard';
@@ -6,6 +14,10 @@ import { CurrentUserDeviceIdAndUserId } from '../../guards/decorators/current-us
 import { SessionsQueryRepository } from '../infrastructure/query/sessions.query-repository';
 import { SessionsViewDto } from './view-dto/sessions.view-dto';
 import { GetAllActiveSessionsSwagger } from './swagger/get-all-active-sessions.swagger';
+import { DeleteAllSessionsCommand } from '../app/sessions.use-cases/delete-all-sessions.use-case';
+import { DeleteAllSessionsSwagger } from './swagger/delete-all-sessions.swagger';
+import { DeleteSessionByIdCommand } from '../app/sessions.use-cases/delete-session-by-id.use-case';
+import { DeleteSessionByIdSwagger } from './swagger/delete-session-by-id.swagger';
 
 @UseGuards(JwtRefreshGuard)
 @Controller(PATHS.SECURITY)
@@ -15,7 +27,6 @@ export class SecurityController {
     private readonly sessionsQueryRepository: SessionsQueryRepository,
   ) {}
 
-  // TODO: add swagger
   @Get('devices')
   @GetAllActiveSessionsSwagger.decorator()
   async getAllActiveSessions(
@@ -28,17 +39,26 @@ export class SecurityController {
     );
   }
 
-  // @SkipThrottle()
-  // @Post('logout')
-  // @UseGuards(JwtRefreshGuard)
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // @LogoutSwagger()
-  // async logout(
-  //   @CurrentUserDeviceIdAndUserId()
-  //   { userId, deviceId }: { userId: string; deviceId: string },
-  //   @Res({ passthrough: true }) response: Response,
-  // ): Promise<void> {
-  //   await this.commandBus.execute(new DeleteSessionCommand(deviceId));
-  //   response.clearCookie('refreshToken');
-  // }
+  @Delete('devices')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @DeleteAllSessionsSwagger.decorator()
+  async terminateAllActiveSessions(
+    @CurrentUserDeviceIdAndUserId()
+    { userId, deviceId }: { userId: string; deviceId: string },
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new DeleteAllSessionsCommand(deviceId, userId),
+    );
+  }
+
+  @Delete('devices/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @DeleteSessionByIdSwagger.decorator()
+  async terminateSessionById(
+    @Param('id') id: string,
+    @CurrentUserDeviceIdAndUserId()
+    { userId }: { userId: string },
+  ): Promise<void> {
+    await this.commandBus.execute(new DeleteSessionByIdCommand(id, userId));
+  }
 }

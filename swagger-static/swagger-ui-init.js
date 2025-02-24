@@ -589,6 +589,68 @@ window.onload = function() {
           "tags": [
             "Security"
           ]
+        },
+        "delete": {
+          "description": "Terminates all user sessions except the one from which the request is made. Protected by JWT Refresh token which should be provided in cookies.",
+          "operationId": "SecurityController_terminateAllActiveSessions",
+          "parameters": [],
+          "responses": {
+            "204": {
+              "description": "All sessions (except current) have been successfully terminated"
+            },
+            "401": {
+              "description": "Unauthorized - refresh token is missing, expired or invalid"
+            }
+          },
+          "security": [
+            {
+              "refreshToken": []
+            }
+          ],
+          "summary": "Terminate all sessions except current",
+          "tags": [
+            "Security"
+          ]
+        }
+      },
+      "/security/devices/{id}": {
+        "delete": {
+          "description": "Terminates a specific session by its deviceId. User can only terminate their own sessions. Protected by JWT Refresh token which should be provided in cookies.",
+          "operationId": "SecurityController_terminateSessionById",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Device ID of the session to terminate",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Session has been successfully terminated"
+            },
+            "401": {
+              "description": "Unauthorized - refresh token is missing, expired or invalid"
+            },
+            "403": {
+              "description": "Forbidden - attempting to terminate session that belongs to another user"
+            },
+            "404": {
+              "description": "Session not found"
+            }
+          },
+          "security": [
+            {
+              "refreshToken": []
+            }
+          ],
+          "summary": "Terminate specific session by id",
+          "tags": [
+            "Security"
+          ]
         }
       },
       "/testing/all-data": {

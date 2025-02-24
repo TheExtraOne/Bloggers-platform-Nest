@@ -19,6 +19,13 @@ export class SessionsRepository {
   async findSessionByDeviceId(
     deviceId: string,
   ): Promise<SessionDocument | null> {
-    return await this.SessionModel.findOne({ deviceId });
+    return await this.SessionModel.findOne({ deviceId, deletedAt: null });
+  }
+
+  async findAllSessionsByUserAndDeviceId(
+    userId: string,
+    deviceId: string,
+  ): Promise<SessionDocument[]> {
+    return await this.SessionModel.find({ userId, deviceId, deletedAt: null });
   }
 }

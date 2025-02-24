@@ -30,6 +30,8 @@ import { UsersQueryRepository } from './users/infrastructure/query/users.query-r
 import { UsersRepository } from './users/infrastructure/users.repository';
 import { SecurityController } from './sessions/api/security.controller';
 import { SessionsQueryRepository } from './sessions/infrastructure/query/sessions.query-repository';
+import { DeleteAllSessionsUseCase } from './sessions/app/sessions.use-cases/delete-all-sessions.use-case';
+import { DeleteSessionByIdUseCase } from './sessions/app/sessions.use-cases/delete-session-by-id.use-case';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
 const strategies = [
@@ -50,9 +52,14 @@ const authUseCases = [
   SendRecoverPasswordEmailUseCase,
   SetNewPasswordUseCase,
   RefreshTokenUseCases,
+];
+
+const sessionsUseCases = [
   CreateSessionUseCase,
   UpdateSessionTimeUseCase,
   DeleteSessionUseCase,
+  DeleteAllSessionsUseCase,
+  DeleteSessionByIdUseCase,
 ];
 
 @Module({
@@ -74,6 +81,7 @@ const authUseCases = [
     ...strategies,
     ...usersUseCases,
     ...authUseCases,
+    ...sessionsUseCases,
   ],
   exports: [BasicStrategy, UsersRepository],
 })
