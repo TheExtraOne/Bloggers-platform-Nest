@@ -31,12 +31,9 @@ export class SecurityController {
   @GetAllActiveSessionsSwagger.decorator()
   async getAllActiveSessions(
     @CurrentUserDeviceIdAndUserId()
-    { userId, deviceId }: { userId: string; deviceId: string },
+    { userId }: { userId: string },
   ): Promise<SessionsViewDto[]> {
-    return this.sessionsQueryRepository.findAllSessionsByUserAndDeviceId(
-      userId,
-      deviceId,
-    );
+    return this.sessionsQueryRepository.findAllSessionsByUserId(userId);
   }
 
   @Delete('devices')

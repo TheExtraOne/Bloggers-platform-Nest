@@ -17,6 +17,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CommentsTestManager } from './managers/comments-test-manager';
 import { EmailService } from '../../src/features/user-accounts/facades/email.service';
+import { SessionsTestManager } from './managers/sessions-test-manager';
 
 export class TestSettingsInitializer {
   private readonly defaultTtl = 1000;
@@ -67,6 +68,7 @@ export class TestSettingsInitializer {
     const commentsTestManager = new CommentsTestManager(app);
     const emailServiceMock =
       testingAppModule.get<EmailServiceMock>(EmailService);
+    const sessionsTestManager = new SessionsTestManager(app);
 
     await deleteAllData(app);
 
@@ -79,6 +81,7 @@ export class TestSettingsInitializer {
       authTestManager,
       commentsTestManager,
       emailServiceMock,
+      sessionsTestManager,
     };
   }
 }

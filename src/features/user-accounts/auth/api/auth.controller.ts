@@ -71,7 +71,6 @@ export class AuthController {
     return mappedUser;
   }
 
-  @SkipThrottle()
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)

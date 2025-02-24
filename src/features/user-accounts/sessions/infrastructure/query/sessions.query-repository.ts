@@ -9,13 +9,9 @@ export class SessionsQueryRepository {
     @InjectModel(Session.name) private SessionModel: SessionModelType,
   ) {}
 
-  async findAllSessionsByUserAndDeviceId(
-    userId: string,
-    deviceId: string,
-  ): Promise<SessionsViewDto[]> {
+  async findAllSessionsByUserId(userId: string): Promise<SessionsViewDto[]> {
     const result = await this.SessionModel.find({
       userId,
-      deviceId,
       deletedAt: null,
     }).lean();
 
