@@ -28,6 +28,8 @@ import { CreateUserUseCase } from './users/app/users.use-cases/create-user.use-c
 import { DeleteUserUseCase } from './users/app/users.use-cases/delete-user.use-case';
 import { UsersQueryRepository } from './users/infrastructure/query/users.query-repository';
 import { UsersRepository } from './users/infrastructure/users.repository';
+import { SecurityController } from './sessions/api/security.controller';
+import { SessionsQueryRepository } from './sessions/infrastructure/query/sessions.query-repository';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
 const strategies = [
@@ -61,11 +63,12 @@ const authUseCases = [
     ]),
     JwtModule,
   ],
-  controllers: [UserController, AuthController],
+  controllers: [UserController, AuthController, SecurityController],
   providers: [
     UsersQueryRepository,
     UsersRepository,
     SessionsRepository,
+    SessionsQueryRepository,
     UserAccountsConfig,
     ...adapters,
     ...strategies,

@@ -5,6 +5,7 @@ export const PATHS = {
   POSTS: 'posts',
   USERS: 'users',
   TESTING: 'testing',
+  SECURITY: 'security',
 };
 
 export const ERRORS = {

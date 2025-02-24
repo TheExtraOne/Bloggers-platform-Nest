@@ -557,6 +557,40 @@ window.onload = function() {
           ]
         }
       },
+      "/security/devices": {
+        "get": {
+          "description": "Returns all active sessions for the authenticated user. Protected by JWT Refresh token which should be provided in cookies.",
+          "operationId": "SecurityController_getAllActiveSessions",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "List of active sessions successfully returned",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/SessionsViewDto"
+                    }
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized - refresh token is missing, expired or invalid"
+            }
+          },
+          "security": [
+            {
+              "refreshToken": []
+            }
+          ],
+          "summary": "Get all active sessions for current user",
+          "tags": [
+            "Security"
+          ]
+        }
+      },
       "/testing/all-data": {
         "delete": {
           "description": "Removes all data from all collections in the database. Use only for testing purposes.",
@@ -1857,6 +1891,29 @@ window.onload = function() {
           "required": [
             "newPassword",
             "recoveryCode"
+          ]
+        },
+        "SessionsViewDto": {
+          "type": "object",
+          "properties": {
+            "ip": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "lastActiveDate": {
+              "type": "string"
+            },
+            "deviceId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "ip",
+            "title",
+            "lastActiveDate",
+            "deviceId"
           ]
         },
         "BlogsViewDto": {
