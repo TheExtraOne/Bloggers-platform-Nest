@@ -128,10 +128,16 @@ export class AuthController {
   @LogoutSwagger()
   async logout(
     @CurrentUserData()
-    { deviceId }: { deviceId: string },
+    {
+      deviceId,
+      userId,
+      iat,
+    }: { deviceId: string; userId: string; iat: number },
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    await this.commandBus.execute(new DeleteSessionCommand(deviceId));
+    await this.commandBus.execute(
+      new DeleteSessionCommand(deviceId, userId, iat),
+    );
     response.clearCookie('refreshToken');
   }
 
