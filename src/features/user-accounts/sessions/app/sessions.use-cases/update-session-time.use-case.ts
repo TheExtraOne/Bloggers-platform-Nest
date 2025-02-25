@@ -4,9 +4,8 @@ import { TimeService } from '../../../../../core/services/time.service';
 
 export class UpdateSessionTimeCommand extends Command<void> {
   constructor(
-    public readonly userId: string,
-    public readonly exp: number,
-    public readonly iat: number,
+    public readonly newExp: number,
+    public readonly newIat: number,
     public readonly deviceId: string,
   ) {
     super();
@@ -23,22 +22,18 @@ export class UpdateSessionTimeUseCase
   ) {}
 
   async execute(command: UpdateSessionTimeCommand): Promise<void> {
-    const { userId, deviceId, exp, iat } = command;
-    const iatISO = this.timeService.convertUnixToISOString(iat);
+    const { newExp, newIat, deviceId } = command;
 
-    const session = await this.sessionsRepository.findSessionByMultipleFilters(
-      userId,
-      deviceId,
-      iatISO,
-    );
+    const session =
+      await this.sessionsRepository.findSessionByDeviceId(deviceId);
 
     if (!session) {
       return;
     }
 
     session.updateSessionTime({
-      exp: this.timeService.convertUnixToISOString(exp),
-      iat: iatISO,
+      exp: this.timeService.convertUnixToISOString(newExp),
+      iat: this.timeService.convertUnixToISOString(newIat),
     });
 
     await this.sessionsRepository.save(session);

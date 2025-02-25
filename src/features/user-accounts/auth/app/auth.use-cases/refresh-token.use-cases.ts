@@ -47,11 +47,11 @@ export class RefreshTokenUseCases
     });
 
     // Extracting exp and iat from refresh token
-    const { exp, iat } =
+    const { exp: newExp, iat: newIat } =
       await this.customJwtService.extractTimeFromRefreshToken(refreshToken);
-    // Updating session
+    // Updating session: sliding expiration time
     await this.commandBus.execute(
-      new UpdateSessionTimeCommand(userId, exp, iat, deviceId),
+      new UpdateSessionTimeCommand(newExp, newIat, deviceId),
     );
 
     return { accessToken, refreshToken };
