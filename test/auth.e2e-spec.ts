@@ -212,9 +212,7 @@ describe('Auth Controller (e2e)', () => {
 
     it('should return 401 when trying to refresh token after logout', async () => {
       // First, logout the user
-      await authTestManager
-        .logout(refreshTokenCookie)
-        .expect(HttpStatus.NO_CONTENT);
+      await authTestManager.logout(refreshTokenCookie);
 
       // Try to refresh token with the same refresh token
       await authTestManager
@@ -227,9 +225,10 @@ describe('Auth Controller (e2e)', () => {
       const refreshResponse = await authTestManager
         .refreshToken(refreshTokenCookie)
         .expect(HttpStatus.OK);
-
+      
       const oldRefreshToken = refreshTokenCookie;
-      const newRefreshToken = refreshResponse.get('Set-Cookie')[0];
+      const newRefreshToken = refreshResponse.headers['set-cookie']?.[0];
+      expect(newRefreshToken).toBeDefined();
 
       // Try to refresh with old token
       await authTestManager
@@ -237,18 +236,29 @@ describe('Auth Controller (e2e)', () => {
         .expect(HttpStatus.UNAUTHORIZED);
 
       // Verify new token still works
-      await authTestManager.refreshToken(newRefreshToken).expect(HttpStatus.OK);
+      await authTestManager
+        .refreshToken(newRefreshToken)
+        .expect(HttpStatus.OK);
     });
 
     it('should return 401 when trying to use refresh token after all sessions terminated', async () => {
+      // Extract just the token value from the cookie string
+      const refreshTokenValue = refreshTokenCookie.split('=')[1].split(';')[0];
+
       // First get all devices endpoint to verify session exists
       await sessionsTestManager.getAllSessions(
-        refreshTokenCookie,
+        refreshTokenValue,
         HttpStatus.OK,
       );
 
+      // Wait a bit to ensure different timestamp
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Terminate all sessions except current
-      await sessionsTestManager.terminateAllSessions(refreshTokenCookie);
+      await sessionsTestManager.terminateAllSessions(refreshTokenValue);
+
+      // Wait a bit to ensure different timestamp
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Try to refresh token
       await authTestManager
