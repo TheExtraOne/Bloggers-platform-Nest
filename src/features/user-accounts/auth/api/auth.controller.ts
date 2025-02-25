@@ -102,15 +102,11 @@ export class AuthController {
   @RefreshTokenSwagger()
   async refreshToken(
     @CurrentUserData()
-    {
-      userId,
-      deviceId,
-      iat,
-    }: { userId: string; deviceId: string; iat: number },
+    { userId, deviceId }: { userId: string; deviceId: string },
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.commandBus.execute(
-      new RefreshTokenCommand(userId, deviceId, iat),
+      new RefreshTokenCommand(userId, deviceId),
     );
 
     response.cookie('refreshToken', refreshToken, {
@@ -128,16 +124,10 @@ export class AuthController {
   @LogoutSwagger()
   async logout(
     @CurrentUserData()
-    {
-      deviceId,
-      userId,
-      iat,
-    }: { deviceId: string; userId: string; iat: number },
+    { deviceId, userId }: { deviceId: string; userId: string },
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    await this.commandBus.execute(
-      new DeleteSessionCommand(deviceId, userId, iat),
-    );
+    await this.commandBus.execute(new DeleteSessionCommand(deviceId, userId));
     response.clearCookie('refreshToken');
   }
 

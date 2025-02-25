@@ -34,7 +34,7 @@ export class UpdateSessionTimeUseCase
     });
     await this.sessionsRepository.save(session);
   }
-
+  // TODO: move to utils
   private convertTimeToISOFromUnix(unixTime: number): string {
     return new Date(unixTime * 1000).toISOString();
   }

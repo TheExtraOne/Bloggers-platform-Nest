@@ -13,7 +13,7 @@ export enum Environments {
 // Each module has it's own *.config.ts
 @Injectable()
 export class CoreConfig {
-  constructor(private configService: ConfigService<any, true>) {
+  constructor(private readonly configService: ConfigService<any, true>) {
     configValidationUtility.validateConfig(this);
   }
 
