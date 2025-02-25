@@ -25,7 +25,7 @@ import { CreateUserCommand } from '../../users/app/users.use-cases/create-user.u
 import { ConfirmEmailRegistrationCommand } from '../app/auth.use-cases/confirm-email-registration.use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { JwtRefreshGuard } from '../../guards/jwt/jwt-refresh.guard';
-import { CurrentUserDeviceIdAndUserId } from '../../guards/decorators/current-user-device-id-and-id.decorator';
+import { CurrentUserData } from '../../guards/decorators/current-user-data.decorator';
 import { RefreshTokenCommand } from '../app/auth.use-cases/refresh-token.use-cases';
 import { DeleteSessionCommand } from '../../sessions/app/sessions.use-cases/delete-session.use-case';
 import { CreateUserInputDto } from '../../users/api/input-dto/users.input-dto';
@@ -101,12 +101,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @RefreshTokenSwagger()
   async refreshToken(
-    @CurrentUserDeviceIdAndUserId()
-    { userId, deviceId }: { userId: string; deviceId: string },
+    @CurrentUserData()
+    {
+      userId,
+      deviceId,
+      iat,
+    }: { userId: string; deviceId: string; iat: number },
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.commandBus.execute(
-      new RefreshTokenCommand(userId, deviceId),
+      new RefreshTokenCommand(userId, deviceId, iat),
     );
 
     response.cookie('refreshToken', refreshToken, {
@@ -123,8 +127,8 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @LogoutSwagger()
   async logout(
-    @CurrentUserDeviceIdAndUserId()
-    { userId, deviceId }: { userId: string; deviceId: string },
+    @CurrentUserData()
+    { deviceId }: { deviceId: string },
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
     await this.commandBus.execute(new DeleteSessionCommand(deviceId));

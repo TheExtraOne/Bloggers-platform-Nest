@@ -10,7 +10,7 @@ import {
 import { PATHS } from '../../../../constants';
 import { CommandBus } from '@nestjs/cqrs';
 import { JwtRefreshGuard } from '../../guards/jwt/jwt-refresh.guard';
-import { CurrentUserDeviceIdAndUserId } from '../../guards/decorators/current-user-device-id-and-id.decorator';
+import { CurrentUserData } from '../../guards/decorators/current-user-data.decorator';
 import { SessionsQueryRepository } from '../infrastructure/query/sessions.query-repository';
 import { SessionsViewDto } from './view-dto/sessions.view-dto';
 import { GetAllActiveSessionsSwagger } from './swagger/get-all-active-sessions.swagger';
@@ -30,7 +30,7 @@ export class SecurityController {
   @Get('devices')
   @GetAllActiveSessionsSwagger.decorator()
   async getAllActiveSessions(
-    @CurrentUserDeviceIdAndUserId()
+    @CurrentUserData()
     { userId }: { userId: string },
   ): Promise<SessionsViewDto[]> {
     return this.sessionsQueryRepository.findAllSessionsByUserId(userId);
@@ -40,7 +40,7 @@ export class SecurityController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteAllSessionsSwagger.decorator()
   async terminateAllActiveSessions(
-    @CurrentUserDeviceIdAndUserId()
+    @CurrentUserData()
     { userId, deviceId }: { userId: string; deviceId: string },
   ): Promise<void> {
     await this.commandBus.execute(
@@ -53,7 +53,7 @@ export class SecurityController {
   @DeleteSessionByIdSwagger.decorator()
   async terminateSessionById(
     @Param('id') id: string,
-    @CurrentUserDeviceIdAndUserId()
+    @CurrentUserData()
     { userId }: { userId: string },
   ): Promise<void> {
     await this.commandBus.execute(new DeleteSessionByIdCommand(id, userId));

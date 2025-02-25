@@ -28,4 +28,17 @@ export class SessionsRepository {
   ): Promise<SessionDocument[]> {
     return await this.SessionModel.find({ userId, deviceId, deletedAt: null });
   }
+
+  async findAllSessionsByMultipleFilters(
+    userId: string,
+    deviceId: string,
+    lastActiveDate: string,
+  ): Promise<SessionDocument | null> {
+    return await this.SessionModel.findOne({
+      userId,
+      deviceId,
+      lastActiveDate,
+      deletedAt: null,
+    });
+  }
 }
