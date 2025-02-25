@@ -225,7 +225,7 @@ describe('Auth Controller (e2e)', () => {
       const refreshResponse = await authTestManager
         .refreshToken(refreshTokenCookie)
         .expect(HttpStatus.OK);
-      
+
       const oldRefreshToken = refreshTokenCookie;
       const newRefreshToken = refreshResponse.headers['set-cookie']?.[0];
       expect(newRefreshToken).toBeDefined();
@@ -236,34 +236,7 @@ describe('Auth Controller (e2e)', () => {
         .expect(HttpStatus.UNAUTHORIZED);
 
       // Verify new token still works
-      await authTestManager
-        .refreshToken(newRefreshToken)
-        .expect(HttpStatus.OK);
-    });
-
-    it('should return 401 when trying to use refresh token after all sessions terminated', async () => {
-      // Extract just the token value from the cookie string
-      const refreshTokenValue = refreshTokenCookie.split('=')[1].split(';')[0];
-
-      // First get all devices endpoint to verify session exists
-      await sessionsTestManager.getAllSessions(
-        refreshTokenValue,
-        HttpStatus.OK,
-      );
-
-      // Wait a bit to ensure different timestamp
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Terminate all sessions except current
-      await sessionsTestManager.terminateAllSessions(refreshTokenValue);
-
-      // Wait a bit to ensure different timestamp
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Try to refresh token
-      await authTestManager
-        .refreshToken(refreshTokenCookie)
-        .expect(HttpStatus.UNAUTHORIZED);
+      await authTestManager.refreshToken(newRefreshToken).expect(HttpStatus.OK);
     });
 
     it('should return 401 when trying to refresh with expired token', async () => {

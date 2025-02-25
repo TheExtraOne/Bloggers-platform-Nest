@@ -20,7 +20,7 @@ export class Post {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, maxLength: 30 })
   title: string;
 
   /**
@@ -28,7 +28,7 @@ export class Post {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, maxLength: 100 })
   shortDescription: string;
 
   /**
@@ -36,7 +36,7 @@ export class Post {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, maxLength: 1000 })
   content: string;
 
   /**

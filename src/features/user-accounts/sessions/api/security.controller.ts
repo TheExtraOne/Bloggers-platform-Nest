@@ -19,8 +19,6 @@ import { DeleteAllSessionsSwagger } from './swagger/delete-all-sessions.swagger'
 import { DeleteSessionByIdCommand } from '../app/sessions.use-cases/delete-session-by-id.use-case';
 import { DeleteSessionByIdSwagger } from './swagger/delete-session-by-id.swagger';
 
-// TODO: check, where I can use observer pattern
-// TODO: refactor tests
 @UseGuards(JwtRefreshGuard)
 @Controller(PATHS.SECURITY)
 export class SecurityController {

@@ -20,7 +20,7 @@ export class Comment {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, minLength: 20, maxLength: 300 })
   content: string;
 
   /**

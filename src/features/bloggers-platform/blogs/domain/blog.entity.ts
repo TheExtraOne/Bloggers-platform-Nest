@@ -17,7 +17,7 @@ export class Blog {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, maxLength: 15 })
   name: string;
 
   /**
@@ -25,7 +25,7 @@ export class Blog {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, maxLength: 500 })
   description: string;
 
   /**
@@ -33,7 +33,13 @@ export class Blog {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, required: true })
+  @Prop({
+    type: String,
+    required: true,
+    maxLength: 100,
+    match:
+      /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
+  })
   websiteUrl: string;
 
   /**

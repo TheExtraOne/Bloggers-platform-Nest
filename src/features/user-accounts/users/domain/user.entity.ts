@@ -13,7 +13,18 @@ import {
   PasswordRecoveryStatus,
 } from './password-recovery.schema';
 
-// TODO: add validation for schema
+export const loginConstraints = {
+  minLength: 3,
+  maxLength: 10,
+  match: /^[a-zA-Z0-9_-]*$/,
+  isUnique: true,
+};
+
+export const emailConstraints = {
+  match: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+  isUnique: true,
+};
+
 // Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
  * User Entity Schema
@@ -26,7 +37,7 @@ export class User {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, ...loginConstraints })
   login: string;
 
   /**
@@ -42,7 +53,7 @@ export class User {
    * @type {string}
    * @required
    */
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, ...emailConstraints })
   email: string;
 
   // TODO: delete after 2 days?
