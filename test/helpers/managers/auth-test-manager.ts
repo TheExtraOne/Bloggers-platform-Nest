@@ -94,4 +94,10 @@ export class AuthTestManager {
 
     return response;
   }
+
+  async logout(refreshTokenCookie: string): Promise<request.Response> {
+    return request(this.app.getHttpServer())
+      .post(`/${PATHS.AUTH}/logout`)
+      .set('Cookie', refreshTokenCookie);
+  }
 }

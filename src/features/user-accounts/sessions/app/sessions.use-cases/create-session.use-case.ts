@@ -7,6 +7,7 @@ import {
 } from '../../domain/session.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { SessionsRepository } from '../../infrastructure/sessions.repository';
+import { TimeService } from '../../../../../core/services/time.service';
 
 type TCreateSessionInputDto = {
   exp: number;
@@ -30,6 +31,7 @@ export class CreateSessionUseCase
   constructor(
     @InjectModel(Session.name) private SessionModel: SessionModelType,
     private readonly sessionsRepository: SessionsRepository,
+    private readonly timeService: TimeService,
   ) {}
 
   async execute(command: CreateSessionCommand): Promise<void> {
@@ -46,17 +48,13 @@ export class CreateSessionUseCase
       deviceId: deviceId ?? new ObjectId().toString(),
       ip,
       title,
-      lastActiveDate: this.convertTimeToISOFromUnix(iat),
-      expirationDate: this.convertTimeToISOFromUnix(exp),
+      lastActiveDate: this.timeService.convertUnixToISOString(iat),
+      expirationDate: this.timeService.convertUnixToISOString(exp),
       userId: userId,
     };
 
     const session: SessionDocument =
       await this.SessionModel.create(newRefreshTokenMeta);
     await this.sessionsRepository.save(session);
-  }
-
-  private convertTimeToISOFromUnix(unixTime: number): string {
-    return new Date(unixTime * 1000).toISOString();
   }
 }

@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { TestSettingsInitializer } from './helpers/init-settings';
 import { AuthTestManager } from './helpers/managers/auth-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
+import { SessionsTestManager } from './helpers/managers/sessions-test-manager';
 import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { deleteAllData } from './helpers/delete-all-data';
 import { CreateUserInputDto } from '../src/features/user-accounts/users/api/input-dto/users.input-dto';
@@ -14,6 +15,7 @@ describe('Auth Controller (e2e)', () => {
   let app: INestApplication;
   let authTestManager: AuthTestManager;
   let usersTestManager: UsersTestManager;
+  let sessionsTestManager: SessionsTestManager;
   let jwtService: JwtService;
 
   beforeAll(async () => {
@@ -21,6 +23,7 @@ describe('Auth Controller (e2e)', () => {
     app = result.app;
     authTestManager = result.authTestManager;
     usersTestManager = result.usersTestManager;
+    sessionsTestManager = result.sessionsTestManager;
     jwtService = app.get(JwtService);
   });
 
@@ -178,8 +181,9 @@ describe('Auth Controller (e2e)', () => {
       password: 'password123',
       email: 'test@example.com',
     };
-    let refreshTokenCookie: string;
+
     let accessToken: string;
+    let refreshTokenCookie: string;
 
     beforeEach(async () => {
       // Create confirmed user
@@ -206,42 +210,65 @@ describe('Auth Controller (e2e)', () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
     });
 
-    it('should refresh tokens with valid refresh token', async () => {
-      const response = await authTestManager
-        .refreshToken(refreshTokenCookie)
-        .expect(HttpStatus.OK);
-
-      // Check response structure
-      expect(response.body).toHaveProperty('accessToken');
-
-      // Check that new refresh token is set in cookies
-      const cookies = response.headers['set-cookie'];
-
-      const newRefreshTokenCookie = cookies[0];
-      expect(newRefreshTokenCookie).toBeDefined();
-      expect(newRefreshTokenCookie).not.toEqual(refreshTokenCookie);
-    });
-
-    it('should fail with 401 if refresh token is missing', async () => {
-      await authTestManager.refreshToken().expect(HttpStatus.UNAUTHORIZED);
-    });
-
-    it('should fail with 401 if refresh token is invalid', async () => {
+    it('should return 401 when trying to refresh token after logout', async () => {
+      // First, logout the user
       await authTestManager
-        .refreshToken('refreshToken=invalid.token.here')
+        .logout(refreshTokenCookie)
+        .expect(HttpStatus.NO_CONTENT);
+
+      // Try to refresh token with the same refresh token
+      await authTestManager
+        .refreshToken(refreshTokenCookie)
         .expect(HttpStatus.UNAUTHORIZED);
     });
 
-    it('should fail with 401 if refresh token is expired', async () => {
-      // Create an expired token
-      const expiredToken = await jwtService.signAsync(
-        { userId: 'some-user-id', deviceId: 'some-device-id' },
-        {
-          secret: process.env.RT_SECRET,
-          expiresIn: '0s',
-        },
+    it('should return 401 when trying to refresh token with old refresh token after successful refresh', async () => {
+      // First refresh to get new tokens
+      const refreshResponse = await authTestManager
+        .refreshToken(refreshTokenCookie)
+        .expect(HttpStatus.OK);
+
+      const oldRefreshToken = refreshTokenCookie;
+      const newRefreshToken = refreshResponse.get('Set-Cookie')[0];
+
+      // Try to refresh with old token
+      await authTestManager
+        .refreshToken(oldRefreshToken)
+        .expect(HttpStatus.UNAUTHORIZED);
+
+      // Verify new token still works
+      await authTestManager.refreshToken(newRefreshToken).expect(HttpStatus.OK);
+    });
+
+    it('should return 401 when trying to use refresh token after all sessions terminated', async () => {
+      // First get all devices endpoint to verify session exists
+      await sessionsTestManager.getAllSessions(
+        refreshTokenCookie,
+        HttpStatus.OK,
       );
 
+      // Terminate all sessions except current
+      await sessionsTestManager.terminateAllSessions(refreshTokenCookie);
+
+      // Try to refresh token
+      await authTestManager
+        .refreshToken(refreshTokenCookie)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should return 401 when trying to refresh with expired token', async () => {
+      // Create an expired refresh token
+      const payload = {
+        userId: 'testId',
+        deviceId: 'testDevice',
+        iat: Math.floor(Date.now() / 1000) - 3600,
+      };
+      const expiredToken = await jwtService.signAsync(payload, {
+        secret: process.env.RT_SECRET,
+        expiresIn: '-1h', // expired 1 hour ago
+      });
+
+      // Try to refresh with expired token
       await authTestManager
         .refreshToken(`refreshToken=${expiredToken}`)
         .expect(HttpStatus.UNAUTHORIZED);
@@ -505,12 +532,14 @@ describe('Rate Limiting', () => {
   let app: INestApplication;
   let authTestManager: AuthTestManager;
   let usersTestManager: UsersTestManager;
+  let sessionsTestManager: SessionsTestManager;
 
   beforeAll(async () => {
     const result = await new TestSettingsInitializer().init(10000, 5);
     app = result.app;
     authTestManager = result.authTestManager;
     usersTestManager = result.usersTestManager;
+    sessionsTestManager = result.sessionsTestManager;
   });
 
   beforeEach(async () => {

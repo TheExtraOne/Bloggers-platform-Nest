@@ -32,6 +32,8 @@ import { SecurityController } from './sessions/api/security.controller';
 import { SessionsQueryRepository } from './sessions/infrastructure/query/sessions.query-repository';
 import { DeleteAllSessionsUseCase } from './sessions/app/sessions.use-cases/delete-all-sessions.use-case';
 import { DeleteSessionByIdUseCase } from './sessions/app/sessions.use-cases/delete-session-by-id.use-case';
+import { ValidateRefreshTokenUseCase } from './sessions/app/sessions.use-cases/validate-refresh-token.use-case';
+import { CoreModule } from '../../core/core-module';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
 const strategies = [
@@ -60,6 +62,7 @@ const sessionsUseCases = [
   DeleteSessionUseCase,
   DeleteAllSessionsUseCase,
   DeleteSessionByIdUseCase,
+  ValidateRefreshTokenUseCase,
 ];
 
 @Module({
@@ -68,7 +71,8 @@ const sessionsUseCases = [
       { name: User.name, schema: UserSchema },
       { name: Session.name, schema: SessionSchema },
     ]),
-    JwtModule,
+    JwtModule.register({}),
+    CoreModule,
   ],
   controllers: [UserController, AuthController, SecurityController],
   providers: [

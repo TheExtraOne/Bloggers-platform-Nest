@@ -1,8 +1,10 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SessionsRepository } from '../../infrastructure/sessions.repository';
+import { TimeService } from '../../../../../core/services/time.service';
 
 export class UpdateSessionTimeCommand extends Command<void> {
   constructor(
+    public readonly userId: string,
     public readonly exp: number,
     public readonly iat: number,
     public readonly deviceId: string,
@@ -13,29 +15,32 @@ export class UpdateSessionTimeCommand extends Command<void> {
 
 @CommandHandler(UpdateSessionTimeCommand)
 export class UpdateSessionTimeUseCase
-  implements ICommandHandler<UpdateSessionTimeCommand, void>
+  implements ICommandHandler<UpdateSessionTimeCommand>
 {
-  constructor(private readonly sessionsRepository: SessionsRepository) {}
+  constructor(
+    private readonly sessionsRepository: SessionsRepository,
+    private readonly timeService: TimeService,
+  ) {}
 
   async execute(command: UpdateSessionTimeCommand): Promise<void> {
-    const { exp, iat, deviceId } = command;
+    const { userId, deviceId, exp, iat } = command;
+    const iatISO = this.timeService.convertUnixToISOString(iat);
 
-    // Find the session by deviceId
-    const session =
-      await this.sessionsRepository.findSessionByDeviceId(deviceId);
+    const session = await this.sessionsRepository.findSessionByMultipleFilters(
+      userId,
+      deviceId,
+      iatISO,
+    );
 
     if (!session) {
-      throw new Error('Session not found');
+      return;
     }
 
     session.updateSessionTime({
-      exp: this.convertTimeToISOFromUnix(exp),
-      iat: this.convertTimeToISOFromUnix(iat),
+      exp: this.timeService.convertUnixToISOString(exp),
+      iat: iatISO,
     });
+
     await this.sessionsRepository.save(session);
-  }
-  // TODO: move to utils
-  private convertTimeToISOFromUnix(unixTime: number): string {
-    return new Date(unixTime * 1000).toISOString();
   }
 }

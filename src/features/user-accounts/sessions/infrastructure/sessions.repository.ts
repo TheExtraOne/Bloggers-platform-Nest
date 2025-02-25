@@ -29,7 +29,7 @@ export class SessionsRepository {
     return await this.SessionModel.find({ userId, deviceId, deletedAt: null });
   }
 
-  async findAllSessionsByMultipleFilters(
+  async findSessionByMultipleFilters(
     userId: string,
     deviceId: string,
     lastActiveDate: string,
@@ -40,5 +40,15 @@ export class SessionsRepository {
       lastActiveDate,
       deletedAt: null,
     });
+  }
+
+  async deleteManySessionsByUserAndDeviceId(
+    userId: string,
+    deviceId: string,
+  ): Promise<void> {
+    await this.SessionModel.updateMany(
+      { userId, deviceId: { $ne: deviceId }, deletedAt: null },
+      { deletedAt: new Date() },
+    );
   }
 }

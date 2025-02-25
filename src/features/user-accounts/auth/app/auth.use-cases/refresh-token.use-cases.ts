@@ -51,7 +51,7 @@ export class RefreshTokenUseCases
       await this.customJwtService.extractTimeFromRefreshToken(refreshToken);
     // Updating session
     await this.commandBus.execute(
-      new UpdateSessionTimeCommand(exp, newIat, deviceId),
+      new UpdateSessionTimeCommand(userId, exp, newIat, deviceId),
     );
 
     return { accessToken, refreshToken };
