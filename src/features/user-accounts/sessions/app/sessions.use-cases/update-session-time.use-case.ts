@@ -32,8 +32,8 @@ export class UpdateSessionTimeUseCase
     }
 
     session.updateSessionTime({
-      exp: this.timeService.convertUnixToISOString(newExp),
-      iat: this.timeService.convertUnixToISOString(newIat),
+      exp: this.timeService.convertUnixToDate(newExp),
+      iat: this.timeService.convertUnixToDate(newIat),
     });
 
     await this.sessionsRepository.save(session);

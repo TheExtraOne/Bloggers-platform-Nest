@@ -171,6 +171,17 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
+// Create TTL index on emailConfirmation.expirationDate for unconfirmed users
+UserSchema.index(
+  { 'emailConfirmation.expirationDate': 1 },
+  {
+    expireAfterSeconds: 2 * 24 * 60 * 60,
+    partialFilterExpression: {
+      'emailConfirmation.confirmationStatus': EmailConfirmationStatus.Pending,
+    },
+  },
+);
+
 // Register entities methods in schema
 UserSchema.loadClass(User);
 

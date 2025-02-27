@@ -32,7 +32,7 @@ export class SessionsRepository {
   async findSessionByMultipleFilters(
     userId: string,
     deviceId: string,
-    lastActiveDate: string,
+    lastActiveDate: Date,
   ): Promise<SessionDocument | null> {
     return await this.SessionModel.findOne({
       userId,

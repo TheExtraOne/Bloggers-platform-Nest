@@ -2,7 +2,7 @@ export class CreateSessionDomainDto {
   deviceId: string;
   ip: string;
   title: string;
-  lastActiveDate: string;
-  expirationDate: string;
+  lastActiveDate: Date;
+  expirationDate: Date;
   userId: string;
 }

@@ -2,7 +2,6 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 import { CreateSessionDomainDto } from './dto/create-session.domain.dto';
 
-// TODO: add cron job to delete expired sessions
 // Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
  * Session Entity Schema
@@ -44,17 +43,17 @@ export class Session {
 
   /**
    * lastActiveDate = iat of refresh token
-   * @type string
+   * @type date
    */
-  @Prop({ type: String, required: true })
-  lastActiveDate: string;
+  @Prop({ type: Date, required: true })
+  lastActiveDate: Date;
 
   /**
    * expirationDate = exp of refresh token
-   * @type string
+   * @type Date
    */
-  @Prop({ type: String, required: true })
-  expirationDate: string;
+  @Prop({ type: Date, required: true })
+  expirationDate: Date;
 
   /**
    * Deletion timestamp, nullable, if date exist, means entity soft deleted
@@ -95,16 +94,19 @@ export class Session {
 
   /**
    * Updates the session instance with new data
-   * @param {string} exp - expiration date
-   * @param {string} iat - issue date
+   * @param {Date} exp - expiration date
+   * @param {Date} iat - issue date
    */
-  updateSessionTime({ exp, iat }: { exp: string; iat: string }) {
+  updateSessionTime({ exp, iat }: { exp: Date; iat: Date }) {
     this.expirationDate = exp;
     this.lastActiveDate = iat;
   }
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);
+
+// Create TTL index on expirationDate field
+SessionSchema.index({ expirationDate: 1 }, { expireAfterSeconds: 0 });
 
 // Register entities methods in schema
 SessionSchema.loadClass(Session);

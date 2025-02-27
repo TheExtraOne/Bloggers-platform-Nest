@@ -12,6 +12,15 @@ export class TimeService {
   }
 
   /**
+   * Converts Unix timestamp to Date object
+   * @param unixTime - Unix timestamp in seconds
+   * @returns Date object
+   */
+  convertUnixToDate(unixTime: number): Date {
+    return new Date(unixTime * 1000);
+  }
+
+  /**
    * Gets current time in ISO string format
    * @returns Current time in ISO string
    */

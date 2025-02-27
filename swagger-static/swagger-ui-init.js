@@ -1965,6 +1965,7 @@ window.onload = function() {
               "type": "string"
             },
             "lastActiveDate": {
+              "format": "date-time",
               "type": "string"
             },
             "deviceId": {

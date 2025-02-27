@@ -48,13 +48,13 @@ export class CreateSessionUseCase
       deviceId: deviceId ?? new ObjectId().toString(),
       ip,
       title,
-      lastActiveDate: this.timeService.convertUnixToISOString(iat),
-      expirationDate: this.timeService.convertUnixToISOString(exp),
+      lastActiveDate: this.timeService.convertUnixToDate(iat),
+      expirationDate: this.timeService.convertUnixToDate(exp),
       userId: userId,
     };
 
     const session: SessionDocument =
-      await this.SessionModel.create(newRefreshTokenMeta);
+      this.SessionModel.createInstance(newRefreshTokenMeta);
     await this.sessionsRepository.save(session);
   }
 }

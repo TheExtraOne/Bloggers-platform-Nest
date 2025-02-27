@@ -27,7 +27,7 @@ export class ValidateRefreshTokenUseCase
     return this.sessionsRepository.findSessionByMultipleFilters(
       userId,
       deviceId,
-      this.timeService.convertUnixToISOString(iat),
+      this.timeService.convertUnixToDate(iat),
     );
   }
 }
