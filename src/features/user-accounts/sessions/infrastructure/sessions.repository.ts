@@ -5,6 +5,7 @@ import {
   SessionDocument,
   SessionModelType,
 } from '../domain/session.entity';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class SessionsRepository {
@@ -19,14 +20,27 @@ export class SessionsRepository {
   async findSessionByDeviceId(
     deviceId: string,
   ): Promise<SessionDocument | null> {
-    return await this.SessionModel.findOne({ deviceId, deletedAt: null });
+    if (!ObjectId.isValid(deviceId)) {
+      return null;
+    }
+    return await this.SessionModel.findOne({
+      _id: new ObjectId(deviceId),
+      deletedAt: null,
+    });
   }
 
   async findAllSessionsByUserAndDeviceId(
     userId: string,
     deviceId: string,
   ): Promise<SessionDocument[]> {
-    return await this.SessionModel.find({ userId, deviceId, deletedAt: null });
+    if (!ObjectId.isValid(deviceId)) {
+      return [];
+    }
+    return await this.SessionModel.find({
+      userId,
+      _id: new ObjectId(deviceId),
+      deletedAt: null,
+    });
   }
 
   async findSessionByMultipleFilters(
@@ -34,9 +48,12 @@ export class SessionsRepository {
     deviceId: string,
     lastActiveDate: Date,
   ): Promise<SessionDocument | null> {
+    if (!ObjectId.isValid(deviceId)) {
+      return null;
+    }
     return await this.SessionModel.findOne({
       userId,
-      deviceId,
+      _id: new ObjectId(deviceId),
       lastActiveDate,
       deletedAt: null,
     });
@@ -46,8 +63,11 @@ export class SessionsRepository {
     userId: string,
     deviceId: string,
   ): Promise<void> {
+    if (!ObjectId.isValid(deviceId)) {
+      return;
+    }
     await this.SessionModel.updateMany(
-      { userId, deviceId: { $ne: deviceId }, deletedAt: null },
+      { userId, _id: { $ne: new ObjectId(deviceId) }, deletedAt: null },
       { deletedAt: new Date() },
     );
   }

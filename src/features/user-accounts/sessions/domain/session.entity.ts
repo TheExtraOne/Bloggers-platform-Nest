@@ -1,6 +1,7 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 import { CreateSessionDomainDto } from './dto/create-session.domain.dto';
+import { ObjectId } from 'mongodb';
 
 // Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
@@ -9,6 +10,13 @@ import { CreateSessionDomainDto } from './dto/create-session.domain.dto';
  */
 @Schema({ timestamps: true })
 export class Session {
+  /**
+   * _id will be used as deviceId
+   * @type {ObjectId}
+   */
+  @Prop({ type: ObjectId, required: true })
+  _id: ObjectId;
+
   /**
    * IP of the user
    * @type {string}
@@ -34,14 +42,6 @@ export class Session {
   userId: string;
 
   /**
-   * deviceId of the user
-   * @type {string}
-   * @required
-   */
-  @Prop({ type: String, required: true })
-  deviceId: string;
-
-  /**
    * lastActiveDate = iat of refresh token
    * @type date
    */
@@ -62,7 +62,6 @@ export class Session {
   @Prop({ type: Date, nullable: true, default: null })
   deletedAt: Date | null;
 
-  // TODO: use deviceId instead of _id?
   /**
    * Factory method to create a Session instance
    * @param {CreateSessionDomainDto} dto - The data transfer object for user creation
@@ -70,7 +69,7 @@ export class Session {
    */
   static createInstance(dto: CreateSessionDomainDto): SessionDocument {
     const session = new this();
-    session.deviceId = dto.deviceId;
+    session._id = dto.deviceId;
     session.ip = dto.ip;
     session.title = dto.title;
     session.lastActiveDate = dto.lastActiveDate;

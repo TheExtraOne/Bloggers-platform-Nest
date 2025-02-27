@@ -12,7 +12,7 @@ export class SessionsViewDto {
     dto.ip = user.ip;
     dto.title = user.title;
     dto.lastActiveDate = user.lastActiveDate;
-    dto.deviceId = user.deviceId;
+    dto.deviceId = user._id.toString();
 
     return dto;
   }

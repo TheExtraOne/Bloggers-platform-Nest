@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { SessionsRepository } from '../../infrastructure/sessions.repository';
 import { TimeService } from '../../../../../core/services/time.service';
+import { InternalServerErrorException } from '@nestjs/common';
 
 type TCreateSessionInputDto = {
   exp: number;
@@ -43,9 +44,11 @@ export class CreateSessionUseCase
       deviceId,
       userId,
     } = command.dto;
-
+    if (!ObjectId.isValid(deviceId)) {
+      throw new InternalServerErrorException();
+    }
     const newRefreshTokenMeta = {
-      deviceId: deviceId ?? new ObjectId().toString(),
+      deviceId: new ObjectId(deviceId),
       ip,
       title,
       lastActiveDate: this.timeService.convertUnixToDate(iat),

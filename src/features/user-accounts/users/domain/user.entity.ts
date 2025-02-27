@@ -56,7 +56,6 @@ export class User {
   @Prop({ type: String, required: true, ...emailConstraints })
   email: string;
 
-  // TODO: delete after 2 days?
   // @Prop(EmailConfirmationSchema) contains confirmation code, date of expire and confirmation status
   @Prop({ type: EmailConfirmationSchema })
   emailConfirmation: EmailConfirmation;

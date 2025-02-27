@@ -1,5 +1,7 @@
+import { ObjectId } from 'mongodb';
+
 export class CreateSessionDomainDto {
-  deviceId: string;
+  deviceId: ObjectId;
   ip: string;
   title: string;
   lastActiveDate: Date;
