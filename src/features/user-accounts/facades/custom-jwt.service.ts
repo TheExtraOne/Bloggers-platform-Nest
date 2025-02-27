@@ -14,37 +14,21 @@ export class CustomJwtService {
     private readonly userAccountsConfig: UserAccountsConfig,
   ) {}
 
-  async createToken({
-    payload,
-    type,
-  }: {
-    payload: Record<string, string | number>;
-    type?: TOKEN_TYPE;
+  async createAccessToken(payload: Record<'userId', string>): Promise<string> {
+    return await this.jwtService.signAsync(payload, {
+      expiresIn: this.userAccountsConfig.acExpiry,
+      secret: this.userAccountsConfig.acSecret,
+    });
+  }
+
+  async createRefreshToken(payload: {
+    userId: string;
+    deviceId: string;
   }): Promise<string> {
-    let token: string;
-
-    switch (type) {
-      case TOKEN_TYPE.AC_TOKEN:
-        token = await this.jwtService.signAsync(payload, {
-          expiresIn: this.userAccountsConfig.acExpiry,
-          secret: this.userAccountsConfig.acSecret,
-        });
-        break;
-      case TOKEN_TYPE.R_TOKEN:
-        token = await this.jwtService.signAsync(payload, {
-          expiresIn: this.userAccountsConfig.rtExpiry,
-          secret: this.userAccountsConfig.rtSecret,
-        });
-        break;
-      default:
-        token = await this.jwtService.signAsync(payload, {
-          expiresIn: this.userAccountsConfig.jwtExpiry,
-          secret: this.userAccountsConfig.jwtSecret,
-        });
-        break;
-    }
-
-    return token;
+    return await this.jwtService.signAsync(payload, {
+      expiresIn: this.userAccountsConfig.rtExpiry,
+      secret: this.userAccountsConfig.rtSecret,
+    });
   }
 
   async extractTimeFromRefreshToken(

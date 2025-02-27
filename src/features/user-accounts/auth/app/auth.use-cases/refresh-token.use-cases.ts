@@ -37,14 +37,15 @@ export class RefreshTokenUseCases
     const { userId, deviceId } = command;
 
     // Create pair of new access and refresh tokens
-    const accessToken: string = await this.customJwtService.createToken({
-      payload: { userId },
-      type: TOKEN_TYPE.AC_TOKEN,
+    const accessToken: string = await this.customJwtService.createAccessToken({
+      userId,
     });
-    const refreshToken: string = await this.customJwtService.createToken({
-      payload: { userId, deviceId },
-      type: TOKEN_TYPE.R_TOKEN,
-    });
+    const refreshToken: string = await this.customJwtService.createRefreshToken(
+      {
+        userId,
+        deviceId,
+      },
+    );
 
     // Extracting exp and iat from refresh token
     const { exp: newExp, iat: newIat } =

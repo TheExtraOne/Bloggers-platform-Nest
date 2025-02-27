@@ -2,6 +2,7 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 import { CreateSessionDomainDto } from './dto/create-session.domain.dto';
 
+// TODO: add cron job to delete expired sessions
 // Flags for timestamps automatically will add createdAt and updatedAt fields
 /**
  * Session Entity Schema
