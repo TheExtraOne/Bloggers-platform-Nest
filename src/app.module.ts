@@ -14,6 +14,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CoreConfig } from './core/core.config';
 
+// TODO: add dynamic inserting of testing module
 @Module({
   imports: [
     configModule,
