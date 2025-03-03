@@ -13,7 +13,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CoreConfig } from './core/core.config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+// import { TypeOrmModule } from '@nestjs/typeorm';
 
 // TODO: add dynamic inserting of testing module
 @Module({
@@ -27,16 +27,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       },
       inject: [CoreConfig],
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'nodejs',
-      password: 'nodejs',
-      database: 'postgres',
-      autoLoadEntities: false,
-      synchronize: false,
-    }),
+    // TypeOrmModule.forRoot({
+    //   type: 'postgres',
+    //   host: 'localhost',
+    //   port: 5432,
+    //   username: 'nodejs',
+    //   password: 'nodejs',
+    //   database: 'postgres',
+    //   autoLoadEntities: false,
+    //   synchronize: false,
+    // }),
     ThrottlerModule.forRootAsync({
       useFactory: (coreConfig: CoreConfig) => {
         return [

@@ -30,13 +30,14 @@ export class SendRecoverPasswordEmailUseCase
 
     // Set recovery code, status and expiration date
     const newRecoveryCode = new ObjectId().toString();
-    user.updateRecoveryPassword({
+    const newExpirationDate = add(new Date(), {
+      hours: 1,
+      minutes: 30,
+    });
+
+    user.setNewPasswordRecoveryData({
       recoveryCode: newRecoveryCode,
-      expirationDate: add(new Date(), {
-        hours: 1,
-        minutes: 30,
-      }),
-      recoveryStatus: PasswordRecoveryStatus.Pending,
+      expirationDate: newExpirationDate,
     });
 
     await this.usersRepository.save(user);

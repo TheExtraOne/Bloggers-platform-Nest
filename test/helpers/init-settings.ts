@@ -18,6 +18,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { CommentsTestManager } from './managers/comments-test-manager';
 import { EmailService } from '../../src/features/user-accounts/facades/email.service';
 import { SessionsTestManager } from './managers/sessions-test-manager';
+// import { TypeOrmModule } from '@nestjs/typeorm';
 
 export class TestSettingsInitializer {
   private readonly defaultTtl = 1000;
@@ -41,6 +42,7 @@ export class TestSettingsInitializer {
           },
         ]),
         CqrsModule.forRoot(),
+        // TypeOrmModule.forRoot(),
         UserAccountsModule,
         BloggersPlatformModule,
         TestingModule,

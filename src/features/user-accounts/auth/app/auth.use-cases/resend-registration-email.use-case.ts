@@ -43,13 +43,14 @@ export class ResendRegistrationEmailUseCase
 
     // Update user confirmationCode and expirationDate
     const newConfirmationCode = new ObjectId().toString();
-    user.updateEmailConfirmation({
-      status: EmailConfirmationStatus.Pending,
+    const newExpirationDate = add(new Date(), {
+      hours: 1,
+      minutes: 30,
+    });
+    user.setNewConfirmationData({
+      confirmationStatus: EmailConfirmationStatus.Pending,
       confirmationCode: newConfirmationCode,
-      expirationDate: add(new Date(), {
-        hours: 1,
-        minutes: 30,
-      }),
+      expirationDate: newExpirationDate,
     });
 
     await this.usersRepository.save(user);

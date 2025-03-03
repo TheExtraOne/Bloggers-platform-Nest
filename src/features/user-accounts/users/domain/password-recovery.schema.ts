@@ -5,6 +5,11 @@ export enum PasswordRecoveryStatus {
   Confirmed = 'confirmed',
 }
 
+export class SetNewPasswordRecoveryDataDto {
+  recoveryCode: string;
+  expirationDate: Date;
+}
+
 @Schema({
   _id: false,
 })
@@ -28,7 +33,32 @@ export class PasswordRecovery {
     nullable: true,
   })
   recoveryStatus: PasswordRecoveryStatus | null;
+
+  static createInstance() {
+    const passwordRecovery = new PasswordRecovery();
+
+    passwordRecovery.recoveryCode = null;
+    passwordRecovery.expirationDate = null;
+    passwordRecovery.recoveryStatus = null;
+
+    return passwordRecovery;
+  }
+
+  setNewPasswordRecoveryData(dto: SetNewPasswordRecoveryDataDto) {
+    this.recoveryCode = dto.recoveryCode;
+    this.expirationDate = dto.expirationDate;
+    this.recoveryStatus = PasswordRecoveryStatus.Pending;
+  }
+
+  confirmRecovery() {
+    this.recoveryStatus = PasswordRecoveryStatus.Confirmed;
+    this.expirationDate = null;
+    this.recoveryCode = null;
+  }
 }
 
 export const PasswordRecoverySchema =
   SchemaFactory.createForClass(PasswordRecovery);
+
+// Register entities methods in schema
+PasswordRecoverySchema.loadClass(PasswordRecovery);

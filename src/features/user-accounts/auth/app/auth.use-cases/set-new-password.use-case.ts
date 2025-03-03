@@ -56,11 +56,7 @@ export class SetNewPasswordUseCase
     );
 
     user.updateLoginPassword({ passwordHash });
-    user.updateRecoveryPassword({
-      recoveryStatus: PasswordRecoveryStatus.Confirmed,
-      recoveryCode: null,
-      expirationDate: null,
-    });
+    user.confirmPasswordRecovery();
 
     await this.usersRepository.save(user);
   }

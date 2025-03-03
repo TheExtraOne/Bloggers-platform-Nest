@@ -5,12 +5,12 @@ import {
   EmailConfirmationSchema,
   EmailConfirmation,
   EmailConfirmationStatus,
+  SetNewConfirmationDataDto,
 } from './email-confirmation.schema';
-import { add } from 'date-fns';
 import {
   PasswordRecovery,
   PasswordRecoverySchema,
-  PasswordRecoveryStatus,
+  SetNewPasswordRecoveryDataDto,
 } from './password-recovery.schema';
 
 export const loginConstraints = {
@@ -82,24 +82,30 @@ export class User {
 
   /**
    * Factory method to create a User instance
-   * @param {CreateUserDto} dto - The data transfer object for user creation
+   * @param {CreateUserDomainDto} dto - The data transfer object for user creation
    * @returns {UserDocument} The created user document
    */
   static createInstance(dto: CreateUserDomainDto): UserDocument {
+    const {
+      email,
+      passwordHash,
+      login,
+      confirmationCode,
+      expirationDate,
+      confirmationStatus,
+    } = dto;
+
     const user = new this();
-    user.email = dto.email;
-    user.passwordHash = dto.passwordHash;
-    user.login = dto.login;
-    user.emailConfirmation = {
-      confirmationCode: dto.confirmationCode,
-      expirationDate: add(new Date(), { hours: 1, minutes: 30 }),
-      confirmationStatus: EmailConfirmationStatus.Pending,
-    };
-    user.passwordRecovery = {
-      recoveryCode: null,
-      expirationDate: null,
-      recoveryStatus: null,
-    };
+
+    user.email = email;
+    user.passwordHash = passwordHash;
+    user.login = login;
+    user.emailConfirmation = EmailConfirmation.createInstance({
+      confirmationCode,
+      expirationDate,
+      confirmationStatus,
+    });
+    user.passwordRecovery = PasswordRecovery.createInstance();
 
     return user as UserDocument;
   }
@@ -116,50 +122,33 @@ export class User {
     this.deletedAt = new Date();
   }
 
-  // TODO: split into methods
   /**
-   * Updates the user instance with new data
-   * Resets email confirmation if email is updated
-   * @param {EmailConfirmationStatus} status - Status of the confirmation
-   * @param {string} confirmationCode - Code for confirmation
-   * @param {Date} expirationDate - Date when the confirmation code expires
+   * Confirms the email
    */
-  updateEmailConfirmation({
-    status,
-    confirmationCode,
-    expirationDate,
-  }: {
-    status?: EmailConfirmationStatus;
-    confirmationCode?: string;
-    expirationDate?: Date;
-  }) {
-    if (status) {
-      this.emailConfirmation.confirmationStatus = status;
-    }
-    if (confirmationCode)
-      this.emailConfirmation.confirmationCode = confirmationCode;
-    if (expirationDate) this.emailConfirmation.expirationDate = expirationDate;
+  confirmEmail() {
+    this.emailConfirmation.confirmEmail();
   }
 
   /**
-   * Updates the user instance with new data
-   * Resets password recovery confirmation if email is updated
-   * @param {PasswordRecoveryStatus} recoveryStatus - Status of the password recovery
-   * @param {string} recoveryCode - Code for password recovery
-   * @param {Date} expirationDate - Date when the recovery code expires
+   * Updates the EmailConfirmation instance with new data
    */
-  updateRecoveryPassword({
-    recoveryStatus,
-    recoveryCode,
-    expirationDate,
-  }: {
-    recoveryStatus?: PasswordRecoveryStatus | null;
-    recoveryCode?: string | null;
-    expirationDate?: Date | null;
-  }) {
-    if (recoveryStatus) this.passwordRecovery.recoveryStatus = recoveryStatus;
-    if (recoveryCode) this.passwordRecovery.recoveryCode = recoveryCode;
-    if (expirationDate) this.passwordRecovery.expirationDate = expirationDate;
+  setNewConfirmationData(dto: SetNewConfirmationDataDto) {
+    this.emailConfirmation.setNewConfirmationData(dto);
+  }
+
+  /**
+   * Confirms the password recovery
+   */
+  confirmPasswordRecovery() {
+    this.passwordRecovery.confirmRecovery();
+  }
+
+  /**
+   * Updates the password recovery instance with new data
+   * @param {SetNewPasswordRecoveryDataDto} dto - Data for updating the password recovery
+   */
+  setNewPasswordRecoveryData(dto: SetNewPasswordRecoveryDataDto) {
+    this.passwordRecovery.setNewPasswordRecoveryData(dto);
   }
 
   /**

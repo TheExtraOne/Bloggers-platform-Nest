@@ -36,13 +36,16 @@ export class ConfirmEmailRegistrationUseCase
       ]);
 
     // Check if confirmationCode expired
-    if (user.emailConfirmation.expirationDate < new Date())
+    if (
+      user.emailConfirmation.expirationDate &&
+      user.emailConfirmation.expirationDate < new Date()
+    )
       throw new BadRequestException([
         { field: 'code', message: 'already expired' },
       ]);
 
     // If ok, then updating user flag
-    user.updateEmailConfirmation({ status: EmailConfirmationStatus.Confirmed });
+    user.confirmEmail();
 
     await this.usersRepository.save(user);
   }

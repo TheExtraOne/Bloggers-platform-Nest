@@ -34,7 +34,9 @@ import { DeleteAllSessionsUseCase } from './sessions/app/sessions.use-cases/dele
 import { DeleteSessionByIdUseCase } from './sessions/app/sessions.use-cases/delete-session-by-id.use-case';
 import { ValidateRefreshTokenUseCase } from './sessions/app/sessions.use-cases/validate-refresh-token.use-case';
 import { CoreModule } from '../../core/core-module';
-import { PgUsersQueryRepository } from './users/infrastructure/query/pg.users.query-repository copy';
+import { AdminCreateUserUseCase } from './users/app/users.use-cases/admin-create-user.use-case';
+import { UsersService } from './users/app/users.service';
+// import { PgUsersQueryRepository } from './users/infrastructure/query/pg.users.query-repository copy';
 // import { TypeOrmModule } from '@nestjs/typeorm';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
@@ -46,6 +48,7 @@ const strategies = [
 ];
 const usersUseCases = [
   CreateUserUseCase,
+  AdminCreateUserUseCase,
   DeleteUserUseCase,
   CheckIfUserIsAbleToLoginUseCase,
 ];
@@ -80,17 +83,18 @@ const sessionsUseCases = [
   controllers: [UserController, AuthController, SecurityController],
   providers: [
     MgUsersQueryRepository,
-    PgUsersQueryRepository,
+    // PgUsersQueryRepository,
     UsersRepository,
     SessionsRepository,
     SessionsQueryRepository,
     UserAccountsConfig,
+    UsersService,
     ...adapters,
     ...strategies,
     ...usersUseCases,
     ...authUseCases,
     ...sessionsUseCases,
   ],
-  exports: [BasicStrategy, UsersRepository],
+  exports: [UsersRepository],
 })
 export class UserAccountsModule {}
