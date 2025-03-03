@@ -29,7 +29,7 @@ import { CurrentUserData } from '../../guards/decorators/current-user-data.decor
 import { RefreshTokenCommand } from '../app/auth.use-cases/refresh-token.use-cases';
 import { DeleteSessionCommand } from '../../sessions/app/sessions.use-cases/delete-session.use-case';
 import { CreateUserInputDto } from '../../users/api/input-dto/users.input-dto';
-import { UsersQueryRepository } from '../../users/infrastructure/query/users.query-repository';
+import { MgUsersQueryRepository } from '../../users/infrastructure/query/mg.users.query-repository';
 import { ResendRegistrationEmailCommand } from '../app/auth.use-cases/resend-registration-email.use-case';
 import { SendRecoverPasswordEmailCommand } from '../app/auth.use-cases/send-recover-password-email.use-case';
 import { SetNewPasswordCommand } from '../app/auth.use-cases/set-new-password.use-case';
@@ -50,7 +50,7 @@ import {
 export class AuthController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly usersQueryRepository: UsersQueryRepository,
+    private readonly mgUsersQueryRepository: MgUsersQueryRepository,
   ) {}
 
   @SkipThrottle()
@@ -60,7 +60,7 @@ export class AuthController {
   async getUserInformation(
     @CurrentUserId() userId: string,
   ): Promise<MeViewDto> {
-    const result = await this.usersQueryRepository.findUserById(userId);
+    const result = await this.mgUsersQueryRepository.findUserById(userId);
 
     const mappedUser: MeViewDto = {
       email: result.email,

@@ -26,7 +26,7 @@ import { EmailService } from './facades/email.service';
 import { CheckIfUserIsAbleToLoginUseCase } from './users/app/users.use-cases/check-user-able-login.use-case';
 import { CreateUserUseCase } from './users/app/users.use-cases/create-user.use-case';
 import { DeleteUserUseCase } from './users/app/users.use-cases/delete-user.use-case';
-import { UsersQueryRepository } from './users/infrastructure/query/users.query-repository';
+import { MgUsersQueryRepository } from './users/infrastructure/query/mg.users.query-repository';
 import { UsersRepository } from './users/infrastructure/users.repository';
 import { SecurityController } from './sessions/api/security.controller';
 import { SessionsQueryRepository } from './sessions/infrastructure/query/sessions.query-repository';
@@ -34,6 +34,8 @@ import { DeleteAllSessionsUseCase } from './sessions/app/sessions.use-cases/dele
 import { DeleteSessionByIdUseCase } from './sessions/app/sessions.use-cases/delete-session-by-id.use-case';
 import { ValidateRefreshTokenUseCase } from './sessions/app/sessions.use-cases/validate-refresh-token.use-case';
 import { CoreModule } from '../../core/core-module';
+import { PgUsersQueryRepository } from './users/infrastructure/query/pg.users.query-repository copy';
+// import { TypeOrmModule } from '@nestjs/typeorm';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
 const strategies = [
@@ -67,6 +69,7 @@ const sessionsUseCases = [
 
 @Module({
   imports: [
+    // TypeOrmModule.forFeature([User, Session]),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Session.name, schema: SessionSchema },
@@ -76,7 +79,8 @@ const sessionsUseCases = [
   ],
   controllers: [UserController, AuthController, SecurityController],
   providers: [
-    UsersQueryRepository,
+    MgUsersQueryRepository,
+    PgUsersQueryRepository,
     UsersRepository,
     SessionsRepository,
     SessionsQueryRepository,

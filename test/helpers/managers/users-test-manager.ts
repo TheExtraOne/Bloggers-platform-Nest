@@ -2,7 +2,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { PATHS } from '../../../src/constants';
 import { CreateUserInputDto } from '../../../src/features/user-accounts/users/api/input-dto/users.input-dto';
-import { UserViewDto } from '../../../src/features/user-accounts/users/api/view-dto/users.view-dto';
+import { MongoUserViewDto } from '../../../src/features/user-accounts/users/api/view-dto/users.view-dto';
 
 export class UsersTestManager {
   constructor(private app: INestApplication) {}
@@ -23,7 +23,7 @@ export class UsersTestManager {
   }
 
   async createSeveralUsers(count: number) {
-    const users = [] as UserViewDto[];
+    const users = [] as MongoUserViewDto[];
 
     for (let i = 0; i < count; ++i) {
       const response = await this.createUser({

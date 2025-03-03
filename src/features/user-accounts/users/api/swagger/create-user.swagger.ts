@@ -5,7 +5,7 @@ import {
   ApiProperty,
   ApiResponse,
 } from '@nestjs/swagger';
-import { UserViewDto } from '../view-dto/users.view-dto';
+import { MongoUserViewDto } from '../view-dto/users.view-dto';
 
 export class ErrorMessageResponse {
   @ApiProperty({ type: String })
@@ -31,7 +31,7 @@ export const CreateUserSwagger = () => {
     ApiResponse({
       status: HttpStatus.CREATED,
       description: 'Successfully created user.',
-      type: UserViewDto,
+      type: MongoUserViewDto,
     })(target, propertyKey, descriptor);
     ApiResponse({
       status: HttpStatus.BAD_REQUEST,

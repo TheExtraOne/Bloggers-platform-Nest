@@ -1,8 +1,8 @@
 import { OmitType } from '@nestjs/swagger';
 import { UserDocument } from '../../../users/domain/user.entity';
-import { UserViewDto } from '../../../users/api/view-dto/users.view-dto';
+import { MongoUserViewDto } from '../../../users/api/view-dto/users.view-dto';
 
-export class MeViewDto extends OmitType(UserViewDto, [
+export class MeViewDto extends OmitType(MongoUserViewDto, [
   'createdAt',
   'id',
 ] as const) {

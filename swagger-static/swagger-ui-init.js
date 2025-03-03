@@ -150,7 +150,7 @@ window.onload = function() {
               "content": {
                 "application/json": {
                   "schema": {
-                    "$ref": "#/components/schemas/UserViewDto"
+                    "$ref": "#/components/schemas/MongoUserViewDto"
                   }
                 }
               }
@@ -1740,7 +1740,7 @@ window.onload = function() {
         }
       },
       "schemas": {
-        "UserViewDto": {
+        "MongoUserViewDto": {
           "type": "object",
           "properties": {
             "id": {
@@ -1770,7 +1770,7 @@ window.onload = function() {
             "items": {
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/UserViewDto"
+                "$ref": "#/components/schemas/MongoUserViewDto"
               }
             },
             "totalCount": {

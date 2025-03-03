@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserViewDto } from '../../api/view-dto/users.view-dto';
+import { MongoUserViewDto } from '../../api/view-dto/users.view-dto';
 import { FilterQuery } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { ERRORS } from '../../../../../constants';
@@ -9,10 +9,10 @@ import { User, UserModelType } from '../../domain/user.entity';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
 
 @Injectable()
-export class UsersQueryRepository {
+export class MgUsersQueryRepository {
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
-  async findUserById(id: string): Promise<UserViewDto> {
+  async findUserById(id: string): Promise<MongoUserViewDto> {
     if (!ObjectId.isValid(id))
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
 
@@ -23,12 +23,12 @@ export class UsersQueryRepository {
 
     if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
 
-    return UserViewDto.mapToView(user);
+    return MongoUserViewDto.mapToView(user);
   }
 
   async findAll(
     query: GetUsersQueryParams,
-  ): Promise<PaginatedViewDto<UserViewDto[]>> {
+  ): Promise<PaginatedViewDto<MongoUserViewDto[]>> {
     // Creating filter
     const filter: FilterQuery<User> = {
       deletedAt: null,
@@ -54,7 +54,7 @@ export class UsersQueryRepository {
 
     const totalCount = await this.UserModel.countDocuments(filter);
 
-    const items = users.map((user) => UserViewDto.mapToView(user));
+    const items = users.map((user) => MongoUserViewDto.mapToView(user));
 
     return PaginatedViewDto.mapToView({
       items,

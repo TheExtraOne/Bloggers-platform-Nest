@@ -5,11 +5,11 @@ import {
   ApiProperty,
   ApiResponse,
 } from '@nestjs/swagger';
-import { UserViewDto } from '../view-dto/users.view-dto';
+import { MongoUserViewDto } from '../view-dto/users.view-dto';
 
 export class PaginatedUsersResponse {
-  @ApiProperty({ type: [UserViewDto] })
-  items: UserViewDto[];
+  @ApiProperty({ type: [MongoUserViewDto] })
+  items: MongoUserViewDto[];
 
   @ApiProperty({ type: Number })
   totalCount: number;

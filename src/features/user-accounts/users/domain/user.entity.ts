@@ -116,6 +116,7 @@ export class User {
     this.deletedAt = new Date();
   }
 
+  // TODO: split into methods
   /**
    * Updates the user instance with new data
    * Resets email confirmation if email is updated
@@ -132,7 +133,9 @@ export class User {
     confirmationCode?: string;
     expirationDate?: Date;
   }) {
-    if (status) this.emailConfirmation.confirmationStatus = status;
+    if (status) {
+      this.emailConfirmation.confirmationStatus = status;
+    }
     if (confirmationCode)
       this.emailConfirmation.confirmationCode = confirmationCode;
     if (expirationDate) this.emailConfirmation.expirationDate = expirationDate;
