@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SessionsRepository } from '../../infrastructure/sessions.repository';
 import { SessionDocument } from '../../domain/session.entity';
-import { TimeService } from '../../../../../core/services/time.service';
+import { convertUnixToDate } from '../../../../../core/utils/time.utils';
 
 export class ValidateRefreshTokenCommand {
   constructor(
@@ -15,10 +15,7 @@ export class ValidateRefreshTokenCommand {
 export class ValidateRefreshTokenUseCase
   implements ICommandHandler<ValidateRefreshTokenCommand>
 {
-  constructor(
-    private readonly sessionsRepository: SessionsRepository,
-    private readonly timeService: TimeService,
-  ) {}
+  constructor(private readonly sessionsRepository: SessionsRepository) {}
 
   async execute(
     command: ValidateRefreshTokenCommand,
@@ -27,7 +24,7 @@ export class ValidateRefreshTokenUseCase
     return this.sessionsRepository.findSessionByMultipleFilters(
       userId,
       deviceId,
-      this.timeService.convertUnixToDate(iat),
+      convertUnixToDate(iat),
     );
   }
 }

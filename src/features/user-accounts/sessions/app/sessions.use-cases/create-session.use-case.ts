@@ -7,8 +7,8 @@ import {
 } from '../../domain/session.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { SessionsRepository } from '../../infrastructure/sessions.repository';
-import { TimeService } from '../../../../../core/services/time.service';
 import { InternalServerErrorException } from '@nestjs/common';
+import { convertUnixToDate } from '../../../../../core/utils/time.utils';
 
 type TCreateSessionInputDto = {
   exp: number;
@@ -32,7 +32,6 @@ export class CreateSessionUseCase
   constructor(
     @InjectModel(Session.name) private SessionModel: SessionModelType,
     private readonly sessionsRepository: SessionsRepository,
-    private readonly timeService: TimeService,
   ) {}
 
   async execute(command: CreateSessionCommand): Promise<void> {
@@ -51,8 +50,8 @@ export class CreateSessionUseCase
       deviceId: new ObjectId(deviceId),
       ip,
       title,
-      lastActiveDate: this.timeService.convertUnixToDate(iat),
-      expirationDate: this.timeService.convertUnixToDate(exp),
+      lastActiveDate: convertUnixToDate(iat),
+      expirationDate: convertUnixToDate(exp),
       userId: userId,
     };
 

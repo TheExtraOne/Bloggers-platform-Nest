@@ -1,6 +1,6 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SessionsRepository } from '../../infrastructure/sessions.repository';
-import { TimeService } from '../../../../../core/services/time.service';
+import { convertUnixToDate } from '../../../../../core/utils/time.utils';
 
 export class UpdateSessionTimeCommand extends Command<void> {
   constructor(
@@ -16,10 +16,7 @@ export class UpdateSessionTimeCommand extends Command<void> {
 export class UpdateSessionTimeUseCase
   implements ICommandHandler<UpdateSessionTimeCommand>
 {
-  constructor(
-    private readonly sessionsRepository: SessionsRepository,
-    private readonly timeService: TimeService,
-  ) {}
+  constructor(private readonly sessionsRepository: SessionsRepository) {}
 
   async execute(command: UpdateSessionTimeCommand): Promise<void> {
     const { newExp, newIat, deviceId } = command;
@@ -32,8 +29,8 @@ export class UpdateSessionTimeUseCase
     }
 
     session.updateSessionTime({
-      exp: this.timeService.convertUnixToDate(newExp),
-      iat: this.timeService.convertUnixToDate(newIat),
+      exp: convertUnixToDate(newExp),
+      iat: convertUnixToDate(newIat),
     });
 
     await this.sessionsRepository.save(session);
