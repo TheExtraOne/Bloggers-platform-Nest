@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PGUserViewDto } from '../../api/view-dto/users.view-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { ERRORS } from 'src/constants';
 
 export type TPgUser = {
   id: string;
@@ -40,6 +41,22 @@ export class PgUsersQueryRepository {
       pageNumber,
       pageSize,
     );
+  }
+
+  async findUserById(id: string): Promise<PGUserViewDto> {
+    const result = await this.dataSource.query(
+      `
+        SELECT *
+        FROM public.users
+        WHERE id = $1 AND deleted_at IS NULL
+    `,
+      [id],
+    );
+    const user = result[0];
+
+    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+
+    return PGUserViewDto.mapToView(user);
   }
 
   private getSortColumn(sortBy: string): string {

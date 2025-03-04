@@ -5,12 +5,14 @@ import { MgUsersRepository } from '../infrastructure/mg.users.repository';
 import { BcryptService } from '../../facades/bcrypt.service';
 import { CreateUserDomainDto } from '../domain/dto/create-user.domain.dto';
 import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
+import { PgUsersRepository } from '../infrastructure/pg.users.repository';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private UserModel: UserModelType,
     private readonly mgUsersRepository: MgUsersRepository,
+    private readonly pgUsersRepository: PgUsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}
 
@@ -36,6 +38,35 @@ export class UsersService {
     return null;
   }
 
+  // For mongoDB
+  // async createUser(dto: {
+  //   login: string;
+  //   email: string;
+  //   password: string;
+  //   confirmationCode: string | null;
+  //   expirationDate: Date | null;
+  //   confirmationStatus: EmailConfirmationStatus;
+  // }) {
+  //   const passwordHash = await this.bcryptService.hashPassword(dto.password);
+
+  //   const createUserDto: CreateUserDomainDto = {
+  //     email: dto.email,
+  //     login: dto.login,
+  //     passwordHash,
+  //     confirmationCode: dto.confirmationCode,
+  //     expirationDate: dto.expirationDate,
+  //     confirmationStatus: dto.confirmationStatus,
+  //   };
+
+  //   const newUser = this.UserModel.createInstance(createUserDto);
+  //   await this.mgUsersRepository.save(newUser);
+
+  //   return {
+  //     userId: newUser._id.toString(),
+  //   };
+  // }
+
+  // For PostgreSQL
   async createUser(dto: {
     login: string;
     email: string;
@@ -55,11 +86,6 @@ export class UsersService {
       confirmationStatus: dto.confirmationStatus,
     };
 
-    const newUser = this.UserModel.createInstance(createUserDto);
-    await this.mgUsersRepository.save(newUser);
-
-    return {
-      userId: newUser._id.toString(),
-    };
+    return await this.pgUsersRepository.createUser(createUserDto);
   }
 }

@@ -27,7 +27,7 @@ export class PGUserViewDto {
   static mapToView(user: TPgUser): PGUserViewDto {
     const dto = new PGUserViewDto();
 
-    dto.id = user.id;
+    dto.id = user.id.toString();
     dto.login = user.login;
     dto.email = user.email;
     dto.createdAt = user.created_at;

@@ -37,6 +37,7 @@ import { CoreModule } from '../../core/core-module';
 import { AdminCreateUserUseCase } from './users/app/users.use-cases/admin-create-user.use-case';
 import { UsersService } from './users/app/users.service';
 import { PgUsersQueryRepository } from './users/infrastructure/query/pg.users.query-repository';
+import { PgUsersRepository } from './users/infrastructure/pg.users.repository';
 // import { TypeOrmModule } from '@nestjs/typeorm';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
@@ -85,6 +86,7 @@ const sessionsUseCases = [
     MgUsersQueryRepository,
     PgUsersQueryRepository,
     MgUsersRepository,
+    PgUsersRepository,
     SessionsRepository,
     SessionsQueryRepository,
     UserAccountsConfig,

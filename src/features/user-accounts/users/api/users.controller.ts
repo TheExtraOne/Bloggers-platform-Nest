@@ -43,8 +43,10 @@ export class UserController {
     @Query() query: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<PGUserViewDto[]>> {
     // ): Promise<PaginatedViewDto<MongoUserViewDto[]>> {
+    // For MongoDB
     //   return this.mgUsersQueryRepository.findAll(query);
 
+    // For Postgres
     return await this.pgUsersQueryRepository.findAll(query);
   }
 
@@ -53,12 +55,16 @@ export class UserController {
   @CreateUserSwagger()
   async createUser(
     @Body() createUserDto: CreateUserInputDto,
-  ): Promise<MongoUserViewDto> {
+    // ): Promise<MongoUserViewDto> {
+  ): Promise<PGUserViewDto> {
     const { userId } = await this.commandBus.execute(
       new AdminCreateUserCommand(createUserDto),
     );
+    // For MongoDB
+    // return await this.mgUsersQueryRepository.findUserById(userId);
 
-    return await this.mgUsersQueryRepository.findUserById(userId);
+    // For Postgres
+    return await this.pgUsersQueryRepository.findUserById(userId);
   }
 
   @Delete(':id')
