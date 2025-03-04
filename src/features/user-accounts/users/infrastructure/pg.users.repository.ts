@@ -5,6 +5,7 @@ import { CreateUserDomainDto } from '../domain/dto/create-user.domain.dto';
 import { ERRORS } from 'src/constants';
 import { PGUserViewDto } from '../api/view-dto/users.view-dto';
 import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
+import { PasswordRecoveryStatus } from '../domain/password-recovery.schema';
 
 // TODO: refactor types
 @Injectable()
@@ -131,11 +132,47 @@ export class PgUsersRepository {
       : null;
   }
 
+  async findUserByPasswordRecoveryCode(recoveryCode: string): Promise<{
+    id: string;
+    recoveryStatus: PasswordRecoveryStatus;
+    recoveryCode: string;
+    expirationDate: Date;
+  } | null> {
+    const result:
+      | [
+          {
+            id: string;
+            recovery_status: PasswordRecoveryStatus;
+            recovery_code: string;
+            expiration_date: Date;
+          },
+        ]
+      | [] = await this.dataSource.query(
+      `
+      SELECT upr.recovery_status, upr.recovery_code, upr.expiration_date, u.id
+      FROM public.users_password_recovery as upr
+      LEFT JOIN public.users as u
+      ON u.id = upr.user_id
+      WHERE upr.recovery_code = $1 AND u.deleted_at IS NULL;
+    `,
+      [recoveryCode],
+    );
+    const user = result[0];
+    return user
+      ? {
+          id: user.id,
+          recoveryStatus: user.recovery_status,
+          recoveryCode: user.recovery_code,
+          expirationDate: user.expiration_date,
+        }
+      : null;
+  }
+
   async setNewEmailConfirmationData(
     userId: string,
     newConfirmationCode: string,
     newExpirationDate: Date,
-  ) {
+  ): Promise<void> {
     // TODO: find a better way to handle id
     if (!this.validateUserId(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
@@ -156,6 +193,31 @@ export class PgUsersRepository {
     await this.dataSource.query(query, params);
   }
 
+  async setNewPasswordRecoveryData(
+    userId: string,
+    newRecoveryCode: string,
+    newExpirationDate: Date,
+  ): Promise<void> {
+    // TODO: find a better way to handle id
+    if (!this.validateUserId(userId)) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
+    // TODO: Do I need to change 'update_at' in users table as well?
+    const query = `
+      UPDATE public.users_password_recovery
+      SET recovery_code = $2, expiration_date = $3, recovery_status = $4
+      WHERE user_id = $1;
+    `;
+    const params = [
+      userId,
+      newRecoveryCode,
+      newExpirationDate,
+      PasswordRecoveryStatus.Pending,
+    ];
+
+    await this.dataSource.query(query, params);
+  }
+
   async confirmUserEmail(userId: string): Promise<void> {
     // TODO: find a better way to handle id
     if (!this.validateUserId(userId)) {
@@ -168,6 +230,32 @@ export class PgUsersRepository {
       WHERE user_id = $1;
     `;
     const params = [userId, EmailConfirmationStatus.Confirmed];
+
+    await this.dataSource.query(query, params);
+  }
+
+  async confirmPasswordRecovery(
+    userId: string,
+    newPassword: string,
+  ): Promise<void> {
+    // TODO: find a better way to handle id
+    if (!this.validateUserId(userId)) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
+
+    const query = `
+      WITH update_password_recovery AS 
+      (UPDATE public.users_password_recovery
+      SET recovery_code = null, expiration_date = null, recovery_status = $3
+      WHERE user_id = $1),
+
+      update_user AS (UPDATE public.users
+      SET updated_at = NOW(), password_hash = $2
+      WHERE id = $1)
+
+      SELECT 1; -- Dummy select to complete the query.
+    `;
+    const params = [userId, newPassword, PasswordRecoveryStatus.Confirmed];
 
     await this.dataSource.query(query, params);
   }

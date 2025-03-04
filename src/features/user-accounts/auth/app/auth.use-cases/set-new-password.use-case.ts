@@ -5,6 +5,7 @@ import { PasswordRecoveryStatus } from '../../../users/domain/password-recovery.
 import { UserDocument } from '../../../users/domain/user.entity';
 import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
 import { NewPasswordInputDto } from '../../api/input-dto/new-password.input-dto';
+import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
 
 export class SetNewPasswordCommand extends Command<void> {
   constructor(public readonly dto: NewPasswordInputDto) {
@@ -18,46 +19,56 @@ export class SetNewPasswordUseCase
 {
   constructor(
     private readonly mgUsersRepository: MgUsersRepository,
+    private readonly pgUsersRepository: PgUsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}
 
   async execute({ dto }: SetNewPasswordCommand): Promise<void> {
-    const user: UserDocument | null =
-      await this.mgUsersRepository.findUserByPasswordRecoveryCode(
-        dto.recoveryCode,
-      );
+    // For MongoDB
+    // const user: UserDocument | null =
+    //   await this.mgUsersRepository.findUserByPasswordRecoveryCode(
+    //     dto.recoveryCode,
+    //   );
+    // For Postgres
+    const user: {
+      id: string;
+      recoveryStatus: PasswordRecoveryStatus;
+      recoveryCode: string;
+      expirationDate: Date;
+    } | null = await this.pgUsersRepository.findUserByPasswordRecoveryCode(
+      dto.recoveryCode,
+    );
+
     // Check if user with such recoveryCode exist
-    if (!user)
+    if (!user) {
       throw new BadRequestException([
         { field: 'recoveryCode', message: 'incorrect recoveryCode' },
       ]);
-
+    }
     // Check if recoveryCode has already been applied
-    if (
-      user.passwordRecovery.recoveryStatus === PasswordRecoveryStatus.Confirmed
-    )
+    if (user.recoveryStatus === PasswordRecoveryStatus.Confirmed) {
       throw new BadRequestException([
         { field: 'recoveryCode', message: 'already confirmed' },
       ]);
-
+    }
     // Check if recoveryCode expired
-    if (
-      user.passwordRecovery.expirationDate &&
-      user.passwordRecovery.expirationDate < new Date()
-    )
+    if (user.expirationDate && user.expirationDate < new Date()) {
       throw new BadRequestException([
         { field: 'recoveryCode', message: 'already expired' },
       ]);
-
+    }
     // If ok, then updating user password
     const passwordHash = await this.bcryptService.hashPassword(
       dto.newPassword,
       10,
     );
 
-    user.updateLoginPassword({ passwordHash });
-    user.confirmPasswordRecovery();
+    // For MongoDB
+    // user.updateLoginPassword({ passwordHash });
+    // user.confirmPasswordRecovery();
+    // await this.mgUsersRepository.save(user);
 
-    await this.mgUsersRepository.save(user);
+    // For Postgres
+    await this.pgUsersRepository.confirmPasswordRecovery(user.id, passwordHash);
   }
 }
