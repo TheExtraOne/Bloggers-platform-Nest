@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { CreateUserDomainDto } from '../domain/dto/create-user.domain.dto';
+import { ERRORS } from 'src/constants';
 
 @Injectable()
 export class PgUsersRepository {
@@ -43,5 +44,35 @@ export class PgUsersRepository {
     const result = await this.dataSource.query(query, params);
 
     return { userId: result[0].id.toString() };
+  }
+
+  async deleteUserById(userId: string): Promise<void> {
+    // TODO: find a better way to handle id
+    if (!this.validateUserId(userId)) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
+    // TODO: should update 'updated_at' field as well?
+    const query = `
+    UPDATE public.users
+    SET deleted_at = NOW()
+    WHERE id = $1 AND deleted_at IS NULL
+    RETURNING id;
+    `;
+    const params = [userId];
+
+    const result = await this.dataSource.query(query, params);
+
+    // `result[1]` contains the number of affected rows.
+    if (result[1] === 0) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
+  }
+
+  private validateUserId(userId: string): boolean {
+    if (isNaN(Number(userId))) {
+      return false;
+    }
+
+    return true;
   }
 }

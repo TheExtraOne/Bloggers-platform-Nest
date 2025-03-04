@@ -44,6 +44,11 @@ export class PgUsersQueryRepository {
   }
 
   async findUserById(id: string): Promise<PGUserViewDto> {
+    // TODO: find a better way to handle id
+    if (!this.validateUserId(id)) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
+
     const result = await this.dataSource.query(
       `
         SELECT *
@@ -156,5 +161,13 @@ export class PgUsersQueryRepository {
 
   private convertCamelToSnake(str: string): string {
     return str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+  }
+
+  private validateUserId(userId: string): boolean {
+    if (isNaN(Number(userId))) {
+      return false;
+    }
+
+    return true;
   }
 }
