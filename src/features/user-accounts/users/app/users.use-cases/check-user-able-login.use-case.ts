@@ -1,5 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { UsersRepository } from '../../infrastructure/users.repository';
+import { MgUsersRepository } from '../../infrastructure/mg.users.repository';
 import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BcryptService } from '../../../facades/bcrypt.service';
@@ -18,14 +18,14 @@ export class CheckIfUserIsAbleToLoginUseCase
   implements ICommandHandler<CheckIfUserIsAbleToLoginCommand, string>
 {
   constructor(
-    private readonly usersRepository: UsersRepository,
+    private readonly mgUsersRepository: MgUsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}
 
   async execute(command: CheckIfUserIsAbleToLoginCommand): Promise<string> {
     const { loginOrEmail, password } = command;
     const user =
-      await this.usersRepository.findUserByLoginOrEmail(loginOrEmail);
+      await this.mgUsersRepository.findUserByLoginOrEmail(loginOrEmail);
     // Check that such user exists
     if (!user) throw new UnauthorizedException();
 

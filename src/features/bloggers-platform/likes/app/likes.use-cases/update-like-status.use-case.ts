@@ -7,7 +7,7 @@ import { Like, LikeDocument, LikeModelType } from '../../domain/like.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { CommentDocument } from '../../../comments/domain/comment.entity';
 import { PostDocument } from '../../../posts/domain/post.entity';
-import { UsersRepository } from '../../../../user-accounts/users/infrastructure/users.repository';
+import { MgUsersRepository } from '../../../../user-accounts/users/infrastructure/mg.users.repository';
 
 export enum EntityType {
   Comment = 'comment',
@@ -34,7 +34,7 @@ export class UpdateLikeStatusUseCase
     private readonly likesRepository: LikesRepository,
     private readonly commentsRepository: CommentsRepository,
     private readonly postsRepository: PostsRepository,
-    private readonly usersRepository: UsersRepository,
+    private readonly mgUsersRepository: MgUsersRepository,
   ) {}
 
   async execute(command: UpdateLikeStatusCommand): Promise<void> {
@@ -101,7 +101,7 @@ export class UpdateLikeStatusUseCase
   }
 
   private async validateAndGetUser(userId: string) {
-    const user = await this.usersRepository.findUserById(userId);
+    const user = await this.mgUsersRepository.findUserById(userId);
     if (!user) {
       throw new Error('User not found');
     }

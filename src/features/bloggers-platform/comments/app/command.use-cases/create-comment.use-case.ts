@@ -3,7 +3,7 @@ import { CreateCommentInputDto } from '../../api/input-dto/comment.input.dto';
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 import { NotFoundException } from '@nestjs/common';
 import { ERRORS } from '../../../../../constants';
-import { UsersRepository } from '../../../../user-accounts/users/infrastructure/users.repository';
+import { MgUsersRepository } from '../../../../user-accounts/users/infrastructure/mg.users.repository';
 import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentModelType } from '../../domain/comment.entity';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
@@ -25,7 +25,7 @@ export class CreateCommentUseCase
   constructor(
     @InjectModel(Comment.name) private CommentModel: CommentModelType,
     private readonly postsRepository: PostsRepository,
-    private readonly usersRepository: UsersRepository,
+    private readonly mgUsersRepository: MgUsersRepository,
     private readonly commentsRepository: CommentsRepository,
   ) {}
 
@@ -37,7 +37,7 @@ export class CreateCommentUseCase
     if (!post) throw new NotFoundException(ERRORS.POST_NOT_FOUND);
 
     // Check if user exists
-    const user = await this.usersRepository.findUserById(userId);
+    const user = await this.mgUsersRepository.findUserById(userId);
     if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
 
     const newComment = this.CommentModel.createInstance({

@@ -27,18 +27,10 @@ export class PgUsersQueryRepository {
     const { sortBy, sortDirection, pageNumber, pageSize } = query;
 
     const sortColumn = this.getSortColumn(sortBy);
-    const { conditions, params } = this.buildWhereClause(query);
     const { offset, limit } = this.getPaginationParams(pageNumber, pageSize);
 
     const [users, totalCount] = await Promise.all([
-      this.findUsers(
-        conditions,
-        params,
-        sortColumn,
-        sortDirection,
-        limit,
-        offset,
-      ),
+      this.findUsers(query, sortColumn, sortDirection, limit, offset),
       this.getTotalCount(),
     ]);
 
@@ -60,26 +52,28 @@ export class PgUsersQueryRepository {
   }
 
   private buildWhereClause(query: GetUsersQueryParams): {
-    conditions: string[];
+    baseConditions: string[];
+    searchConditions: string[];
     params: (string | number)[];
   } {
     const { searchLoginTerm, searchEmailTerm } = query;
-    const conditions = ['deleted_at IS NULL'];
+    const baseConditions = ['deleted_at IS NULL'];
+    const searchConditions: string[] = [];
     const params: (string | number)[] = [];
 
     if (searchLoginTerm) {
       const value = `%${searchLoginTerm}%`;
       params.push(value);
-      conditions.push(`login LIKE $${params.indexOf(value) + 1}`);
+      searchConditions.push(`login LIKE $${params.indexOf(value) + 1}`);
     }
 
     if (searchEmailTerm) {
       const value = `%${searchEmailTerm}%`;
       params.push(value);
-      conditions.push(`email LIKE $${params.indexOf(value) + 1}`);
+      searchConditions.push(`email LIKE $${params.indexOf(value) + 1}`);
     }
 
-    return { conditions, params };
+    return { baseConditions, searchConditions, params };
   }
 
   private getPaginationParams(pageNumber: number, pageSize: number) {
@@ -90,25 +84,33 @@ export class PgUsersQueryRepository {
   }
 
   private async findUsers(
-    conditions: string[],
-    params: (string | number)[],
+    query: GetUsersQueryParams,
     sortColumn: string,
     sortDirection: string,
     limit: number,
     offset: number,
   ): Promise<TPgUser[]> {
+    const { baseConditions, searchConditions, params } =
+      this.buildWhereClause(query);
+
     params.push(limit, offset);
-    // TODO: OR!!!!
-    const query = `
+
+    const whereClause = baseConditions.join(' AND ');
+    const searchClause =
+      searchConditions.length > 0
+        ? ` AND (${searchConditions.join(' OR ')})`
+        : '';
+
+    const sql = `
       SELECT *
       FROM public.users
-      WHERE ${conditions.join(' AND ')}
+      WHERE ${whereClause}${searchClause}
       ORDER BY users.${sortColumn} ${sortDirection}
       LIMIT $${params.indexOf(limit) + 1}
       OFFSET $${params.indexOf(offset) + 1}
     `;
 
-    return this.dataSource.query(query, params);
+    return this.dataSource.query(sql, params);
   }
 
   private async getTotalCount(): Promise<[{ count: string }]> {

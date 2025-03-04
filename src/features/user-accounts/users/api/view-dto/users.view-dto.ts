@@ -1,5 +1,5 @@
 import { UserDocument } from '../../domain/user.entity';
-import { TPgUser } from '../../infrastructure/query/pg.users.query-repository copy';
+import { TPgUser } from '../../infrastructure/query/pg.users.query-repository';
 
 export class MongoUserViewDto {
   id: string;

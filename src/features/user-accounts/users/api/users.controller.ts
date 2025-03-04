@@ -24,19 +24,16 @@ import {
   DeleteUserSwagger,
 } from './swagger';
 import { MongoUserViewDto, PGUserViewDto } from './view-dto/users.view-dto';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
 import { AdminCreateUserCommand } from '../app/users.use-cases/admin-create-user.use-case';
-// import { PgUsersQueryRepository } from '../infrastructure/query/pg.users.query-repository copy';
+import { PgUsersQueryRepository } from '../infrastructure/query/pg.users.query-repository';
 
 @UseGuards(BasicAuthGuard)
 @Controller(PATHS.USERS)
 export class UserController {
   constructor(
-    // @InjectDataSource() private readonly dataSource: DataSource,
     private readonly commandBus: CommandBus,
     private readonly mgUsersQueryRepository: MgUsersQueryRepository,
-    // private readonly pgUsersQueryRepository: PgUsersQueryRepository,
+    private readonly pgUsersQueryRepository: PgUsersQueryRepository,
   ) {}
 
   @Get()
@@ -44,11 +41,11 @@ export class UserController {
   @GetAllUsersSwagger()
   async getAllUsers(
     @Query() query: GetUsersQueryParams,
-    // ): Promise<PaginatedViewDto<PGUserViewDto[]>> {
-  ): Promise<PaginatedViewDto<MongoUserViewDto[]>> {
-    return this.mgUsersQueryRepository.findAll(query);
+  ): Promise<PaginatedViewDto<PGUserViewDto[]>> {
+    // ): Promise<PaginatedViewDto<MongoUserViewDto[]>> {
+    //   return this.mgUsersQueryRepository.findAll(query);
 
-    // return await this.pgUsersQueryRepository.findAll(query);
+    return await this.pgUsersQueryRepository.findAll(query);
   }
 
   @Post()

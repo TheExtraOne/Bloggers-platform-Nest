@@ -5,7 +5,7 @@ import { ERRORS } from 'src/constants';
 import { User, UserModelType, UserDocument } from '../domain/user.entity';
 
 @Injectable()
-export class UsersRepository {
+export class MgUsersRepository {
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
   async save(user: UserDocument): Promise<void> {

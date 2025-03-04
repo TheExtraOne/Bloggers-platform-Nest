@@ -27,7 +27,7 @@ import { CheckIfUserIsAbleToLoginUseCase } from './users/app/users.use-cases/che
 import { CreateUserUseCase } from './users/app/users.use-cases/create-user.use-case';
 import { DeleteUserUseCase } from './users/app/users.use-cases/delete-user.use-case';
 import { MgUsersQueryRepository } from './users/infrastructure/query/mg.users.query-repository';
-import { UsersRepository } from './users/infrastructure/users.repository';
+import { MgUsersRepository } from './users/infrastructure/mg.users.repository';
 import { SecurityController } from './sessions/api/security.controller';
 import { SessionsQueryRepository } from './sessions/infrastructure/query/sessions.query-repository';
 import { DeleteAllSessionsUseCase } from './sessions/app/sessions.use-cases/delete-all-sessions.use-case';
@@ -36,7 +36,7 @@ import { ValidateRefreshTokenUseCase } from './sessions/app/sessions.use-cases/v
 import { CoreModule } from '../../core/core-module';
 import { AdminCreateUserUseCase } from './users/app/users.use-cases/admin-create-user.use-case';
 import { UsersService } from './users/app/users.service';
-// import { PgUsersQueryRepository } from './users/infrastructure/query/pg.users.query-repository copy';
+import { PgUsersQueryRepository } from './users/infrastructure/query/pg.users.query-repository';
 // import { TypeOrmModule } from '@nestjs/typeorm';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
@@ -83,8 +83,8 @@ const sessionsUseCases = [
   controllers: [UserController, AuthController, SecurityController],
   providers: [
     MgUsersQueryRepository,
-    // PgUsersQueryRepository,
-    UsersRepository,
+    PgUsersQueryRepository,
+    MgUsersRepository,
     SessionsRepository,
     SessionsQueryRepository,
     UserAccountsConfig,
@@ -95,6 +95,6 @@ const sessionsUseCases = [
     ...authUseCases,
     ...sessionsUseCases,
   ],
-  exports: [UsersRepository],
+  exports: [MgUsersRepository],
 })
 export class UserAccountsModule {}

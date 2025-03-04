@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserModelType } from '../domain/user.entity';
-import { UsersRepository } from '../infrastructure/users.repository';
+import { MgUsersRepository } from '../infrastructure/mg.users.repository';
 import { BcryptService } from '../../facades/bcrypt.service';
 import { CreateUserDomainDto } from '../domain/dto/create-user.domain.dto';
 import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
@@ -10,13 +10,13 @@ import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
 export class UsersService {
   constructor(
     @InjectModel(User.name) private UserModel: UserModelType,
-    private readonly usersRepository: UsersRepository,
+    private readonly mgUsersRepository: MgUsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}
 
   async validateUserCredentials(login: string, email: string) {
     const userByLogin =
-      await this.usersRepository.findUserByLoginOrEmail(login);
+      await this.mgUsersRepository.findUserByLoginOrEmail(login);
     if (userByLogin) {
       return {
         field: 'login',
@@ -25,7 +25,7 @@ export class UsersService {
     }
 
     const userByEmail =
-      await this.usersRepository.findUserByLoginOrEmail(email);
+      await this.mgUsersRepository.findUserByLoginOrEmail(email);
     if (userByEmail) {
       return {
         field: 'email',
@@ -56,7 +56,7 @@ export class UsersService {
     };
 
     const newUser = this.UserModel.createInstance(createUserDto);
-    await this.usersRepository.save(newUser);
+    await this.mgUsersRepository.save(newUser);
 
     return {
       userId: newUser._id.toString(),

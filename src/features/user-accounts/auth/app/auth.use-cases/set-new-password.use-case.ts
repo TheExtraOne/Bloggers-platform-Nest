@@ -3,7 +3,7 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BcryptService } from '../../../facades/bcrypt.service';
 import { PasswordRecoveryStatus } from '../../../users/domain/password-recovery.schema';
 import { UserDocument } from '../../../users/domain/user.entity';
-import { UsersRepository } from '../../../users/infrastructure/users.repository';
+import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
 import { NewPasswordInputDto } from '../../api/input-dto/new-password.input-dto';
 
 export class SetNewPasswordCommand extends Command<void> {
@@ -17,13 +17,13 @@ export class SetNewPasswordUseCase
   implements ICommandHandler<SetNewPasswordCommand>
 {
   constructor(
-    private readonly usersRepository: UsersRepository,
+    private readonly mgUsersRepository: MgUsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}
 
   async execute({ dto }: SetNewPasswordCommand): Promise<void> {
     const user: UserDocument | null =
-      await this.usersRepository.findUserByPasswordRecoveryCode(
+      await this.mgUsersRepository.findUserByPasswordRecoveryCode(
         dto.recoveryCode,
       );
     // Check if user with such recoveryCode exist
@@ -58,6 +58,6 @@ export class SetNewPasswordUseCase
     user.updateLoginPassword({ passwordHash });
     user.confirmPasswordRecovery();
 
-    await this.usersRepository.save(user);
+    await this.mgUsersRepository.save(user);
   }
 }

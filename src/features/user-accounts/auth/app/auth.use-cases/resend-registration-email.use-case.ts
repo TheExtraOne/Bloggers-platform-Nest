@@ -5,7 +5,7 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EmailService } from '../../../facades/email.service';
 import { EmailConfirmationStatus } from '../../../users/domain/email-confirmation.schema';
 import { UserDocument } from '../../../users/domain/user.entity';
-import { UsersRepository } from '../../../users/infrastructure/users.repository';
+import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
 import { ResendRegistrationInputDto } from '../../api/input-dto/resend-registration.input-dto';
 
 export class ResendRegistrationEmailCommand extends Command<void> {
@@ -19,13 +19,13 @@ export class ResendRegistrationEmailUseCase
   implements ICommandHandler<ResendRegistrationEmailCommand, void>
 {
   constructor(
-    private readonly usersRepository: UsersRepository,
+    private readonly mgUsersRepository: MgUsersRepository,
     private readonly emailService: EmailService,
   ) {}
 
   async execute(command: ResendRegistrationEmailCommand): Promise<void> {
     const user: UserDocument | null =
-      await this.usersRepository.findUserByLoginOrEmail(command.dto.email);
+      await this.mgUsersRepository.findUserByLoginOrEmail(command.dto.email);
     // Check if user with such email exists
     if (!user)
       throw new BadRequestException([
@@ -53,7 +53,7 @@ export class ResendRegistrationEmailUseCase
       expirationDate: newExpirationDate,
     });
 
-    await this.usersRepository.save(user);
+    await this.mgUsersRepository.save(user);
 
     // Send confirmation letter
     this.emailService.sendRegistrationMail({

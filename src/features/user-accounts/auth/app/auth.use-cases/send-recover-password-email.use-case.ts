@@ -2,9 +2,8 @@ import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EmailService } from '../../../facades/email.service';
-import { PasswordRecoveryStatus } from '../../../users/domain/password-recovery.schema';
 import { UserDocument } from '../../../users/domain/user.entity';
-import { UsersRepository } from '../../../users/infrastructure/users.repository';
+import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
 import { PasswordRecoveryInputDto } from '../../api/input-dto/password-recovery.input-dto';
 
 export class SendRecoverPasswordEmailCommand extends Command<void> {
@@ -18,13 +17,13 @@ export class SendRecoverPasswordEmailUseCase
   implements ICommandHandler<SendRecoverPasswordEmailCommand, void>
 {
   constructor(
-    private readonly usersRepository: UsersRepository,
+    private readonly mgUsersRepository: MgUsersRepository,
     private readonly emailService: EmailService,
   ) {}
 
   async execute(command: SendRecoverPasswordEmailCommand): Promise<void> {
     const user: UserDocument | null =
-      await this.usersRepository.findUserByLoginOrEmail(command.dto.email);
+      await this.mgUsersRepository.findUserByLoginOrEmail(command.dto.email);
     // Even if current email is not registered (for prevent user's email detection)
     if (!user) return;
 
@@ -40,7 +39,7 @@ export class SendRecoverPasswordEmailUseCase
       expirationDate: newExpirationDate,
     });
 
-    await this.usersRepository.save(user);
+    await this.mgUsersRepository.save(user);
 
     // Send recovery password letter
     this.emailService.sendRecoveryPasswordMail({
