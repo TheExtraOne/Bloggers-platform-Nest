@@ -96,6 +96,39 @@ export class PgUsersRepository {
       : null;
   }
 
+  async findUserByLoginOrEmail(loginOrEmail: string): Promise<{
+    id: string;
+    confirmationStatus: EmailConfirmationStatus;
+    passwordHash: string;
+  } | null> {
+    const result:
+      | [
+          {
+            id: string;
+            confirmation_status: EmailConfirmationStatus;
+            password_hash: string;
+          },
+        ]
+      | [] = await this.dataSource.query(
+      `
+        SELECT u.id, u.password_hash, uem.confirmation_status
+        FROM public.users as u
+		    LEFT JOIN public.users_email_confirmation as uem
+		    ON u.id = uem.user_id
+        WHERE u.login = $1 OR u.email = $1 AND u.deleted_at IS NULL;
+      `,
+      [loginOrEmail],
+    );
+    const user = result[0];
+    return user
+      ? {
+          id: user.id,
+          confirmationStatus: user.confirmation_status,
+          passwordHash: user.password_hash,
+        }
+      : null;
+  }
+
   async findUserByConfirmationCode(confirmationCode: string): Promise<{
     id: string;
     confirmationStatus: EmailConfirmationStatus;

@@ -3,6 +3,7 @@ import { MgUsersRepository } from '../../infrastructure/mg.users.repository';
 import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BcryptService } from '../../../facades/bcrypt.service';
+import { PgUsersRepository } from '../../infrastructure/pg.users.repository';
 
 export class CheckIfUserIsAbleToLoginCommand extends Command<string> {
   constructor(
@@ -19,23 +20,31 @@ export class CheckIfUserIsAbleToLoginUseCase
 {
   constructor(
     private readonly mgUsersRepository: MgUsersRepository,
+    private readonly pgUsersRepository: PgUsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}
 
   async execute(command: CheckIfUserIsAbleToLoginCommand): Promise<string> {
     const { loginOrEmail, password } = command;
-    const user =
-      await this.mgUsersRepository.findUserByLoginOrEmail(loginOrEmail);
+    // For MongoDB
+    // await this.mgUsersRepository.findUserByLoginOrEmail(loginOrEmail);
+    // For Postgres
+    const user: {
+      id: string;
+      confirmationStatus: EmailConfirmationStatus;
+      passwordHash: string;
+    } | null =
+      await this.pgUsersRepository.findUserByLoginOrEmail(loginOrEmail);
+
     // Check that such user exists
-    if (!user) throw new UnauthorizedException();
+    if (!user) {
+      throw new UnauthorizedException();
+    }
 
     // Check that user confirmed his email
-    if (
-      user.emailConfirmation.confirmationStatus !==
-      EmailConfirmationStatus.Confirmed
-    )
+    if (user.confirmationStatus === EmailConfirmationStatus.Pending) {
       throw new UnauthorizedException();
-
+    }
     // Check that user password is correct
     const isPasswordCorrect = await this.bcryptService.comparePasswords(
       password,
@@ -43,6 +52,9 @@ export class CheckIfUserIsAbleToLoginUseCase
     );
     if (!isPasswordCorrect) throw new UnauthorizedException();
 
-    return user._id.toString();
+    // For MongoDB
+    // return user._id.toString();
+    // For Postgres
+    return user.id;
   }
 }

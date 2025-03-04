@@ -17,8 +17,13 @@ export class UsersService {
   ) {}
 
   async validateUserCredentials(login: string, email: string) {
+    // For MongoDB
+    // const userByLogin =
+    //   await this.mgUsersRepository.findUserByLoginOrEmail(login);
+    // For Postgres
     const userByLogin =
-      await this.mgUsersRepository.findUserByLoginOrEmail(login);
+      await this.pgUsersRepository.findUserByLoginOrEmail(login);
+
     if (userByLogin) {
       return {
         field: 'login',
@@ -26,8 +31,13 @@ export class UsersService {
       };
     }
 
+    // For MongoDB
+    // const userByEmail =
+    //   await this.mgUsersRepository.findUserByLoginOrEmail(email);
+    // For Postgres
     const userByEmail =
-      await this.mgUsersRepository.findUserByLoginOrEmail(email);
+      await this.pgUsersRepository.findUserByLoginOrEmail(email);
+
     if (userByEmail) {
       return {
         field: 'email',
@@ -38,35 +48,6 @@ export class UsersService {
     return null;
   }
 
-  // For mongoDB
-  // async createUser(dto: {
-  //   login: string;
-  //   email: string;
-  //   password: string;
-  //   confirmationCode: string | null;
-  //   expirationDate: Date | null;
-  //   confirmationStatus: EmailConfirmationStatus;
-  // }) {
-  //   const passwordHash = await this.bcryptService.hashPassword(dto.password);
-
-  //   const createUserDto: CreateUserDomainDto = {
-  //     email: dto.email,
-  //     login: dto.login,
-  //     passwordHash,
-  //     confirmationCode: dto.confirmationCode,
-  //     expirationDate: dto.expirationDate,
-  //     confirmationStatus: dto.confirmationStatus,
-  //   };
-
-  //   const newUser = this.UserModel.createInstance(createUserDto);
-  //   await this.mgUsersRepository.save(newUser);
-
-  //   return {
-  //     userId: newUser._id.toString(),
-  //   };
-  // }
-
-  // For PostgreSQL
   async createUser(dto: {
     login: string;
     email: string;
@@ -86,6 +67,14 @@ export class UsersService {
       confirmationStatus: dto.confirmationStatus,
     };
 
+    // For MongoDB
+    //   const newUser = this.UserModel.createInstance(createUserDto);
+    //   await this.mgUsersRepository.save(newUser);
+    //   return {
+    //     userId: newUser._id.toString(),
+    //   };
+
+    // For PostgreSQL
     return await this.pgUsersRepository.createUser(createUserDto);
   }
 }
