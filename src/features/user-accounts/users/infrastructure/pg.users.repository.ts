@@ -3,7 +3,10 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { CreateUserDomainDto } from '../domain/dto/create-user.domain.dto';
 import { ERRORS } from 'src/constants';
+import { PGUserViewDto } from '../api/view-dto/users.view-dto';
+import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
 
+// TODO: refactor types
 @Injectable()
 export class PgUsersRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
@@ -66,6 +69,107 @@ export class PgUsersRepository {
     if (result[1] === 0) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
+  }
+
+  async findUserByEmail(email: string): Promise<{
+    id: string;
+    confirmationStatus: EmailConfirmationStatus;
+  } | null> {
+    const result:
+      | [{ id: string; confirmation_status: EmailConfirmationStatus }]
+      | [] = await this.dataSource.query(
+      `
+        SELECT u.id, uec.confirmation_status
+        FROM public.users as u
+        LEFT JOIN public.users_email_confirmation as uec
+	      ON u.id = uec.user_id
+        WHERE u.email = $1 AND u.deleted_at IS NULL;
+      `,
+      [email],
+    );
+
+    const user = result[0];
+
+    return user
+      ? { id: user.id, confirmationStatus: user.confirmation_status }
+      : null;
+  }
+
+  async findUserByConfirmationCode(confirmationCode: string): Promise<{
+    id: string;
+    confirmationStatus: EmailConfirmationStatus;
+    confirmationCode: string;
+    expirationDate: Date;
+  } | null> {
+    const result:
+      | [
+          {
+            id: string;
+            confirmation_status: EmailConfirmationStatus;
+            confirmation_code: string;
+            expiration_date: Date;
+          },
+        ]
+      | [] = await this.dataSource.query(
+      `
+      SELECT uec.confirmation_status, uec.confirmation_code,uec.expiration_date, u.id
+      FROM public.users_email_confirmation as uec
+      LEFT JOIN public.users as u
+      ON u.id = uec.user_id
+      WHERE uec.confirmation_code = $1 AND u.deleted_at IS NULL;
+    `,
+      [confirmationCode],
+    );
+    const user = result[0];
+    return user
+      ? {
+          id: user.id,
+          confirmationStatus: user.confirmation_status,
+          confirmationCode: user.confirmation_code,
+          expirationDate: user.expiration_date,
+        }
+      : null;
+  }
+
+  async setNewEmailConfirmationData(
+    userId: string,
+    newConfirmationCode: string,
+    newExpirationDate: Date,
+  ) {
+    // TODO: find a better way to handle id
+    if (!this.validateUserId(userId)) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
+    // TODO: Do I need to change 'update_at' in users table as well?
+    const query = `
+      UPDATE public.users_email_confirmation
+      SET confirmation_code = $2, expiration_date = $3, confirmation_status = $4
+      WHERE user_id = $1;
+    `;
+    const params = [
+      userId,
+      newConfirmationCode,
+      newExpirationDate,
+      EmailConfirmationStatus.Pending,
+    ];
+
+    await this.dataSource.query(query, params);
+  }
+
+  async confirmUserEmail(userId: string): Promise<void> {
+    // TODO: find a better way to handle id
+    if (!this.validateUserId(userId)) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
+    // TODO: Do I need to change 'update_at' in users table as well?
+    const query = `
+      UPDATE public.users_email_confirmation
+      SET confirmation_status = $2
+      WHERE user_id = $1;
+    `;
+    const params = [userId, EmailConfirmationStatus.Confirmed];
+
+    await this.dataSource.query(query, params);
   }
 
   private validateUserId(userId: string): boolean {

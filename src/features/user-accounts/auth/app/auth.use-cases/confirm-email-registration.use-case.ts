@@ -4,6 +4,7 @@ import { EmailConfirmationStatus } from '../../../users/domain/email-confirmatio
 import { UserDocument } from '../../../users/domain/user.entity';
 import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
 import { ConfirmRegistrationInputDto } from '../../api/input-dto/confirm-registration.input-dto';
+import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
 
 export class ConfirmEmailRegistrationCommand extends Command<void> {
   constructor(public readonly dto: ConfirmRegistrationInputDto) {
@@ -15,38 +16,52 @@ export class ConfirmEmailRegistrationCommand extends Command<void> {
 export class ConfirmEmailRegistrationUseCase
   implements ICommandHandler<ConfirmEmailRegistrationCommand, void>
 {
-  constructor(private readonly mgUsersRepository: MgUsersRepository) {}
+  constructor(
+    private readonly mgUsersRepository: MgUsersRepository,
+    private readonly pgUsersRepository: PgUsersRepository,
+  ) {}
 
   async execute(command: ConfirmEmailRegistrationCommand): Promise<void> {
-    const user: UserDocument | null =
-      await this.mgUsersRepository.findUserByConfirmationCode(command.dto.code);
-    // Check if user with such confirmationCode exist
-    if (!user)
-      throw new BadRequestException([
-        { field: 'code', message: 'already confirmed' },
-      ]);
+    // For MongoDB
+    // const user: UserDocument | null =
+    //   await this.mgUsersRepository.findUserByConfirmationCode(command.dto.code);
 
+    // For Postgres
+    const user: {
+      id: string;
+      confirmationStatus: EmailConfirmationStatus;
+      confirmationCode: string;
+      expirationDate: Date;
+    } | null = await this.pgUsersRepository.findUserByConfirmationCode(
+      command.dto.code,
+    );
+
+    // Check if user with such confirmationCode exist
+    if (!user) {
+      throw new BadRequestException([
+        { field: 'code', message: 'no user found' },
+      ]);
+    }
     // Check if confirmationCode has already been applied
-    if (
-      user.emailConfirmation.confirmationStatus ===
-      EmailConfirmationStatus.Confirmed
-    )
+    if (user.confirmationStatus === EmailConfirmationStatus.Confirmed) {
       throw new BadRequestException([
         { field: 'code', message: 'already confirmed' },
       ]);
+    }
 
     // Check if confirmationCode expired
-    if (
-      user.emailConfirmation.expirationDate &&
-      user.emailConfirmation.expirationDate < new Date()
-    )
+    if (user.expirationDate && user.expirationDate < new Date()) {
       throw new BadRequestException([
         { field: 'code', message: 'already expired' },
       ]);
+    }
 
     // If ok, then updating user flag
-    user.confirmEmail();
+    // For MongoDB
+    // user.confirmEmail();
+    // await this.mgUsersRepository.save(user);
 
-    await this.mgUsersRepository.save(user);
+    // For Postgres
+    await this.pgUsersRepository.confirmUserEmail(user.id);
   }
 }

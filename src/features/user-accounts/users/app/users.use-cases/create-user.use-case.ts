@@ -43,8 +43,8 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
 
     // Send confirmation email
     this.emailService.sendRegistrationMail({
-      email: email,
-      confirmationCode: confirmationCode,
+      email,
+      confirmationCode,
     });
 
     return result;
