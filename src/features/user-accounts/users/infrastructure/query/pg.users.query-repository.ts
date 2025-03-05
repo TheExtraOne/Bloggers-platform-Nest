@@ -32,7 +32,7 @@ export class PgUsersQueryRepository {
 
     const [users, totalCount] = await Promise.all([
       this.findUsers(query, sortColumn, sortDirection, limit, offset),
-      this.getTotalCount(),
+      this.getTotalCount(query),
     ]);
 
     return this.mapToPaginatedView(
@@ -83,16 +83,17 @@ export class PgUsersQueryRepository {
     const searchConditions: string[] = [];
     const params: (string | number)[] = [];
 
+    // ILIKE is case-insensitive
     if (searchLoginTerm) {
       const value = `%${searchLoginTerm}%`;
       params.push(value);
-      searchConditions.push(`login LIKE $${params.indexOf(value) + 1}`);
+      searchConditions.push(`login ILIKE $${params.indexOf(value) + 1}`);
     }
 
     if (searchEmailTerm) {
       const value = `%${searchEmailTerm}%`;
       params.push(value);
-      searchConditions.push(`email LIKE $${params.indexOf(value) + 1}`);
+      searchConditions.push(`email ILIKE $${params.indexOf(value) + 1}`);
     }
 
     return { baseConditions, searchConditions, params };
@@ -135,12 +136,26 @@ export class PgUsersQueryRepository {
     return this.dataSource.query(sql, params);
   }
 
-  private async getTotalCount(): Promise<[{ count: string }]> {
-    return this.dataSource.query(`
+  private async getTotalCount(
+    query: GetUsersQueryParams,
+  ): Promise<[{ count: string }]> {
+    const { baseConditions, searchConditions, params } =
+      this.buildWhereClause(query);
+
+    const whereClause = baseConditions.join(' AND ');
+    const searchClause =
+      searchConditions.length > 0
+        ? ` AND (${searchConditions.join(' OR ')})`
+        : '';
+
+    return this.dataSource.query(
+      `
       SELECT COUNT(*)
       FROM public.users
-      WHERE deleted_at IS NULL
-    `);
+      WHERE ${whereClause}${searchClause}
+    `,
+      params,
+    );
   }
 
   private mapToPaginatedView(

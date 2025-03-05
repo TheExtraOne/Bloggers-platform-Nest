@@ -32,7 +32,7 @@ window.onload = function() {
           ]
         }
       },
-      "/users": {
+      "/sa/users": {
         "get": {
           "description": "Returns a paginated list of all users. Requires basic authentication.",
           "operationId": "UserController_getAllUsers",
@@ -180,7 +180,7 @@ window.onload = function() {
           ]
         }
       },
-      "/users/{id}": {
+      "/sa/users/{id}": {
         "delete": {
           "description": "Deletes a user by their ID. Requires basic authentication. This operation cannot be undone.",
           "operationId": "UserController_deleteUser",

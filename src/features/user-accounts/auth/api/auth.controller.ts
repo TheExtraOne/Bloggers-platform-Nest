@@ -44,6 +44,7 @@ import {
   PasswordRecoverySwagger,
   NewPasswordSwagger,
 } from './swagger';
+import { PgUsersQueryRepository } from '../../users/infrastructure/query/pg.users.query-repository';
 
 @UseGuards(ThrottlerGuard)
 @Controller(PATHS.AUTH)
@@ -51,6 +52,7 @@ export class AuthController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly mgUsersQueryRepository: MgUsersQueryRepository,
+    private readonly pgUsersQueryRepository: PgUsersQueryRepository,
   ) {}
 
   @SkipThrottle()
@@ -60,7 +62,10 @@ export class AuthController {
   async getUserInformation(
     @CurrentUserId() userId: string,
   ): Promise<MeViewDto> {
-    const result = await this.mgUsersQueryRepository.findUserById(userId);
+    // For MongoDB
+    // const result = await this.mgUsersQueryRepository.findUserById(userId);
+    // For Postgres
+    const result = await this.pgUsersQueryRepository.findUserById(userId);
 
     const mappedUser: MeViewDto = {
       email: result.email,

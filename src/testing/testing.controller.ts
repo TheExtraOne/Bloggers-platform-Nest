@@ -3,22 +3,33 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { PATHS } from '../constants';
 import { DeleteAllDataSwagger } from './swagger';
+import { DataSource } from 'typeorm';
 
 @Controller(PATHS.TESTING)
 export class TestingController {
   constructor(
     @InjectConnection() private readonly databaseConnection: Connection,
+    private readonly dataSource: DataSource,
   ) {}
 
   @Delete('all-data')
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteAllDataSwagger()
   async deleteAll() {
-    const collections = await this.databaseConnection.listCollections();
+    // For MongoDB
+    // const collections = await this.databaseConnection.listCollections();
+    // const promises = collections.map((collection) =>
+    //   this.databaseConnection.collection(collection.name).deleteMany({}),
+    // );
+    // await Promise.all(promises);
 
-    const promises = collections.map((collection) =>
-      this.databaseConnection.collection(collection.name).deleteMany({}),
-    );
-    await Promise.all(promises);
+    // For Postgres
+    await this.dataSource.query(`
+      TRUNCATE TABLE 
+      public.users_password_recovery, 
+      public.users_email_confirmation, 
+      public.users 
+      RESTART IDENTITY CASCADE;
+    `);
   }
 }

@@ -3,7 +3,7 @@ export const PATHS = {
   BLOGS: 'blogs',
   COMMENTS: 'comments',
   POSTS: 'posts',
-  USERS: 'users',
+  USERS: 'sa/users',
   TESTING: 'testing',
   SECURITY: 'security',
 };
