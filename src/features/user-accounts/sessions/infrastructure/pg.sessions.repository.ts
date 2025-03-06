@@ -45,7 +45,7 @@ export class PgSessionsRepository {
     `;
     const params = [deviceId];
     const result = await this.dataSource.query(query, params);
-    console.log('result', result);
+
     return result[0];
   }
 
@@ -69,7 +69,7 @@ export class PgSessionsRepository {
     `;
     const params = [userId, deviceId, lastActiveDate];
     const result = await this.dataSource.query(query, params);
-    console.log('result validation', result);
+
     return result[0];
   }
 
@@ -80,11 +80,22 @@ export class PgSessionsRepository {
   ): Promise<void> {
     const query = `
       UPDATE public.sessions
-      SET expiration_date = $1, last_activate_date = $2
-      WHERE id = $3
+      SET expiration_date = $1, last_activate_date = $2, updated_at = $3
+      WHERE id = $4
       AND deleted_at IS NULL
     `;
-    const params = [newExp, newIat, deviceId];
+    const params = [newExp, newIat, new Date(), deviceId];
+    await this.dataSource.query(query, params);
+  }
+
+  async deleteSessionByDeviceId(deviceId: string): Promise<void> {
+    const query = `
+      UPDATE public.sessions
+      SET deleted_at = NOW()
+      WHERE id = $1
+      AND deleted_at IS NULL
+    `;
+    const params = [deviceId];
     await this.dataSource.query(query, params);
   }
 

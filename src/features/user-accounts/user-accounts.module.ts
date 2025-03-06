@@ -29,7 +29,7 @@ import { DeleteUserUseCase } from './users/app/users.use-cases/delete-user.use-c
 import { MgUsersQueryRepository } from './users/infrastructure/query/mg.users.query-repository';
 import { MgUsersRepository } from './users/infrastructure/mg.users.repository';
 import { SecurityController } from './sessions/api/security.controller';
-import { SessionsQueryRepository } from './sessions/infrastructure/query/sessions.query-repository';
+import { MgSessionsQueryRepository } from './sessions/infrastructure/query/mg.sessions.query-repository';
 import { DeleteAllSessionsUseCase } from './sessions/app/sessions.use-cases/delete-all-sessions.use-case';
 import { DeleteSessionByIdUseCase } from './sessions/app/sessions.use-cases/delete-session-by-id.use-case';
 import { ValidateRefreshTokenUseCase } from './sessions/app/sessions.use-cases/validate-refresh-token.use-case';
@@ -39,6 +39,7 @@ import { UsersService } from './users/app/users.service';
 import { PgUsersQueryRepository } from './users/infrastructure/query/pg.users.query-repository';
 import { PgUsersRepository } from './users/infrastructure/pg.users.repository';
 import { PgSessionsRepository } from './sessions/infrastructure/pg.sessions.repository';
+import { PgSessionsQueryRepository } from './sessions/infrastructure/query/pg.sessions.query-repository';
 // import { TypeOrmModule } from '@nestjs/typeorm';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
@@ -89,8 +90,9 @@ const sessionsUseCases = [
     MgUsersRepository,
     PgUsersRepository,
     MgSessionsRepository,
-    SessionsQueryRepository,
+    MgSessionsQueryRepository,
     PgSessionsRepository,
+    PgSessionsQueryRepository,
     UserAccountsConfig,
     UsersService,
     ...adapters,

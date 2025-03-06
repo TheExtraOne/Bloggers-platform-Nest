@@ -1,7 +1,7 @@
 import { INestApplication, HttpStatus } from '@nestjs/common';
 import request from 'supertest';
 import { PATHS } from '../../../src/constants';
-import { SessionsViewDto } from '../../../src/features/user-accounts/sessions/api/view-dto/sessions.view-dto';
+import { MgSessionsViewDto } from '../../../src/features/user-accounts/sessions/api/view-dto/sessions.view-dto';
 
 export class SessionsTestManager {
   constructor(private readonly app: INestApplication) {}
@@ -9,7 +9,7 @@ export class SessionsTestManager {
   async getAllSessions(
     refreshToken: string,
     statusCode: HttpStatus = HttpStatus.OK,
-  ): Promise<SessionsViewDto[]> {
+  ): Promise<MgSessionsViewDto[]> {
     const response = await request(this.app.getHttpServer())
       .get(`/${PATHS.SECURITY}/devices`)
       .set('Cookie', [`refreshToken=${refreshToken}`])

@@ -31,7 +31,8 @@ export class TestingController {
       TRUNCATE TABLE 
       public.users_password_recovery, 
       public.users_email_confirmation, 
-      public.users 
+      public.users, 
+      public.sessions
       RESTART IDENTITY CASCADE;
     `);
   }

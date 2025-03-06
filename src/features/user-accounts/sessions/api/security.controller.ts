@@ -11,20 +11,25 @@ import { PATHS } from '../../../../constants';
 import { CommandBus } from '@nestjs/cqrs';
 import { JwtRefreshGuard } from '../../guards/jwt/jwt-refresh.guard';
 import { CurrentUserData } from '../../guards/decorators/current-user-data.decorator';
-import { SessionsQueryRepository } from '../infrastructure/query/sessions.query-repository';
-import { SessionsViewDto } from './view-dto/sessions.view-dto';
+import { MgSessionsQueryRepository } from '../infrastructure/query/mg.sessions.query-repository';
+import {
+  MgSessionsViewDto,
+  PgSessionsViewDto,
+} from './view-dto/sessions.view-dto';
 import { GetAllActiveSessionsSwagger } from './swagger/get-all-active-sessions.swagger';
 import { DeleteAllSessionsCommand } from '../app/sessions.use-cases/delete-all-sessions.use-case';
 import { DeleteAllSessionsSwagger } from './swagger/delete-all-sessions.swagger';
 import { DeleteSessionByIdCommand } from '../app/sessions.use-cases/delete-session-by-id.use-case';
 import { DeleteSessionByIdSwagger } from './swagger/delete-session-by-id.swagger';
+import { PgSessionsQueryRepository } from '../infrastructure/query/pg.sessions.query-repository';
 
 @UseGuards(JwtRefreshGuard)
 @Controller(PATHS.SECURITY)
 export class SecurityController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly sessionsQueryRepository: SessionsQueryRepository,
+    private readonly mgSessionsQueryRepository: MgSessionsQueryRepository,
+    private readonly pgSessionsQueryRepository: PgSessionsQueryRepository,
   ) {}
 
   @Get('devices')
@@ -32,8 +37,12 @@ export class SecurityController {
   async getAllActiveSessions(
     @CurrentUserData()
     { userId }: { userId: string },
-  ): Promise<SessionsViewDto[]> {
-    return this.sessionsQueryRepository.findAllSessionsByUserId(userId);
+    // ): Promise<MgSessionsViewDto[]> {
+  ): Promise<PgSessionsViewDto[]> {
+    // For MongoDb
+    // return this.mgSessionsQueryRepository.findAllSessionsByUserId(userId);
+    // For Postgres
+    return this.pgSessionsQueryRepository.findAllSessionsByUserId(userId);
   }
 
   @Delete('devices')

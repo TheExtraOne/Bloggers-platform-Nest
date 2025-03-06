@@ -570,7 +570,7 @@ window.onload = function() {
                   "schema": {
                     "type": "array",
                     "items": {
-                      "$ref": "#/components/schemas/SessionsViewDto"
+                      "$ref": "#/components/schemas/MgSessionsViewDto"
                     }
                   }
                 }
@@ -1955,7 +1955,7 @@ window.onload = function() {
             "recoveryCode"
           ]
         },
-        "SessionsViewDto": {
+        "MgSessionsViewDto": {
           "type": "object",
           "properties": {
             "ip": {
