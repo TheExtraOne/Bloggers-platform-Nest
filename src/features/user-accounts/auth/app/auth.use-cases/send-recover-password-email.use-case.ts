@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { EmailService } from '../../../facades/email.service';
+import { EmailService } from '../../../utils/email.service';
 import { UserDocument } from '../../../users/domain/user.entity';
 import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
 import { PasswordRecoveryInputDto } from '../../api/input-dto/password-recovery.input-dto';

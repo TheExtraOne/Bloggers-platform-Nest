@@ -66,6 +66,14 @@ export class LikesService {
         parentIds,
       );
 
+    // TODO: optimize, use object instead of array with userLikes. A key will be parentId and value will be LikeStatus. O (1)
+    // const userLikesObject = userLikes.reduce(
+    //   (acc, like) => {
+    //     acc[like.parentId] = like.status;
+    //     return acc;
+    //   },
+    //   {} as Record<string, string>,
+    // );
     // Add user's like status to each entity
     return {
       ...paginatedEntities,

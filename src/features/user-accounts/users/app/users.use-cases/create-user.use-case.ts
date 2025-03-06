@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
-import { EmailService } from '../../../../user-accounts/facades/email.service';
+import { EmailService } from '../../../utils/email.service';
 import { UsersService } from '../users.service';
 
 export class CreateUserCommand {

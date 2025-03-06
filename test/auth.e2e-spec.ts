@@ -9,7 +9,7 @@ import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { deleteAllData } from './helpers/delete-all-data';
 import { CreateUserInputDto } from '../src/features/user-accounts/users/api/input-dto/users.input-dto';
 import { MeViewDto } from '../src/features/user-accounts/auth/api/view-dto/me.view-dto';
-import { EmailService } from '../src/features/user-accounts/facades/email.service';
+import { EmailService } from '../src/features/user-accounts/utils/email.service';
 
 describe('Auth Controller (e2e)', () => {
   let app: INestApplication;

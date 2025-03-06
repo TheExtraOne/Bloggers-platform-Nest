@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BcryptService } from '../../../facades/bcrypt.service';
+import { BcryptService } from '../../../utils/bcrypt.service';
 import { PasswordRecoveryStatus } from '../../../users/domain/password-recovery.schema';
 import { UserDocument } from '../../../users/domain/user.entity';
 import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';

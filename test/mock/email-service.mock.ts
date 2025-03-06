@@ -1,4 +1,4 @@
-import { EmailService } from '../../src/features/user-accounts/facades/email.service';
+import { EmailService } from '../../src/features/user-accounts/utils/email.service';
 
 export class EmailServiceMock extends EmailService {
   sendRegistrationMail({

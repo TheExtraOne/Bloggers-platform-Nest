@@ -24,6 +24,9 @@ export class TestingController {
     // await Promise.all(promises);
 
     // For Postgres
+    // TRUNCATE TABLE - removes all data but keeps the table structure
+    // RESTART IDENTITY - resets auto-incremented IDs (SERIAL primary keys)
+    // CASCADE - removes dependent records in related tables to avoid foreign key constraints
     await this.dataSource.query(`
       TRUNCATE TABLE 
       public.users_password_recovery, 

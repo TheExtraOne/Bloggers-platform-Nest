@@ -16,7 +16,7 @@ import { AuthTestManager } from './managers/auth-test-manager';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CommentsTestManager } from './managers/comments-test-manager';
-import { EmailService } from '../../src/features/user-accounts/facades/email.service';
+import { EmailService } from '../../src/features/user-accounts/utils/email.service';
 import { SessionsTestManager } from './managers/sessions-test-manager';
 // import { TypeOrmModule } from '@nestjs/typeorm';
 

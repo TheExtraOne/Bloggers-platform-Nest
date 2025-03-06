@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { add } from 'date-fns';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { EmailService } from '../../../facades/email.service';
+import { EmailService } from '../../../utils/email.service';
 import { EmailConfirmationStatus } from '../../../users/domain/email-confirmation.schema';
 import { UserDocument } from '../../../users/domain/user.entity';
 import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
