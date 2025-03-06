@@ -1,6 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { validate as isUUID } from 'uuid';
 
 @Injectable()
 export class PgSessionsRepository {
@@ -15,7 +16,7 @@ export class PgSessionsRepository {
     userId: string;
   }): Promise<void> {
     // TODO: find a better way to handle id
-    if (!this.validateUserId(dto.userId)) {
+    if (!this.validateUserId(dto.userId) || !isUUID(dto.deviceId)) {
       throw new InternalServerErrorException();
     }
 
@@ -37,6 +38,10 @@ export class PgSessionsRepository {
   async findSessionByDeviceId(
     deviceId: string,
   ): Promise<{ userId: string } | null> {
+    if (!isUUID(deviceId)) {
+      return null;
+    }
+
     const query = `
       SELECT user_id
       FROM public.sessions
@@ -55,8 +60,8 @@ export class PgSessionsRepository {
     lastActiveDate: Date,
   ): Promise<{ id: string } | null> {
     // TODO: find a better way to handle id
-    if (!this.validateUserId(userId)) {
-      throw new InternalServerErrorException();
+    if (!this.validateUserId(userId) || !isUUID(deviceId)) {
+      return null;
     }
 
     const query = `
@@ -70,7 +75,7 @@ export class PgSessionsRepository {
     const params = [userId, deviceId, lastActiveDate];
     const result = await this.dataSource.query(query, params);
 
-    return { id: result[0].id };
+    return result[0];
   }
 
   async updateSessionTime(
@@ -78,6 +83,9 @@ export class PgSessionsRepository {
     newExp: Date,
     newIat: Date,
   ): Promise<void> {
+    if (!isUUID(deviceId)) {
+      throw new InternalServerErrorException();
+    }
     const query = `
       UPDATE public.sessions
       SET expiration_date = $1, last_activate_date = $2, updated_at = $3
@@ -89,6 +97,9 @@ export class PgSessionsRepository {
   }
 
   async deleteSessionByDeviceId(deviceId: string): Promise<void> {
+    if (!isUUID(deviceId)) {
+      throw new InternalServerErrorException();
+    }
     const query = `
       UPDATE public.sessions
       SET deleted_at = NOW()
