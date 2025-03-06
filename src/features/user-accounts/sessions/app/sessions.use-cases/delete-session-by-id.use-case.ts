@@ -2,6 +2,7 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
 import { ERRORS } from '../../../../../constants';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
 
 export class DeleteSessionByIdCommand extends Command<void> {
   constructor(
@@ -16,14 +17,23 @@ export class DeleteSessionByIdCommand extends Command<void> {
 export class DeleteSessionByIdUseCase
   implements ICommandHandler<DeleteSessionByIdCommand, void>
 {
-  constructor(private readonly mgSessionsRepository: MgSessionsRepository) {}
+  constructor(
+    private readonly mgSessionsRepository: MgSessionsRepository,
+    private readonly pgSessionsRepository: PgSessionsRepository,
+  ) {}
 
   async execute(command: DeleteSessionByIdCommand): Promise<void> {
     const { deviceId, userId } = command;
 
     // Find the session by deviceId
-    const session =
-      await this.mgSessionsRepository.findSessionByDeviceId(deviceId);
+    // For MongoDB
+    // const session =
+    //   await this.mgSessionsRepository.findSessionByDeviceId(deviceId);
+
+    // For PostgreSQL
+    const session: {
+      userId: string;
+    } | null = await this.pgSessionsRepository.findSessionByDeviceId(deviceId);
 
     if (!session) {
       throw new NotFoundException(ERRORS.SESSION_NOT_FOUND);
@@ -33,7 +43,11 @@ export class DeleteSessionByIdUseCase
       throw new ForbiddenException();
     }
 
-    session.makeDeleted();
-    await this.mgSessionsRepository.save(session);
+    // For MongoDB
+    // session.makeDeleted();
+    // await this.mgSessionsRepository.save(session);
+
+    // For PostgreSQL
+    await this.pgSessionsRepository.deleteSessionByDeviceId(deviceId);
   }
 }

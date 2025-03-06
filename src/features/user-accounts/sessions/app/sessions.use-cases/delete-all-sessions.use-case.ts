@@ -1,5 +1,6 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
+import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
 
 export class DeleteAllSessionsCommand extends Command<void> {
   constructor(
@@ -14,13 +15,23 @@ export class DeleteAllSessionsCommand extends Command<void> {
 export class DeleteAllSessionsUseCase
   implements ICommandHandler<DeleteAllSessionsCommand, void>
 {
-  constructor(private readonly mgSessionsRepository: MgSessionsRepository) {}
+  constructor(
+    private readonly mgSessionsRepository: MgSessionsRepository,
+    private readonly pgSessionsRepository: PgSessionsRepository,
+  ) {}
 
   async execute(command: DeleteAllSessionsCommand): Promise<void> {
     const { deviceId, userId } = command;
 
     // Deleting all sessions except current
-    await this.mgSessionsRepository.deleteManySessionsByUserAndDeviceId(
+    // For MongoDB
+    // await this.mgSessionsRepository.deleteManySessionsByUserAndDeviceId(
+    //   userId,
+    //   deviceId,
+    // );
+
+    // For PostgreSQL
+    await this.pgSessionsRepository.deleteManySessionsByUserAndDeviceId(
       userId,
       deviceId,
     );

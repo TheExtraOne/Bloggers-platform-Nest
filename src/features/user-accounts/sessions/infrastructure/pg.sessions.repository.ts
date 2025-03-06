@@ -46,7 +46,7 @@ export class PgSessionsRepository {
     const params = [deviceId];
     const result = await this.dataSource.query(query, params);
 
-    return result[0];
+    return { userId: result[0].user_id };
   }
 
   async findSessionByMultipleFilters(
@@ -70,7 +70,7 @@ export class PgSessionsRepository {
     const params = [userId, deviceId, lastActiveDate];
     const result = await this.dataSource.query(query, params);
 
-    return result[0];
+    return { id: result[0].id };
   }
 
   async updateSessionTime(
@@ -96,6 +96,23 @@ export class PgSessionsRepository {
       AND deleted_at IS NULL
     `;
     const params = [deviceId];
+    await this.dataSource.query(query, params);
+  }
+
+  async deleteManySessionsByUserAndDeviceId(
+    userId: string,
+    deviceId: string,
+  ): Promise<void> {
+    // <> is !=
+    const query = `
+      UPDATE public.sessions
+      SET deleted_at = NOW()
+      WHERE user_id = $1
+      AND id <> $2
+      AND deleted_at IS NULL
+    `;
+    const params = [userId, deviceId];
+
     await this.dataSource.query(query, params);
   }
 
