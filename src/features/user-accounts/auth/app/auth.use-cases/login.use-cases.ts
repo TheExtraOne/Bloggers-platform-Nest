@@ -10,6 +10,7 @@ import {
   TOKEN_TYPE,
 } from '../../../utils/custom-jwt.service';
 import { CreateSessionCommand } from '../../../sessions/app/sessions.use-cases/create-session.use-case';
+import { v4 as uuidv4 } from 'uuid';
 
 export class LoginCommand extends Command<{
   accessToken: string;
@@ -35,7 +36,11 @@ export class LoginUseCases implements ICommandHandler<LoginCommand> {
     command: LoginCommand,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const { userId, title, ip } = command;
-    const deviceId = new ObjectId().toString();
+    // For MongoDb
+    // const deviceId = new ObjectId().toString();
+
+    // For Postgres
+    const deviceId = uuidv4();
 
     const accessToken: string = await this.customJwtService.createAccessToken({
       userId,

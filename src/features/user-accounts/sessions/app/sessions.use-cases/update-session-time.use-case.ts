@@ -1,6 +1,7 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { SessionsRepository } from '../../infrastructure/sessions.repository';
+import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
 import { convertUnixToDate } from '../../../../../core/utils/time.utils';
+import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
 
 export class UpdateSessionTimeCommand extends Command<void> {
   constructor(
@@ -16,23 +17,37 @@ export class UpdateSessionTimeCommand extends Command<void> {
 export class UpdateSessionTimeUseCase
   implements ICommandHandler<UpdateSessionTimeCommand>
 {
-  constructor(private readonly sessionsRepository: SessionsRepository) {}
+  constructor(
+    private readonly mgSessionsRepository: MgSessionsRepository,
+    private readonly pgSessionsRepository: PgSessionsRepository,
+  ) {}
 
   async execute(command: UpdateSessionTimeCommand): Promise<void> {
     const { newExp, newIat, deviceId } = command;
 
-    const session =
-      await this.sessionsRepository.findSessionByDeviceId(deviceId);
+    // For MongoDB
+    // const session =
+    //   await this.mgSessionsRepository.findSessionByDeviceId(deviceId);
+
+    // For PostgreSQL
+    const session: { userId: string } | null =
+      await this.pgSessionsRepository.findSessionByDeviceId(deviceId);
 
     if (!session) {
       return;
     }
+    // For MongoDB
+    // session.updateSessionTime({
+    //   exp: convertUnixToDate(newExp),
+    //   iat: convertUnixToDate(newIat),
+    // });
+    // await this.mgSessionsRepository.save(session);
 
-    session.updateSessionTime({
-      exp: convertUnixToDate(newExp),
-      iat: convertUnixToDate(newIat),
-    });
-
-    await this.sessionsRepository.save(session);
+    // For PostgreSQL
+    await this.pgSessionsRepository.updateSessionTime(
+      deviceId,
+      convertUnixToDate(newExp),
+      convertUnixToDate(newIat),
+    );
   }
 }

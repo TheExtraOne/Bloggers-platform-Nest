@@ -31,7 +31,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
     iat: number;
   }): Promise<{ userId: string; deviceId: string; iat: number }> {
     const { userId, deviceId, iat } = payload;
-
+    console.log('deviceId', deviceId);
     // Check, if there is such active session  by userId, deviceId and iat
     // Checking iat is important
     const session = await this.commandBus.execute(

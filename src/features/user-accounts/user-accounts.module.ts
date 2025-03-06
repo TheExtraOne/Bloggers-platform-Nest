@@ -11,7 +11,7 @@ import { JwtRefreshStrategy } from './guards/jwt/jwt-refresh.strategy';
 import { UserAccountsConfig } from './user-account.config';
 import { CreateSessionUseCase } from './sessions/app/sessions.use-cases/create-session.use-case';
 import { Session, SessionSchema } from './sessions/domain/session.entity';
-import { SessionsRepository } from './sessions/infrastructure/sessions.repository';
+import { MgSessionsRepository } from './sessions/infrastructure/mg.sessions.repository';
 import { UpdateSessionTimeUseCase } from './sessions/app/sessions.use-cases/update-session-time.use-case';
 import { DeleteSessionUseCase } from './sessions/app/sessions.use-cases/delete-session.use-case';
 import { ConfirmEmailRegistrationUseCase } from './auth/app/auth.use-cases/confirm-email-registration.use-case';
@@ -38,6 +38,7 @@ import { AdminCreateUserUseCase } from './users/app/users.use-cases/admin-create
 import { UsersService } from './users/app/users.service';
 import { PgUsersQueryRepository } from './users/infrastructure/query/pg.users.query-repository';
 import { PgUsersRepository } from './users/infrastructure/pg.users.repository';
+import { PgSessionsRepository } from './sessions/infrastructure/pg.sessions.repository';
 // import { TypeOrmModule } from '@nestjs/typeorm';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
@@ -87,8 +88,9 @@ const sessionsUseCases = [
     PgUsersQueryRepository,
     MgUsersRepository,
     PgUsersRepository,
-    SessionsRepository,
+    MgSessionsRepository,
     SessionsQueryRepository,
+    PgSessionsRepository,
     UserAccountsConfig,
     UsersService,
     ...adapters,

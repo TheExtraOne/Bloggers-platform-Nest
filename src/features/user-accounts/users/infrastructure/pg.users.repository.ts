@@ -12,6 +12,7 @@ import { PasswordRecoveryStatus } from '../domain/password-recovery.schema';
 export class PgUsersRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
+  // TODO: we don't need to create password recovery records for new users right here.
   async createUser(dto: CreateUserDomainDto): Promise<{ userId: string }> {
     // 1. define temporary query results (Common Table Expressions - CTEs) inserted_user. The WITH statement allows us to define temporary query results (CTEs) that can be used within the main query.
     // 2. insert new user into users table and get inserted id into inserted_user cte.

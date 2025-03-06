@@ -1,7 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { SessionsRepository } from '../../infrastructure/sessions.repository';
+import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
 import { SessionDocument } from '../../domain/session.entity';
 import { convertUnixToDate } from '../../../../../core/utils/time.utils';
+import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
 
 export class ValidateRefreshTokenCommand {
   constructor(
@@ -15,13 +16,25 @@ export class ValidateRefreshTokenCommand {
 export class ValidateRefreshTokenUseCase
   implements ICommandHandler<ValidateRefreshTokenCommand>
 {
-  constructor(private readonly sessionsRepository: SessionsRepository) {}
+  constructor(
+    private readonly mgSessionsRepository: MgSessionsRepository,
+    private readonly pgSessionsRepository: PgSessionsRepository,
+  ) {}
 
   async execute(
     command: ValidateRefreshTokenCommand,
-  ): Promise<SessionDocument | null> {
+    // ): Promise<SessionDocument | null> {
+  ): Promise<{ id: string } | null> {
     const { userId, deviceId, iat } = command;
-    return this.sessionsRepository.findSessionByMultipleFilters(
+    // For MongoDB
+    // return this.mgSessionsRepository.findSessionByMultipleFilters(
+    //   userId,
+    //   deviceId,
+    //   convertUnixToDate(iat),
+    // );
+
+    // For PostgreSQL
+    return this.pgSessionsRepository.findSessionByMultipleFilters(
       userId,
       deviceId,
       convertUnixToDate(iat),

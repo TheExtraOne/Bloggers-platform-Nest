@@ -8,7 +8,7 @@ import {
 import { ObjectId } from 'mongodb';
 
 @Injectable()
-export class SessionsRepository {
+export class MgSessionsRepository {
   constructor(
     @InjectModel(Session.name) private SessionModel: SessionModelType,
   ) {}
