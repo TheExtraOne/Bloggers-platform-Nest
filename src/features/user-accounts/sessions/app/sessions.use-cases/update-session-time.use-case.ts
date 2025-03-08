@@ -1,5 +1,5 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
+// import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
 import { convertUnixToDate } from '../../../../../core/utils/time.utils';
 import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
 
@@ -18,7 +18,7 @@ export class UpdateSessionTimeUseCase
   implements ICommandHandler<UpdateSessionTimeCommand>
 {
   constructor(
-    private readonly mgSessionsRepository: MgSessionsRepository,
+    // private readonly mgSessionsRepository: MgSessionsRepository,
     private readonly pgSessionsRepository: PgSessionsRepository,
   ) {}
 

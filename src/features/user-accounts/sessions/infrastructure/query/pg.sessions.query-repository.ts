@@ -1,10 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Session, SessionModelType } from '../../domain/session.entity';
-import {
-  MgSessionsViewDto,
-  PgSessionsViewDto,
-} from '../../api/view-dto/sessions.view-dto';
+import { PgSessionsViewDto } from '../../api/view-dto/sessions.view-dto';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 

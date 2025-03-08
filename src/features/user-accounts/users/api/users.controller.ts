@@ -15,7 +15,7 @@ import { PATHS } from '../../../../constants';
 import { BasicAuthGuard } from '../../guards/basic/basic-auth.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteUserCommand } from '../app/users.use-cases/delete-user.use-case';
-import { MgUsersQueryRepository } from '../infrastructure/query/mg.users.query-repository';
+// import { MgUsersQueryRepository } from '../infrastructure/query/mg.users.query-repository';
 import { GetUsersQueryParams } from './input-dto/get-users.query-params.input-dto';
 import { CreateUserInputDto } from './input-dto/users.input-dto';
 import {
@@ -23,7 +23,7 @@ import {
   CreateUserSwagger,
   DeleteUserSwagger,
 } from './swagger';
-import { MongoUserViewDto, PGUserViewDto } from './view-dto/users.view-dto';
+import { PGUserViewDto } from './view-dto/users.view-dto';
 import { AdminCreateUserCommand } from '../app/users.use-cases/admin-create-user.use-case';
 import { PgUsersQueryRepository } from '../infrastructure/query/pg.users.query-repository';
 
@@ -32,7 +32,7 @@ import { PgUsersQueryRepository } from '../infrastructure/query/pg.users.query-r
 export class UserController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly mgUsersQueryRepository: MgUsersQueryRepository,
+    // private readonly mgUsersQueryRepository: MgUsersQueryRepository,
     private readonly pgUsersQueryRepository: PgUsersQueryRepository,
   ) {}
 

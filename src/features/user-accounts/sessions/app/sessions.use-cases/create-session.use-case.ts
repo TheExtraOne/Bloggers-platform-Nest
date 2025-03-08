@@ -1,14 +1,12 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ObjectId } from 'mongodb';
-import { v4 as uuidv4 } from 'uuid';
-import {
-  Session,
-  SessionDocument,
-  SessionModelType,
-} from '../../domain/session.entity';
-import { InjectModel } from '@nestjs/mongoose';
-import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
-import { InternalServerErrorException } from '@nestjs/common';
+// import { ObjectId } from 'mongodb';
+// import {
+//   Session,
+//   SessionDocument,
+//   SessionModelType,
+// } from '../../domain/session.entity';
+// import { InjectModel } from '@nestjs/mongoose';
+// import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
 import { convertUnixToDate } from '../../../../../core/utils/time.utils';
 import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
 
@@ -32,8 +30,8 @@ export class CreateSessionUseCase
   implements ICommandHandler<CreateSessionCommand, void>
 {
   constructor(
-    @InjectModel(Session.name) private SessionModel: SessionModelType,
-    private readonly mgSessionsRepository: MgSessionsRepository,
+    // @InjectModel(Session.name) private SessionModel: SessionModelType,
+    // private readonly mgSessionsRepository: MgSessionsRepository,
     private readonly pgSessionsRepository: PgSessionsRepository,
   ) {}
 

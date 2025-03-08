@@ -1,5 +1,5 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
+// import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
 import { ERRORS } from '../../../../../constants';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
@@ -18,7 +18,7 @@ export class DeleteSessionByIdUseCase
   implements ICommandHandler<DeleteSessionByIdCommand, void>
 {
   constructor(
-    private readonly mgSessionsRepository: MgSessionsRepository,
+    // private readonly mgSessionsRepository: MgSessionsRepository,
     private readonly pgSessionsRepository: PgSessionsRepository,
   ) {}
 

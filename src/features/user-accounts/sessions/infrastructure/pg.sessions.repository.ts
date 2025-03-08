@@ -1,11 +1,14 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
+import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { DataSource } from 'typeorm';
 import { validate as isUUID } from 'uuid';
 
 @Injectable()
-export class PgSessionsRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+export class PgSessionsRepository extends PgBaseRepository {
+  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+    super();
+  }
 
   async createSession(dto: {
     deviceId: string;
@@ -15,7 +18,6 @@ export class PgSessionsRepository {
     expirationDate: Date;
     userId: string;
   }): Promise<void> {
-    // TODO: find a better way to handle id
     if (!this.validateUserId(dto.userId) || !isUUID(dto.deviceId)) {
       throw new InternalServerErrorException();
     }
@@ -59,7 +61,6 @@ export class PgSessionsRepository {
     deviceId: string,
     lastActiveDate: Date,
   ): Promise<{ id: string } | null> {
-    // TODO: find a better way to handle id
     if (!this.validateUserId(userId) || !isUUID(deviceId)) {
       return null;
     }
@@ -125,14 +126,5 @@ export class PgSessionsRepository {
     const params = [userId, deviceId];
 
     await this.dataSource.query(query, params);
-  }
-
-  // TODO: find a better way to handle id, remove duplicates?
-  private validateUserId(userId: string): boolean {
-    if (isNaN(Number(userId))) {
-      return false;
-    }
-
-    return true;
   }
 }

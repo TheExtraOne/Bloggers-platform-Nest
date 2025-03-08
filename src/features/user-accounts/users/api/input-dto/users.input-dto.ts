@@ -1,7 +1,6 @@
 import { IsEmail, IsNotEmpty, Length, Matches } from 'class-validator';
 import { IsStringWithTrim } from '../../../../../core/decorators/is-not-empty-string';
 import { ApiProperty } from '@nestjs/swagger';
-import { UsersSortBy } from './users-sort-by';
 
 export class CreateUserInputDto {
   @IsStringWithTrim()

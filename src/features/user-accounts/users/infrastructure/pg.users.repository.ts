@@ -2,23 +2,24 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { CreateUserDomainDto } from '../domain/dto/create-user.domain.dto';
-import { ERRORS } from 'src/constants';
-import { PGUserViewDto } from '../api/view-dto/users.view-dto';
+import { ERRORS } from '../../../../constants';
 import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
 import { PasswordRecoveryStatus } from '../domain/password-recovery.schema';
+import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 
 // TODO: refactor types
+// TODO: add'updated_at' field to all tables?
 @Injectable()
-export class PgUsersRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+export class PgUsersRepository extends PgBaseRepository {
+  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+    super();
+  }
 
-  // TODO: we don't need to create password recovery records for new users right here.
   async createUser(dto: CreateUserDomainDto): Promise<{ userId: string }> {
     // 1. define temporary query results (Common Table Expressions - CTEs) inserted_user. The WITH statement allows us to define temporary query results (CTEs) that can be used within the main query.
     // 2. insert new user into users table and get inserted id into inserted_user cte.
     // 3. insert email confirmation details into the users_email_confirmation table. The user_id comes from the inserted_user CTE, ensuring that the confirmation is linked to the new user.
-    // 4. insert password recovery details into the users_password_recovery table. The user_id comes from the inserted_user CTE, ensuring that the password recovery is linked to the new user.
-    // 5. return the user id.
+    // 4. return the user id.
     const query = `
       WITH inserted_user AS (
         INSERT INTO public.users (email, password_hash, login)
@@ -29,10 +30,6 @@ export class PgUsersRepository {
         INSERT INTO public.users_email_confirmation (user_id, confirmation_code, expiration_date, confirmation_status)
         SELECT id, $4, $5, $6
         FROM inserted_user
-      ),
-      password_recovery AS (
-        INSERT INTO public.users_password_recovery (user_id)
-        SELECT id FROM inserted_user
       )
       SELECT id FROM inserted_user;
     `;
@@ -52,11 +49,10 @@ export class PgUsersRepository {
   }
 
   async deleteUserById(userId: string): Promise<void> {
-    // TODO: find a better way to handle id
     if (!this.validateUserId(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
-    // TODO: should update 'updated_at' field as well?
+
     const query = `
     UPDATE public.users
     SET deleted_at = NOW()
@@ -207,11 +203,9 @@ export class PgUsersRepository {
     newConfirmationCode: string,
     newExpirationDate: Date,
   ): Promise<void> {
-    // TODO: find a better way to handle id
     if (!this.validateUserId(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
-    // TODO: Do I need to change 'update_at' in users table as well?
     const query = `
       UPDATE public.users_email_confirmation
       SET confirmation_code = $2, expiration_date = $3, confirmation_status = $4
@@ -227,20 +221,19 @@ export class PgUsersRepository {
     await this.dataSource.query(query, params);
   }
 
-  async setNewPasswordRecoveryData(
+  async createNewPasswordRecoveryData(
     userId: string,
     newRecoveryCode: string,
     newExpirationDate: Date,
   ): Promise<void> {
-    // TODO: find a better way to handle id
     if (!this.validateUserId(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
-    // TODO: Do I need to change 'update_at' in users table as well?
+
     const query = `
-      UPDATE public.users_password_recovery
-      SET recovery_code = $2, expiration_date = $3, recovery_status = $4
-      WHERE user_id = $1;
+      INSERT INTO public.users_password_recovery
+      (user_id, recovery_code, expiration_date, recovery_status)
+      VALUES ($1, $2, $3, $4);
     `;
     const params = [
       userId,
@@ -253,11 +246,9 @@ export class PgUsersRepository {
   }
 
   async confirmUserEmail(userId: string): Promise<void> {
-    // TODO: find a better way to handle id
     if (!this.validateUserId(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
-    // TODO: Do I need to change 'update_at' in users table as well?
     const query = `
       UPDATE public.users_email_confirmation
       SET confirmation_status = $2
@@ -272,7 +263,6 @@ export class PgUsersRepository {
     userId: string,
     newPassword: string,
   ): Promise<void> {
-    // TODO: find a better way to handle id
     if (!this.validateUserId(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
@@ -292,13 +282,5 @@ export class PgUsersRepository {
     const params = [userId, newPassword, PasswordRecoveryStatus.Confirmed];
 
     await this.dataSource.query(query, params);
-  }
-
-  private validateUserId(userId: string): boolean {
-    if (isNaN(Number(userId))) {
-      return false;
-    }
-
-    return true;
   }
 }

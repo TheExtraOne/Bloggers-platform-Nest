@@ -1,18 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../domain/user.entity';
-import { MgUsersRepository } from '../infrastructure/mg.users.repository';
+// import { InjectModel } from '@nestjs/mongoose';
+// import { User, UserModelType } from '../domain/user.entity';
+// import { MgUsersRepository } from '../infrastructure/mg.users.repository';
 import { BcryptService } from '../../utils/bcrypt.service';
 import { CreateUserDomainDto } from '../domain/dto/create-user.domain.dto';
 import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
 import { PgUsersRepository } from '../infrastructure/pg.users.repository';
 
-// TODO: turn to base class
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel(User.name) private UserModel: UserModelType,
-    private readonly mgUsersRepository: MgUsersRepository,
+    // @InjectModel(User.name) private UserModel: UserModelType,
+    // private readonly mgUsersRepository: MgUsersRepository,
     private readonly pgUsersRepository: PgUsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}

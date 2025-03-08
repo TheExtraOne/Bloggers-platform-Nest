@@ -4,7 +4,8 @@ import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dt
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { ERRORS } from 'src/constants';
+import { ERRORS } from '../../../../../constants';
+import { PgBaseRepository } from '../../../../../core/base-classes/pg.base.repository';
 
 export type TPgUser = {
   id: string;
@@ -17,10 +18,12 @@ export type TPgUser = {
 };
 
 @Injectable()
-export class PgUsersQueryRepository {
+export class PgUsersQueryRepository extends PgBaseRepository {
   private readonly allowedColumns = ['created_at', 'login', 'email'] as const;
 
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+    super();
+  }
 
   async findAll(
     query: GetUsersQueryParams,
@@ -44,7 +47,6 @@ export class PgUsersQueryRepository {
   }
 
   async findUserById(id: string): Promise<PGUserViewDto> {
-    // TODO: find a better way to handle id
     if (!this.validateUserId(id)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
@@ -65,7 +67,7 @@ export class PgUsersQueryRepository {
   }
 
   private getSortColumn(sortBy: string): string {
-    const sortBySnakeCase = this.convertCamelToSnake(sortBy);
+    const sortBySnakeCase = this.adapterCamelToSnake(sortBy);
     return this.allowedColumns.includes(
       sortBySnakeCase as (typeof this.allowedColumns)[number],
     )
@@ -172,17 +174,5 @@ export class PgUsersQueryRepository {
       page: pageNumber,
       size: pageSize,
     });
-  }
-
-  private convertCamelToSnake(str: string): string {
-    return str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
-  }
-
-  private validateUserId(userId: string): boolean {
-    if (isNaN(Number(userId))) {
-      return false;
-    }
-
-    return true;
   }
 }

@@ -1,5 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { MgUsersRepository } from '../../infrastructure/mg.users.repository';
+// import { MgUsersRepository } from '../../infrastructure/mg.users.repository';
 import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BcryptService } from '../../../utils/bcrypt.service';
@@ -19,7 +19,7 @@ export class CheckIfUserIsAbleToLoginUseCase
   implements ICommandHandler<CheckIfUserIsAbleToLoginCommand, string>
 {
   constructor(
-    private readonly mgUsersRepository: MgUsersRepository,
+    // private readonly mgUsersRepository: MgUsersRepository,
     private readonly pgUsersRepository: PgUsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}

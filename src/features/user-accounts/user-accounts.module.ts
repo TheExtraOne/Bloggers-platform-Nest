@@ -101,6 +101,6 @@ const sessionsUseCases = [
     ...authUseCases,
     ...sessionsUseCases,
   ],
-  exports: [MgUsersRepository],
+  exports: [MgUsersRepository, PgUsersRepository],
 })
 export class UserAccountsModule {}
