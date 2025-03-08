@@ -1,6 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-// import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
-// import { SessionDocument } from '../../domain/session.entity';
 import { convertUnixToDate } from '../../../../../core/utils/time.utils';
 import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
 
@@ -16,10 +14,7 @@ export class ValidateRefreshTokenCommand {
 export class ValidateRefreshTokenUseCase
   implements ICommandHandler<ValidateRefreshTokenCommand>
 {
-  constructor(
-    // private readonly mgSessionsRepository: MgSessionsRepository,
-    private readonly pgSessionsRepository: PgSessionsRepository,
-  ) {}
+  constructor(private readonly pgSessionsRepository: PgSessionsRepository) {}
 
   async execute(
     command: ValidateRefreshTokenCommand,

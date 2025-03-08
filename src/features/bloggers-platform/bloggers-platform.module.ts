@@ -34,6 +34,7 @@ import { LikesService } from './likes/app/likes.service';
 import { BlogIdExistsRule } from './decorators/blog-id-exists.decorator';
 import { PgBlogsRepository } from './blogs/infrastructure/pg.blogs.repository';
 import { PgBlogsQueryRepository } from './blogs/infrastructure/query/pg.blogs.query-repository';
+import { BlogsController } from './blogs/api/blogs.controller';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -72,7 +73,12 @@ const likesUseCases = [
     ]),
     UserAccountsModule,
   ],
-  controllers: [SaBlogsController, PostsController, CommentsController],
+  controllers: [
+    SaBlogsController,
+    BlogsController,
+    PostsController,
+    CommentsController,
+  ],
   providers: [
     BlogsService,
     MgBlogsQueryRepository,

@@ -32,7 +32,7 @@ export class PgBlogsRepository extends PgBaseRepository {
       return null;
     }
     const query = `
-      SELECT * FROM blogs WHERE id = $1;
+      SELECT * FROM blogs WHERE id = $1 AND deleted_at IS NULL;
     `;
     const params = [id];
     const result = await this.dataSource.query(query, params);
@@ -57,10 +57,36 @@ export class PgBlogsRepository extends PgBaseRepository {
     const query = `
       UPDATE blogs
       SET name = $1, description = $2, website_url = $3, updated_at = $4
-      WHERE id = $5;
+      WHERE id = $5 AND deleted_at IS NULL;
     `;
     const params = [name, description, websiteUrl, new Date(), id];
 
+    const result = await this.dataSource.query(query, params);
+
+    // `result[1]` contains the number of affected rows.
+    if (result[1] === 0) {
+      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+    }
+  }
+
+  async deleteBlog(id: string): Promise<void> {
+    if (!this.isCorrectNumber(id)) {
+      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+    }
+    const query = `
+      UPDATE blogs
+      SET deleted_at = $1
+      WHERE id = $2 AND deleted_at IS NULL;
+    `;
+    const params = [new Date(), id];
+
     await this.dataSource.query(query, params);
+
+    const result = await this.dataSource.query(query, params);
+
+    // `result[1]` contains the number of affected rows.
+    if (result[1] === 0) {
+      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+    }
   }
 }

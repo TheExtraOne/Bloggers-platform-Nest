@@ -1,8 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EmailConfirmationStatus } from '../../../users/domain/email-confirmation.schema';
-// import { UserDocument } from '../../../users/domain/user.entity';
-// import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
 import { ConfirmRegistrationInputDto } from '../../api/input-dto/confirm-registration.input-dto';
 import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
 
@@ -16,10 +14,7 @@ export class ConfirmEmailRegistrationCommand extends Command<void> {
 export class ConfirmEmailRegistrationUseCase
   implements ICommandHandler<ConfirmEmailRegistrationCommand, void>
 {
-  constructor(
-    // private readonly mgUsersRepository: MgUsersRepository,
-    private readonly pgUsersRepository: PgUsersRepository,
-  ) {}
+  constructor(private readonly pgUsersRepository: PgUsersRepository) {}
 
   async execute(command: ConfirmEmailRegistrationCommand): Promise<void> {
     // For MongoDB

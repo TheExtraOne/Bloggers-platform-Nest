@@ -1,5 +1,7 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { MgBlogsRepository } from '../../infrastructure/mg.blogs.repository';
+import { PgBlogsRepository } from '../../infrastructure/pg.blogs.repository';
+import { NotFoundException } from '@nestjs/common';
+import { ERRORS } from 'src/constants';
 
 export class DeleteBlogCommand extends Command<void> {
   constructor(public id: string) {
@@ -11,12 +13,20 @@ export class DeleteBlogCommand extends Command<void> {
 export class DeleteBlogUseCase
   implements ICommandHandler<DeleteBlogCommand, void>
 {
-  constructor(private readonly mgBlogsRepository: MgBlogsRepository) {}
+  constructor(private readonly pgBlogsRepository: PgBlogsRepository) {}
 
   async execute(command: DeleteBlogCommand): Promise<void> {
-    const blog = await this.mgBlogsRepository.findBlogById(command.id);
-    blog.makeDeleted();
+    // For MongoDb
+    // const blog = await this.mgBlogsRepository.findBlogById(command.id);
+    // blog.makeDeleted();
+    // await this.mgBlogsRepository.save(blog);
 
-    await this.mgBlogsRepository.save(blog);
+    // For Postgres
+    const blog = await this.pgBlogsRepository.getBlogById(command.id);
+    if (!blog) {
+      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+    }
+
+    await this.pgBlogsRepository.deleteBlog(command.id);
   }
 }

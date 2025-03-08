@@ -218,7 +218,11 @@ export class PgUsersRepository extends PgBaseRepository {
       EmailConfirmationStatus.Pending,
     ];
 
-    await this.dataSource.query(query, params);
+    const result = await this.dataSource.query(query, params);
+    // `result[1]` contains the number of affected rows.
+    if (result[1] === 0) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
   }
 
   async createNewPasswordRecoveryData(
@@ -256,7 +260,11 @@ export class PgUsersRepository extends PgBaseRepository {
     `;
     const params = [userId, EmailConfirmationStatus.Confirmed];
 
-    await this.dataSource.query(query, params);
+    const result = await this.dataSource.query(query, params);
+    // `result[1]` contains the number of affected rows.
+    if (result[1] === 0) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
   }
 
   async confirmPasswordRecovery(
@@ -281,6 +289,10 @@ export class PgUsersRepository extends PgBaseRepository {
     `;
     const params = [userId, newPassword, PasswordRecoveryStatus.Confirmed];
 
-    await this.dataSource.query(query, params);
+    const result = await this.dataSource.query(query, params);
+    // `result[1]` contains the number of affected rows.
+    if (result[1] === 0) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
   }
 }

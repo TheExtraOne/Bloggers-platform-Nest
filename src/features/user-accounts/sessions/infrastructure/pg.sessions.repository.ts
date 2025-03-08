@@ -53,7 +53,7 @@ export class PgSessionsRepository extends PgBaseRepository {
     const params = [deviceId];
     const result = await this.dataSource.query(query, params);
 
-    return { userId: result[0].user_id };
+    return result[0] ? { userId: result[0].user_id } : null;
   }
 
   async findSessionByMultipleFilters(
@@ -76,7 +76,7 @@ export class PgSessionsRepository extends PgBaseRepository {
     const params = [userId, deviceId, lastActiveDate];
     const result = await this.dataSource.query(query, params);
 
-    return result[0];
+    return result[0] ?? null;
   }
 
   async updateSessionTime(
@@ -115,6 +115,9 @@ export class PgSessionsRepository extends PgBaseRepository {
     userId: string,
     deviceId: string,
   ): Promise<void> {
+    if (!this.isCorrectNumber(userId) || !isUUID(deviceId)) {
+      return;
+    }
     // <> is !=
     const query = `
       UPDATE public.sessions

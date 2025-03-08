@@ -856,6 +856,160 @@ window.onload = function() {
           "tags": [
             "SaBlogs"
           ]
+        },
+        "delete": {
+          "description": "Deletes a blog by ID. Requires basic authentication.",
+          "operationId": "SaBlogsController_deleteBlogById",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Blog ID",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Blog successfully deleted."
+            },
+            "401": {
+              "description": "Unauthorized."
+            },
+            "404": {
+              "description": "Blog not found."
+            }
+          },
+          "security": [
+            {
+              "basicAuth": []
+            }
+          ],
+          "summary": "Delete blog",
+          "tags": [
+            "SaBlogs"
+          ]
+        }
+      },
+      "/blogs": {
+        "get": {
+          "description": "Returns a paginated list of all blogs. Can be filtered by name and sorted.",
+          "operationId": "BlogsController_getAllBlogs",
+          "parameters": [
+            {
+              "name": "sortBy",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "createdAt",
+                "type": "string",
+                "enum": [
+                  "createdAt",
+                  "name",
+                  "description",
+                  "websiteUrl",
+                  "isMembership"
+                ]
+              }
+            },
+            {
+              "name": "searchNameTerm",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "nullable": true,
+                "default": null,
+                "type": "string"
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            {
+              "name": "pageNumber",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "minimum": 1,
+                "default": 1,
+                "type": "number"
+              }
+            },
+            {
+              "name": "pageSize",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "minimum": 1,
+                "default": 10,
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved blogs.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PaginatedBlogsResponse"
+                  }
+                }
+              }
+            }
+          },
+          "summary": "Get all blogs",
+          "tags": [
+            "Blogs"
+          ]
+        }
+      },
+      "/blogs/{id}": {
+        "get": {
+          "description": "Returns a single blog by its ID.",
+          "operationId": "BlogsController_getBlogById",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Blog ID",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved blog.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/MgBlogsViewDto"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Blog not found."
+            }
+          },
+          "summary": "Get blog by ID",
+          "tags": [
+            "Blogs"
+          ]
         }
       },
       "/posts": {

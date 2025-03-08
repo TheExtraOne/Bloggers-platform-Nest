@@ -1,5 +1,4 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-// import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
 import { convertUnixToDate } from '../../../../../core/utils/time.utils';
 import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
 
@@ -17,10 +16,7 @@ export class UpdateSessionTimeCommand extends Command<void> {
 export class UpdateSessionTimeUseCase
   implements ICommandHandler<UpdateSessionTimeCommand>
 {
-  constructor(
-    // private readonly mgSessionsRepository: MgSessionsRepository,
-    private readonly pgSessionsRepository: PgSessionsRepository,
-  ) {}
+  constructor(private readonly pgSessionsRepository: PgSessionsRepository) {}
 
   async execute(command: UpdateSessionTimeCommand): Promise<void> {
     const { newExp, newIat, deviceId } = command;

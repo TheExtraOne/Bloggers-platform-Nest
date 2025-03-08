@@ -36,11 +36,13 @@ export class PgBlogsQueryRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
     }
     const query = `
-      SELECT * FROM blogs WHERE id = $1;
+      SELECT * FROM blogs WHERE id = $1 AND deleted_at IS NULL;
     `;
     const params = [id];
     const result = await this.dataSource.query(query, params);
     const blog: TPgBlog = result[0];
+
+    if (!blog) throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
 
     return PgBlogsViewDto.mapToView(blog);
   }

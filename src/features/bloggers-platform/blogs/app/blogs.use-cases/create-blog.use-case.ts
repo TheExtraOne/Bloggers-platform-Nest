@@ -1,8 +1,5 @@
-// import { InjectModel } from '@nestjs/mongoose';
-// import { Blog, BlogModelType } from '../../domain/blog.entity';
 import { CreateBlogInputDto } from '../../api/input-dto/blogs.input-dto';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-// import { MgBlogsRepository } from '../../infrastructure/mg.blogs.repository';
 import { PgBlogsRepository } from '../../infrastructure/pg.blogs.repository';
 
 export class CreateBlogCommand extends Command<string> {
@@ -15,11 +12,7 @@ export class CreateBlogCommand extends Command<string> {
 export class CreateBlogUseCase
   implements ICommandHandler<CreateBlogCommand, string>
 {
-  constructor(
-    // @InjectModel(Blog.name) private BlogModel: BlogModelType,
-    // private readonly mgBlogsRepository: MgBlogsRepository,
-    private readonly pgBlogsRepository: PgBlogsRepository,
-  ) {}
+  constructor(private readonly pgBlogsRepository: PgBlogsRepository) {}
 
   async execute(command: CreateBlogCommand): Promise<string> {
     const { name, description, websiteUrl } = command.dto;

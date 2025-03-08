@@ -11,7 +11,6 @@ import { PATHS } from '../../../../constants';
 import { CommandBus } from '@nestjs/cqrs';
 import { JwtRefreshGuard } from '../../guards/jwt/jwt-refresh.guard';
 import { CurrentUserData } from '../../guards/decorators/current-user-data.decorator';
-// import { MgSessionsQueryRepository } from '../infrastructure/query/mg.sessions.query-repository';
 import { PgSessionsViewDto } from './view-dto/sessions.view-dto';
 import { GetAllActiveSessionsSwagger } from './swagger/get-all-active-sessions.swagger';
 import { DeleteAllSessionsCommand } from '../app/sessions.use-cases/delete-all-sessions.use-case';
@@ -25,7 +24,6 @@ import { PgSessionsQueryRepository } from '../infrastructure/query/pg.sessions.q
 export class SecurityController {
   constructor(
     private readonly commandBus: CommandBus,
-    // private readonly mgSessionsQueryRepository: MgSessionsQueryRepository,
     private readonly pgSessionsQueryRepository: PgSessionsQueryRepository,
   ) {}
 

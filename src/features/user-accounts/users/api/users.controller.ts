@@ -15,7 +15,6 @@ import { PATHS } from '../../../../constants';
 import { BasicAuthGuard } from '../../guards/basic/basic-auth.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteUserCommand } from '../app/users.use-cases/delete-user.use-case';
-// import { MgUsersQueryRepository } from '../infrastructure/query/mg.users.query-repository';
 import { GetUsersQueryParams } from './input-dto/get-users.query-params.input-dto';
 import { CreateUserInputDto } from './input-dto/users.input-dto';
 import {
@@ -32,7 +31,6 @@ import { PgUsersQueryRepository } from '../infrastructure/query/pg.users.query-r
 export class UserController {
   constructor(
     private readonly commandBus: CommandBus,
-    // private readonly mgUsersQueryRepository: MgUsersQueryRepository,
     private readonly pgUsersQueryRepository: PgUsersQueryRepository,
   ) {}
 

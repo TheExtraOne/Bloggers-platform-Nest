@@ -1,12 +1,4 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-// import { ObjectId } from 'mongodb';
-// import {
-//   Session,
-//   SessionDocument,
-//   SessionModelType,
-// } from '../../domain/session.entity';
-// import { InjectModel } from '@nestjs/mongoose';
-// import { MgSessionsRepository } from '../../infrastructure/mg.sessions.repository';
 import { convertUnixToDate } from '../../../../../core/utils/time.utils';
 import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
 
@@ -29,11 +21,7 @@ export class CreateSessionCommand extends Command<void> {
 export class CreateSessionUseCase
   implements ICommandHandler<CreateSessionCommand, void>
 {
-  constructor(
-    // @InjectModel(Session.name) private SessionModel: SessionModelType,
-    // private readonly mgSessionsRepository: MgSessionsRepository,
-    private readonly pgSessionsRepository: PgSessionsRepository,
-  ) {}
+  constructor(private readonly pgSessionsRepository: PgSessionsRepository) {}
 
   async execute(command: CreateSessionCommand): Promise<void> {
     const {

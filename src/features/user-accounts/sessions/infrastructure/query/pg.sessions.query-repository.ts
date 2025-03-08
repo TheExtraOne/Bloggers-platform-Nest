@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PgSessionsViewDto } from '../../api/view-dto/sessions.view-dto';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { PgBaseRepository } from '../../../../../core/base-classes/pg.base.repository';
+import { ERRORS } from 'src/constants';
 
 export type TPgSession = {
   id: string;
@@ -15,10 +17,15 @@ export type TPgSession = {
 };
 
 @Injectable()
-export class PgSessionsQueryRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+export class PgSessionsQueryRepository extends PgBaseRepository {
+  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+    super();
+  }
 
   async findAllSessionsByUserId(userId: string): Promise<PgSessionsViewDto[]> {
+    if (!this.isCorrectNumber(userId)) {
+      throw new NotFoundException(ERRORS.SESSION_NOT_FOUND);
+    }
     const result = await this.dataSource.query(
       `
         SELECT *
@@ -29,7 +36,9 @@ export class PgSessionsQueryRepository {
       `,
       [userId],
     );
-
+    if (result.length === 0) {
+      throw new NotFoundException(ERRORS.SESSION_NOT_FOUND);
+    }
     return result.map(PgSessionsViewDto.mapToView);
   }
 }

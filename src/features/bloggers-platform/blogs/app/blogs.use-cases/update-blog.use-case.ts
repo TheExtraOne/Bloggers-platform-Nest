@@ -1,6 +1,5 @@
 import { UpdateBlogInputDto } from '../../api/input-dto/blogs.input-dto';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-// import { MgBlogsRepository } from '../../infrastructure/mg.blogs.repository';
 import { PgBlogsRepository } from '../../infrastructure/pg.blogs.repository';
 import { NotFoundException } from '@nestjs/common';
 import { ERRORS } from '../../../../../constants';
@@ -18,10 +17,7 @@ export class UpdateBlogCommand extends Command<void> {
 export class UpdateBlogUseCase
   implements ICommandHandler<UpdateBlogCommand, void>
 {
-  constructor(
-    // private readonly mgBlogsRepository: MgBlogsRepository,
-    private pgBlogsRepository: PgBlogsRepository,
-  ) {}
+  constructor(private pgBlogsRepository: PgBlogsRepository) {}
 
   async execute(command: UpdateBlogCommand): Promise<void> {
     const { id, dto } = command;

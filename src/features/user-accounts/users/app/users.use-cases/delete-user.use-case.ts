@@ -1,5 +1,3 @@
-// import { MgUsersRepository } from '../../infrastructure/mg.users.repository';
-// import { UserDocument } from '../../domain/user.entity';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PgUsersRepository } from '../../infrastructure/pg.users.repository';
 
@@ -11,10 +9,7 @@ export class DeleteUserCommand extends Command<void> {
 
 @CommandHandler(DeleteUserCommand)
 export class DeleteUserUseCase implements ICommandHandler<DeleteUserCommand> {
-  constructor(
-    // private readonly mgUsersRepository: MgUsersRepository,
-    private readonly pgUsersRepository: PgUsersRepository,
-  ) {}
+  constructor(private readonly pgUsersRepository: PgUsersRepository) {}
 
   async execute({ id }: DeleteUserCommand): Promise<void> {
     // For MongoDB
