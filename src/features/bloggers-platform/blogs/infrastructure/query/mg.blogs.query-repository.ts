@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogModelType } from '../../domain/blog.entity';
-import { BlogsViewDto } from '../../api/view-dto/blogs.view-dto';
+import { MgBlogsViewDto } from '../../api/view-dto/blogs.view-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
 import { FilterQuery } from 'mongoose';
 import { ERRORS } from '../../../../../constants';
@@ -9,10 +9,10 @@ import { ObjectId } from 'mongodb';
 import { GetBlogsQueryParams } from '../../api/input-dto/get-blogs.query-params.input-dto';
 
 @Injectable()
-export class BlogsQueryRepository {
+export class MgBlogsQueryRepository {
   constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) {}
 
-  async findBlogById(id: string): Promise<BlogsViewDto> {
+  async findBlogById(id: string): Promise<MgBlogsViewDto> {
     if (!ObjectId.isValid(id))
       throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
 
@@ -23,12 +23,12 @@ export class BlogsQueryRepository {
 
     if (!blog) throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
 
-    return BlogsViewDto.mapToView(blog);
+    return MgBlogsViewDto.mapToView(blog);
   }
 
   async findAll(
     query: GetBlogsQueryParams,
-  ): Promise<PaginatedViewDto<BlogsViewDto[]>> {
+  ): Promise<PaginatedViewDto<MgBlogsViewDto[]>> {
     // Creating filter
     const filter: FilterQuery<Blog> = {
       deletedAt: null,
@@ -44,7 +44,7 @@ export class BlogsQueryRepository {
 
     const totalCount = await this.BlogModel.countDocuments(filter);
 
-    const items = blogs.map((blog) => BlogsViewDto.mapToView(blog));
+    const items = blogs.map((blog) => MgBlogsViewDto.mapToView(blog));
 
     return PaginatedViewDto.mapToView({
       items,

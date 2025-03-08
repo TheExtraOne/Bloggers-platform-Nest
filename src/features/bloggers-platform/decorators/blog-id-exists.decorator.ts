@@ -6,16 +6,16 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { BlogsRepository } from '../blogs/infrastructure/blogs.repository';
+import { MgBlogsRepository } from '../blogs/infrastructure/mg.blogs.repository';
 
 @ValidatorConstraint({ name: 'BlogIdExists', async: true })
 @Injectable()
 export class BlogIdExistsRule implements ValidatorConstraintInterface {
-  constructor(private readonly blogsRepository: BlogsRepository) {}
+  constructor(private readonly mgBlogsRepository: MgBlogsRepository) {}
 
   async validate(blogId: string) {
     try {
-      await this.blogsRepository.findBlogById(blogId);
+      await this.mgBlogsRepository.findBlogById(blogId);
     } catch (e) {
       return false;
     }

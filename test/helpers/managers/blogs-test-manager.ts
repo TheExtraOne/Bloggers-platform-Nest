@@ -5,7 +5,7 @@ import {
   CreateBlogInputDto,
   UpdateBlogInputDto,
 } from '../../../src/features/bloggers-platform/blogs/api/input-dto/blogs.input-dto';
-import { BlogsViewDto } from '../../../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
+import { MgBlogsViewDto } from '../../../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
 import { CreatePostInputDto } from '../../../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
 import { PostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 
@@ -17,7 +17,7 @@ export class BlogsTestManager {
     statusCode: number = HttpStatus.CREATED,
     username: string = 'admin',
     password: string = 'qwerty',
-  ): Promise<BlogsViewDto> {
+  ): Promise<MgBlogsViewDto> {
     const response = await request(this.app.getHttpServer())
       .post(`/${PATHS.BLOGS}`)
       .auth(username, password)
@@ -70,7 +70,7 @@ export class BlogsTestManager {
   }
 
   async createSeveralBlogs(count: number) {
-    const blogs = [] as BlogsViewDto[];
+    const blogs = [] as MgBlogsViewDto[];
 
     for (let i = 0; i < count; ++i) {
       const response = await this.createBlog({

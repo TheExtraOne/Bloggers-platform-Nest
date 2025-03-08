@@ -28,7 +28,7 @@ import { AdminCreateUserCommand } from '../app/users.use-cases/admin-create-user
 import { PgUsersQueryRepository } from '../infrastructure/query/pg.users.query-repository';
 
 @UseGuards(BasicAuthGuard)
-@Controller(PATHS.USERS)
+@Controller(PATHS.SA_USERS)
 export class UserController {
   constructor(
     private readonly commandBus: CommandBus,

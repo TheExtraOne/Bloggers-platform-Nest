@@ -1,14 +1,11 @@
-import { ObjectId } from 'mongodb';
+// import { ObjectId } from 'mongodb';
 import {
   Command,
   CommandBus,
   CommandHandler,
   ICommandHandler,
 } from '@nestjs/cqrs';
-import {
-  CustomJwtService,
-  TOKEN_TYPE,
-} from '../../../utils/custom-jwt.service';
+import { CustomJwtService } from '../../../utils/custom-jwt.service';
 import { CreateSessionCommand } from '../../../sessions/app/sessions.use-cases/create-session.use-case';
 import { v4 as uuidv4 } from 'uuid';
 

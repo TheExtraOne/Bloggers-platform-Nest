@@ -4,11 +4,11 @@ import { add } from 'date-fns';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EmailService } from '../../../utils/email.service';
 import { EmailConfirmationStatus } from '../../../users/domain/email-confirmation.schema';
-import { UserDocument } from '../../../users/domain/user.entity';
-import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
+// import { UserDocument } from '../../../users/domain/user.entity';
+// import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
 import { ResendRegistrationInputDto } from '../../api/input-dto/resend-registration.input-dto';
 import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
-import { PGUserViewDto } from '../../../users/api/view-dto/users.view-dto';
+// import { PGUserViewDto } from '../../../users/api/view-dto/users.view-dto';
 
 export class ResendRegistrationEmailCommand extends Command<void> {
   constructor(public readonly dto: ResendRegistrationInputDto) {
@@ -21,7 +21,7 @@ export class ResendRegistrationEmailUseCase
   implements ICommandHandler<ResendRegistrationEmailCommand, void>
 {
   constructor(
-    private readonly mgUsersRepository: MgUsersRepository,
+    // private readonly mgUsersRepository: MgUsersRepository,
     private readonly pgUsersRepository: PgUsersRepository,
     private readonly emailService: EmailService,
   ) {}

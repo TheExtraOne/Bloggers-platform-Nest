@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EmailConfirmationStatus } from '../../../users/domain/email-confirmation.schema';
-import { UserDocument } from '../../../users/domain/user.entity';
-import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
+// import { UserDocument } from '../../../users/domain/user.entity';
+// import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
 import { ConfirmRegistrationInputDto } from '../../api/input-dto/confirm-registration.input-dto';
 import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
 
@@ -17,7 +17,7 @@ export class ConfirmEmailRegistrationUseCase
   implements ICommandHandler<ConfirmEmailRegistrationCommand, void>
 {
   constructor(
-    private readonly mgUsersRepository: MgUsersRepository,
+    // private readonly mgUsersRepository: MgUsersRepository,
     private readonly pgUsersRepository: PgUsersRepository,
   ) {}
 

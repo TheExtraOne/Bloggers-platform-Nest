@@ -2,8 +2,8 @@ import { BadRequestException } from '@nestjs/common';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BcryptService } from '../../../utils/bcrypt.service';
 import { PasswordRecoveryStatus } from '../../../users/domain/password-recovery.schema';
-import { UserDocument } from '../../../users/domain/user.entity';
-import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
+// import { UserDocument } from '../../../users/domain/user.entity';
+// import { MgUsersRepository } from '../../../users/infrastructure/mg.users.repository';
 import { NewPasswordInputDto } from '../../api/input-dto/new-password.input-dto';
 import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
 
@@ -18,7 +18,7 @@ export class SetNewPasswordUseCase
   implements ICommandHandler<SetNewPasswordCommand>
 {
   constructor(
-    private readonly mgUsersRepository: MgUsersRepository,
+    // private readonly mgUsersRepository: MgUsersRepository,
     private readonly pgUsersRepository: PgUsersRepository,
     private readonly bcryptService: BcryptService,
   ) {}

@@ -1,10 +1,10 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiProperty } from '@nestjs/swagger';
-import { BlogsViewDto } from '../view-dto/blogs.view-dto';
+import { MgBlogsViewDto } from '../view-dto/blogs.view-dto';
 
 export class PaginatedBlogsResponse {
-  @ApiProperty({ type: [BlogsViewDto] })
-  items: BlogsViewDto[];
+  @ApiProperty({ type: [MgBlogsViewDto] })
+  items: MgBlogsViewDto[];
 
   @ApiProperty({ type: Number })
   totalCount: number;

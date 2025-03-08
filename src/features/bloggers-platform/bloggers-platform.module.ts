@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { BlogsQueryRepository } from './blogs/infrastructure/query/blogs.query-repository';
+import { MgBlogsQueryRepository } from './blogs/infrastructure/query/mg.blogs.query-repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Blog, BlogSchema } from './blogs/domain/blog.entity';
 import { PostsController } from './posts/api/posts.controller';
@@ -11,11 +11,11 @@ import { CreateCommentUseCase } from './comments/app/command.use-cases/create-co
 import { Comment, CommentSchema } from './comments/domain/comment.entity';
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
 import { CommentsQueryRepository } from './comments/infrastructure/query/comments.query-repository';
-import { BlogsController } from './blogs/api/blogs.controller';
+import { SaBlogsController } from './blogs/api/sa.blogs.controller';
 import { CreateBlogUseCase } from './blogs/app/blogs.use-cases/create-blog.use-case';
 import { DeleteBlogUseCase } from './blogs/app/blogs.use-cases/delete-blog.use-case';
 import { UpdateBlogUseCase } from './blogs/app/blogs.use-cases/update-blog.use-case';
-import { BlogsRepository } from './blogs/infrastructure/blogs.repository';
+import { MgBlogsRepository } from './blogs/infrastructure/mg.blogs.repository';
 import { CreatePostUseCase } from './posts/app/posts.use-cases/create-post.use-case';
 import { DeletePostUseCase } from './posts/app/posts.use-cases/delete-post.use-case';
 import { UpdatePostUseCase } from './posts/app/posts.use-cases/update-post.use-case';
@@ -32,6 +32,8 @@ import { EnrichCommentsWithLikesUseCase } from './likes/app/likes.use-cases/enri
 import { EnrichCommentWithLikeUseCase } from './likes/app/likes.use-cases/enrich-comment-with-like.use-case';
 import { LikesService } from './likes/app/likes.service';
 import { BlogIdExistsRule } from './decorators/blog-id-exists.decorator';
+import { PgBlogsRepository } from './blogs/infrastructure/pg.blogs.repository';
+import { PgBlogsQueryRepository } from './blogs/infrastructure/query/pg.blogs.query-repository';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -70,11 +72,13 @@ const likesUseCases = [
     ]),
     UserAccountsModule,
   ],
-  controllers: [BlogsController, PostsController, CommentsController],
+  controllers: [SaBlogsController, PostsController, CommentsController],
   providers: [
     BlogsService,
-    BlogsQueryRepository,
-    BlogsRepository,
+    MgBlogsQueryRepository,
+    PgBlogsQueryRepository,
+    MgBlogsRepository,
+    PgBlogsRepository,
     PostsRepository,
     PostsQueryRepository,
     CommentsRepository,

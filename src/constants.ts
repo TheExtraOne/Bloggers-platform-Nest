@@ -1,9 +1,10 @@
 export const PATHS = {
   AUTH: 'auth',
+  SA_BLOGS: 'sa/blogs',
   BLOGS: 'blogs',
   COMMENTS: 'comments',
   POSTS: 'posts',
-  USERS: 'sa/users',
+  SA_USERS: 'sa/users',
   TESTING: 'testing',
   SECURITY: 'security',
 };

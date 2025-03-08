@@ -1,6 +1,6 @@
 import { UpdateBlogInputDto } from '../../api/input-dto/blogs.input-dto';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogsRepository } from '../../infrastructure/blogs.repository';
+import { MgBlogsRepository } from '../../infrastructure/mg.blogs.repository';
 
 export class UpdateBlogCommand extends Command<void> {
   constructor(
@@ -15,17 +15,17 @@ export class UpdateBlogCommand extends Command<void> {
 export class UpdateBlogUseCase
   implements ICommandHandler<UpdateBlogCommand, void>
 {
-  constructor(private readonly blogsRepository: BlogsRepository) {}
+  constructor(private readonly mgBlogsRepository: MgBlogsRepository) {}
 
   async execute(command: UpdateBlogCommand): Promise<void> {
     const { id, dto } = command;
-    const blog = await this.blogsRepository.findBlogById(id);
+    const blog = await this.mgBlogsRepository.findBlogById(id);
     blog.update({
       name: dto.name,
       description: dto.description,
       websiteUrl: dto.websiteUrl,
     });
 
-    await this.blogsRepository.save(blog);
+    await this.mgBlogsRepository.save(blog);
   }
 }

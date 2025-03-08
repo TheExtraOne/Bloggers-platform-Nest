@@ -1,15 +1,15 @@
 import { BlogDocument } from '../domain/blog.entity';
-import { BlogsViewDto } from '../api/view-dto/blogs.view-dto';
+import { MgBlogsViewDto } from '../api/view-dto/blogs.view-dto';
 import { Injectable } from '@nestjs/common';
-import { BlogsRepository } from '../infrastructure/blogs.repository';
+import { MgBlogsRepository } from '../infrastructure/mg.blogs.repository';
 
 @Injectable()
 export class BlogsService {
-  constructor(private readonly blogsRepository: BlogsRepository) {}
+  constructor(private readonly mgBlogsRepository: MgBlogsRepository) {}
 
-  async getBlogById(id: string): Promise<BlogsViewDto> {
-    const blog: BlogDocument = await this.blogsRepository.findBlogById(id);
+  async getBlogById(id: string): Promise<MgBlogsViewDto> {
+    const blog: BlogDocument = await this.mgBlogsRepository.findBlogById(id);
 
-    return BlogsViewDto.mapToView(blog);
+    return MgBlogsViewDto.mapToView(blog);
   }
 }

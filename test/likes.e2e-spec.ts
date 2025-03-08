@@ -8,7 +8,7 @@ import { BlogsTestManager } from './helpers/managers/blogs-test-manager';
 import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { deleteAllData } from './helpers/delete-all-data';
 import { LikeStatus } from '../src/features/bloggers-platform/likes/domain/like.entity';
-import { BlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
+import { MgBlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
 import { PostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 
 describe('Likes (e2e)', () => {
@@ -19,7 +19,7 @@ describe('Likes (e2e)', () => {
   let usersTestManager: UsersTestManager;
   let blogsTestManager: BlogsTestManager;
   let accessToken: string;
-  let blog: BlogsViewDto;
+  let blog: MgBlogsViewDto;
   let post: PostsViewDto;
 
   beforeAll(async () => {
@@ -83,7 +83,10 @@ describe('Likes (e2e)', () => {
       );
 
       // Get post and verify like status
-      const updatedPost = await postsTestManager.getPostById(post.id, accessToken);
+      const updatedPost = await postsTestManager.getPostById(
+        post.id,
+        accessToken,
+      );
       expect(updatedPost.extendedLikesInfo.likesCount).toBe(1);
       expect(updatedPost.extendedLikesInfo.myStatus).toBe(LikeStatus.Like);
     });
@@ -116,7 +119,9 @@ describe('Likes (e2e)', () => {
       // Create a comment
       comment = await postsTestManager.createComment(
         post.id,
-        { content: 'This is a test comment that meets the length requirement.' },
+        {
+          content: 'This is a test comment that meets the length requirement.',
+        },
         accessToken,
         HttpStatus.CREATED,
       );
@@ -131,7 +136,10 @@ describe('Likes (e2e)', () => {
       );
 
       // Get comment and verify like status
-      const updatedComment = await commentsTestManager.getCommentById(comment.id, accessToken);
+      const updatedComment = await commentsTestManager.getCommentById(
+        comment.id,
+        accessToken,
+      );
       expect(updatedComment.likesInfo.likesCount).toBe(1);
       expect(updatedComment.likesInfo.myStatus).toBe(LikeStatus.Like);
     });
@@ -160,7 +168,10 @@ describe('Likes (e2e)', () => {
       // Create a comment on the post
       const comment = await postsTestManager.createComment(
         post.id,
-        { content: 'This is a test comment that is long enough to meet the minimum length requirement.' },
+        {
+          content:
+            'This is a test comment that is long enough to meet the minimum length requirement.',
+        },
         accessToken,
       );
 
@@ -193,7 +204,10 @@ describe('Likes (e2e)', () => {
       );
 
       // Verify comment has 1 like and 1 dislike
-      let updatedComment = await commentsTestManager.getCommentById(comment.id, user2AccessToken);
+      let updatedComment = await commentsTestManager.getCommentById(
+        comment.id,
+        user2AccessToken,
+      );
       expect(updatedComment.likesInfo.likesCount).toBe(1);
       expect(updatedComment.likesInfo.dislikesCount).toBe(1);
       expect(updatedComment.likesInfo.myStatus).toBe(LikeStatus.Dislike);
@@ -206,7 +220,10 @@ describe('Likes (e2e)', () => {
       );
 
       // Verify final state: 0 likes, 1 dislike
-      updatedComment = await commentsTestManager.getCommentById(comment.id, accessToken);
+      updatedComment = await commentsTestManager.getCommentById(
+        comment.id,
+        accessToken,
+      );
       expect(updatedComment.likesInfo.likesCount).toBe(0);
       expect(updatedComment.likesInfo.dislikesCount).toBe(1);
       expect(updatedComment.likesInfo.myStatus).toBe(LikeStatus.None);

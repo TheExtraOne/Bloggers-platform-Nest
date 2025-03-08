@@ -10,7 +10,7 @@ import {
   CreateBlogInputDto,
   UpdateBlogInputDto,
 } from '../src/features/bloggers-platform/blogs/api/input-dto/blogs.input-dto';
-import { BlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
+import { MgBlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
 import { CreatePostInputDto } from '../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
 import { PostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 import { TestSettingsInitializer } from './helpers/init-settings';
@@ -157,7 +157,7 @@ describe('Blogs Controller (e2e)', () => {
         .get(`/${PATHS.BLOGS}?pageSize=3&pageNumber=2`)
         .expect(HttpStatus.OK);
 
-      const body = response.body as PaginatedViewDto<BlogsViewDto[]>;
+      const body = response.body as PaginatedViewDto<MgBlogsViewDto[]>;
       expect(body.items).toHaveLength(2); // Second page should have 2 items
       expect(body.totalCount).toBe(5);
       expect(body.pagesCount).toBe(2);
@@ -182,7 +182,7 @@ describe('Blogs Controller (e2e)', () => {
         .get(`/${PATHS.BLOGS}?searchNameTerm=First`)
         .expect(HttpStatus.OK);
 
-      const body = response.body as PaginatedViewDto<BlogsViewDto[]>;
+      const body = response.body as PaginatedViewDto<MgBlogsViewDto[]>;
       expect(body.items).toHaveLength(1);
       expect(body.items[0].name).toBe('First Blog');
     });

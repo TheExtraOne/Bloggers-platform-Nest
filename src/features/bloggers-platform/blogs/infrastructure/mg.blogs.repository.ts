@@ -5,7 +5,7 @@ import { ERRORS } from '../../../../constants';
 import { Blog, BlogModelType, BlogDocument } from '../domain/blog.entity';
 
 @Injectable()
-export class BlogsRepository {
+export class MgBlogsRepository {
   constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) {}
 
   async save(blog: BlogDocument): Promise<void> {

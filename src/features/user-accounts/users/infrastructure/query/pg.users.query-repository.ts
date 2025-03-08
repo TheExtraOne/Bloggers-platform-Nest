@@ -30,7 +30,7 @@ export class PgUsersQueryRepository extends PgBaseRepository {
   ): Promise<PaginatedViewDto<PGUserViewDto[]>> {
     const { sortBy, sortDirection, pageNumber, pageSize } = query;
 
-    const sortColumn = this.getSortColumn(sortBy);
+    const sortColumn = this.getSortColumn(sortBy, this.allowedColumns);
     const { offset, limit } = this.getPaginationParams(pageNumber, pageSize);
 
     const [users, totalCount] = await Promise.all([
@@ -66,15 +66,6 @@ export class PgUsersQueryRepository extends PgBaseRepository {
     return PGUserViewDto.mapToView(user);
   }
 
-  private getSortColumn(sortBy: string): string {
-    const sortBySnakeCase = this.adapterCamelToSnake(sortBy);
-    return this.allowedColumns.includes(
-      sortBySnakeCase as (typeof this.allowedColumns)[number],
-    )
-      ? sortBySnakeCase
-      : 'created_at';
-  }
-
   private buildWhereClause(query: GetUsersQueryParams): {
     baseConditions: string[];
     searchConditions: string[];
@@ -99,13 +90,6 @@ export class PgUsersQueryRepository extends PgBaseRepository {
     }
 
     return { baseConditions, searchConditions, params };
-  }
-
-  private getPaginationParams(pageNumber: number, pageSize: number) {
-    return {
-      offset: (pageNumber - 1) * pageSize,
-      limit: pageSize,
-    };
   }
 
   private async findUsers(

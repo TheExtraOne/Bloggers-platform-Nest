@@ -669,10 +669,10 @@ window.onload = function() {
           ]
         }
       },
-      "/blogs": {
+      "/sa/blogs": {
         "get": {
           "description": "Returns a paginated list of all blogs. Can be filtered by name and sorted.",
-          "operationId": "BlogsController_getAllBlogs",
+          "operationId": "SaBlogsController_getAllBlogs",
           "parameters": [
             {
               "name": "sortBy",
@@ -748,12 +748,12 @@ window.onload = function() {
           },
           "summary": "Get all blogs",
           "tags": [
-            "Blogs"
+            "SaBlogs"
           ]
         },
         "post": {
           "description": "Creates a new blog. Requires basic authentication.",
-          "operationId": "BlogsController_createBlog",
+          "operationId": "SaBlogsController_createBlog",
           "parameters": [],
           "requestBody": {
             "required": true,
@@ -771,7 +771,7 @@ window.onload = function() {
               "content": {
                 "application/json": {
                   "schema": {
-                    "$ref": "#/components/schemas/BlogsViewDto"
+                    "$ref": "#/components/schemas/MgBlogsViewDto"
                   }
                 }
               }
@@ -797,281 +797,7 @@ window.onload = function() {
           ],
           "summary": "Create new blog",
           "tags": [
-            "Blogs"
-          ]
-        }
-      },
-      "/blogs/{id}": {
-        "get": {
-          "description": "Returns a single blog by its ID.",
-          "operationId": "BlogsController_getBlogById",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "description": "Blog ID",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successfully retrieved blog.",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/BlogsViewDto"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "Blog not found."
-            }
-          },
-          "summary": "Get blog by ID",
-          "tags": [
-            "Blogs"
-          ]
-        },
-        "put": {
-          "description": "Updates an existing blog by ID. Requires basic authentication.",
-          "operationId": "BlogsController_updateBlogById",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "description": "Blog ID",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdateBlogInputDto"
-                }
-              }
-            }
-          },
-          "responses": {
-            "204": {
-              "description": "Blog successfully updated."
-            },
-            "400": {
-              "description": "Invalid input data.",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/APIErrorResultResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized."
-            },
-            "404": {
-              "description": "Blog not found."
-            }
-          },
-          "security": [
-            {
-              "basicAuth": []
-            }
-          ],
-          "summary": "Update blog",
-          "tags": [
-            "Blogs"
-          ]
-        },
-        "delete": {
-          "description": "Deletes a blog by ID. Requires basic authentication.",
-          "operationId": "BlogsController_deleteBlogById",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "description": "Blog ID",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "204": {
-              "description": "Blog successfully deleted."
-            },
-            "401": {
-              "description": "Unauthorized."
-            },
-            "404": {
-              "description": "Blog not found."
-            }
-          },
-          "security": [
-            {
-              "basicAuth": []
-            }
-          ],
-          "summary": "Delete blog",
-          "tags": [
-            "Blogs"
-          ]
-        }
-      },
-      "/blogs/{id}/posts": {
-        "get": {
-          "description": "Returns a paginated list of all posts for a specific blog. Posts will include like status if user is authenticated.",
-          "operationId": "BlogsController_getPostsByBlogId",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "description": "Blog ID",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "sortBy",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "default": "createdAt",
-                "type": "string",
-                "enum": [
-                  "createdAt",
-                  "title",
-                  "shortDescription",
-                  "content",
-                  "blogId",
-                  "blogName"
-                ]
-              }
-            },
-            {
-              "name": "sortDirection",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "default": "desc",
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              }
-            },
-            {
-              "name": "pageNumber",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "minimum": 1,
-                "default": 1,
-                "type": "number"
-              }
-            },
-            {
-              "name": "pageSize",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "minimum": 1,
-                "default": 10,
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Successfully retrieved posts.",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/PaginatedPostsResponse"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "Blog not found."
-            }
-          },
-          "summary": "Get all posts for a blog",
-          "tags": [
-            "Blogs"
-          ]
-        },
-        "post": {
-          "description": "Creates a new post for a specific blog. Requires basic authentication.",
-          "operationId": "BlogsController_createPostByBlogId",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "description": "Blog ID",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreatePostFromBlogInputDto"
-                }
-              }
-            }
-          },
-          "responses": {
-            "201": {
-              "description": "Post successfully created.",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/PostViewModel"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Invalid input data.",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/APIErrorResultResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized."
-            },
-            "404": {
-              "description": "Blog not found."
-            }
-          },
-          "security": [
-            {
-              "basicAuth": []
-            }
-          ],
-          "summary": "Create new post for blog",
-          "tags": [
-            "Blogs"
+            "SaBlogs"
           ]
         }
       },
@@ -1979,7 +1705,7 @@ window.onload = function() {
             "deviceId"
           ]
         },
-        "BlogsViewDto": {
+        "MgBlogsViewDto": {
           "type": "object",
           "properties": {
             "id": {
@@ -2017,7 +1743,7 @@ window.onload = function() {
             "items": {
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/BlogsViewDto"
+                "$ref": "#/components/schemas/MgBlogsViewDto"
               }
             },
             "totalCount": {
@@ -2039,6 +1765,29 @@ window.onload = function() {
             "pagesCount",
             "page",
             "pageSize"
+          ]
+        },
+        "CreateBlogInputDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 15
+            },
+            "description": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "websiteUrl": {
+              "type": "string",
+              "maxLength": 100,
+              "pattern": "/^(http|https):\\/\\/[a-z0-9]+([-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$/"
+            }
+          },
+          "required": [
+            "name",
+            "description",
+            "websiteUrl"
           ]
         },
         "NewestLikeInfo": {
@@ -2180,74 +1929,6 @@ window.onload = function() {
             "pagesCount",
             "page",
             "pageSize"
-          ]
-        },
-        "CreateBlogInputDto": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string",
-              "maxLength": 15
-            },
-            "description": {
-              "type": "string",
-              "maxLength": 500
-            },
-            "websiteUrl": {
-              "type": "string",
-              "maxLength": 100,
-              "pattern": "/^(http|https):\\/\\/[a-z0-9]+([-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$/"
-            }
-          },
-          "required": [
-            "name",
-            "description",
-            "websiteUrl"
-          ]
-        },
-        "CreatePostFromBlogInputDto": {
-          "type": "object",
-          "properties": {
-            "title": {
-              "type": "string",
-              "maxLength": 30
-            },
-            "shortDescription": {
-              "type": "string",
-              "maxLength": 100
-            },
-            "content": {
-              "type": "string",
-              "maxLength": 1000
-            }
-          },
-          "required": [
-            "title",
-            "shortDescription",
-            "content"
-          ]
-        },
-        "UpdateBlogInputDto": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string",
-              "maxLength": 15
-            },
-            "description": {
-              "type": "string",
-              "maxLength": 500
-            },
-            "websiteUrl": {
-              "type": "string",
-              "maxLength": 100,
-              "pattern": "/^(http|https):\\/\\/[a-z0-9]+([-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$/"
-            }
-          },
-          "required": [
-            "name",
-            "description",
-            "websiteUrl"
           ]
         },
         "CommentatorInfo": {

@@ -51,7 +51,7 @@ describe('Users Controller (e2e)', () => {
 
     it('should not create user without auth credentials', async () => {
       await request(httpServer)
-        .post(`/${PATHS.USERS}`)
+        .post(`/${PATHS.SA_USERS}`)
         .send(validUser)
         .expect(HttpStatus.UNAUTHORIZED);
     });
@@ -141,7 +141,7 @@ describe('Users Controller (e2e)', () => {
   describe('GET /users', () => {
     it('should return empty list when no users exist', async () => {
       const response = await request(httpServer)
-        .get(`/${PATHS.USERS}`)
+        .get(`/${PATHS.SA_USERS}`)
         .auth('admin', 'qwerty')
         .expect(HttpStatus.OK);
 
@@ -159,7 +159,7 @@ describe('Users Controller (e2e)', () => {
       await userTestManager.createSeveralUsers(5);
 
       const response = await request(httpServer)
-        .get(`/${PATHS.USERS}?pageSize=3&pageNumber=2`)
+        .get(`/${PATHS.SA_USERS}?pageSize=3&pageNumber=2`)
         .auth('admin', 'qwerty')
         .expect(HttpStatus.OK);
 
@@ -185,7 +185,7 @@ describe('Users Controller (e2e)', () => {
       });
 
       const response = await request(httpServer)
-        .get(`/${PATHS.USERS}?searchLoginTerm=john`)
+        .get(`/${PATHS.SA_USERS}?searchLoginTerm=john`)
         .auth('admin', 'qwerty')
         .expect(HttpStatus.OK);
 
@@ -206,13 +206,13 @@ describe('Users Controller (e2e)', () => {
 
       // Delete the user
       await request(httpServer)
-        .delete(`/${PATHS.USERS}/${user.id}`)
+        .delete(`/${PATHS.SA_USERS}/${user.id}`)
         .auth('admin', 'qwerty')
         .expect(HttpStatus.NO_CONTENT);
 
       // Verify user is deleted by trying to get all users
       const response = await request(httpServer)
-        .get(`/${PATHS.USERS}`)
+        .get(`/${PATHS.SA_USERS}`)
         .auth('admin', 'qwerty')
         .expect(HttpStatus.OK);
 
@@ -222,7 +222,7 @@ describe('Users Controller (e2e)', () => {
 
     it('should return 404 when deleting non-existing user', async () => {
       await request(httpServer)
-        .delete(`/${PATHS.USERS}/nonexistentid`)
+        .delete(`/${PATHS.SA_USERS}/nonexistentid`)
         .auth('admin', 'qwerty')
         .expect(HttpStatus.NOT_FOUND);
     });
@@ -235,7 +235,7 @@ describe('Users Controller (e2e)', () => {
       });
 
       await request(httpServer)
-        .delete(`/${PATHS.USERS}/${user.id}`)
+        .delete(`/${PATHS.SA_USERS}/${user.id}`)
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });

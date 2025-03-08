@@ -14,7 +14,7 @@ export class UsersTestManager {
     password: string = 'qwerty',
   ): Promise<any> {
     const response = await request(this.app.getHttpServer())
-      .post(`/${PATHS.USERS}`)
+      .post(`/${PATHS.SA_USERS}`)
       .send(createModel)
       .auth(username, password)
       .expect(statusCode);
