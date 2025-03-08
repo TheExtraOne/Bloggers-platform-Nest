@@ -1,7 +1,7 @@
 export class PgBaseRepository {
   constructor() {}
-  protected validateUserId(userId: string): boolean {
-    if (isNaN(Number(userId))) {
+  protected isCorrectNumber(id: string): boolean {
+    if (isNaN(Number(id))) {
       return false;
     }
 

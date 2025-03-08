@@ -18,7 +18,7 @@ export class PgSessionsRepository extends PgBaseRepository {
     expirationDate: Date;
     userId: string;
   }): Promise<void> {
-    if (!this.validateUserId(dto.userId) || !isUUID(dto.deviceId)) {
+    if (!this.isCorrectNumber(dto.userId) || !isUUID(dto.deviceId)) {
       throw new InternalServerErrorException();
     }
 
@@ -61,7 +61,7 @@ export class PgSessionsRepository extends PgBaseRepository {
     deviceId: string,
     lastActiveDate: Date,
   ): Promise<{ id: string } | null> {
-    if (!this.validateUserId(userId) || !isUUID(deviceId)) {
+    if (!this.isCorrectNumber(userId) || !isUUID(deviceId)) {
       return null;
     }
 

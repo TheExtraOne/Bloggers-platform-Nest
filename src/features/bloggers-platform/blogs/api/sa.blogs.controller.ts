@@ -5,15 +5,15 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  // Param,
+  Param,
   Post,
-  // Put,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import {
   CreateBlogInputDto,
-  // UpdateBlogInputDto,
+  UpdateBlogInputDto,
 } from './input-dto/blogs.input-dto';
 import { PgBlogsViewDto } from './view-dto/blogs.view-dto';
 import { GetBlogsQueryParams } from './input-dto/get-blogs.query-params.input-dto';
@@ -21,7 +21,7 @@ import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.g
 import { CreateBlogCommand } from '../app/blogs.use-cases/create-blog.use-case';
 import { CommandBus } from '@nestjs/cqrs';
 // import { DeleteBlogCommand } from '../app/blogs.use-cases/delete-blog.use-case';
-// import { UpdateBlogCommand } from '../app/blogs.use-cases/update-blog.use-case';
+import { UpdateBlogCommand } from '../app/blogs.use-cases/update-blog.use-case';
 import { PATHS } from '../../../../constants';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
 // import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts.query-params.input-dto';
@@ -39,7 +39,7 @@ import {
   // GetBlogPostsSwagger,
   CreateBlogSwagger,
   // CreateBlogPostSwagger,
-  // UpdateBlogSwagger,
+  UpdateBlogSwagger,
   // DeleteBlogSwagger,
 } from './swagger';
 import { PgBlogsQueryRepository } from '../infrastructure/query/pg.blogs.query-repository';
@@ -129,16 +129,16 @@ export class SaBlogsController {
   //   return this.postsQueryRepository.findPostById(postId);
   // }
 
-  // @Put(':id')
-  // @UseGuards(BasicAuthGuard)
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // @UpdateBlogSwagger()
-  // async updateBlogById(
-  //   @Param('id') id: string,
-  //   @Body() updateBlogDto: UpdateBlogInputDto,
-  // ): Promise<void> {
-  //   return this.commandBus.execute(new UpdateBlogCommand(id, updateBlogDto));
-  // }
+  @Put(':id')
+  @UseGuards(BasicAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UpdateBlogSwagger()
+  async updateBlogById(
+    @Param('id') id: string,
+    @Body() updateBlogDto: UpdateBlogInputDto,
+  ): Promise<void> {
+    return this.commandBus.execute(new UpdateBlogCommand(id, updateBlogDto));
+  }
 
   // @Delete(':id')
   // @UseGuards(BasicAuthGuard)

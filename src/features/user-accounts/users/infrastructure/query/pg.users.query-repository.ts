@@ -47,7 +47,7 @@ export class PgUsersQueryRepository extends PgBaseRepository {
   }
 
   async findUserById(id: string): Promise<PGUserViewDto> {
-    if (!this.validateUserId(id)) {
+    if (!this.isCorrectNumber(id)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
 

@@ -49,7 +49,7 @@ export class PgUsersRepository extends PgBaseRepository {
   }
 
   async deleteUserById(userId: string): Promise<void> {
-    if (!this.validateUserId(userId)) {
+    if (!this.isCorrectNumber(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
 
@@ -203,7 +203,7 @@ export class PgUsersRepository extends PgBaseRepository {
     newConfirmationCode: string,
     newExpirationDate: Date,
   ): Promise<void> {
-    if (!this.validateUserId(userId)) {
+    if (!this.isCorrectNumber(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
     const query = `
@@ -226,7 +226,7 @@ export class PgUsersRepository extends PgBaseRepository {
     newRecoveryCode: string,
     newExpirationDate: Date,
   ): Promise<void> {
-    if (!this.validateUserId(userId)) {
+    if (!this.isCorrectNumber(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
 
@@ -246,7 +246,7 @@ export class PgUsersRepository extends PgBaseRepository {
   }
 
   async confirmUserEmail(userId: string): Promise<void> {
-    if (!this.validateUserId(userId)) {
+    if (!this.isCorrectNumber(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
     const query = `
@@ -263,7 +263,7 @@ export class PgUsersRepository extends PgBaseRepository {
     userId: string,
     newPassword: string,
   ): Promise<void> {
-    if (!this.validateUserId(userId)) {
+    if (!this.isCorrectNumber(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
 

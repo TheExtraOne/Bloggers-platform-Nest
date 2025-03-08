@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { PgBaseRepository } from '../../../../../core/base-classes/pg.base.repository';
 import { PgBlogsViewDto } from '../../api/view-dto/blogs.view-dto';
 import { GetBlogsQueryParams } from '../../api/input-dto/get-blogs.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
+import { ERRORS } from 'src/constants';
 
 export type TPgBlog = {
   id: string;
@@ -31,12 +32,15 @@ export class PgBlogsQueryRepository extends PgBaseRepository {
   }
 
   async getBlogById(id: string): Promise<PgBlogsViewDto> {
+    if (!this.isCorrectNumber(id)) {
+      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+    }
     const query = `
       SELECT * FROM blogs WHERE id = $1;
     `;
     const params = [id];
     const result = await this.dataSource.query(query, params);
-    const blog = result[0];
+    const blog: TPgBlog = result[0];
 
     return PgBlogsViewDto.mapToView(blog);
   }

@@ -801,6 +801,63 @@ window.onload = function() {
           ]
         }
       },
+      "/sa/blogs/{id}": {
+        "put": {
+          "description": "Updates an existing blog by ID. Requires basic authentication.",
+          "operationId": "SaBlogsController_updateBlogById",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Blog ID",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateBlogInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "Blog successfully updated."
+            },
+            "400": {
+              "description": "Invalid input data.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/APIErrorResultResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized."
+            },
+            "404": {
+              "description": "Blog not found."
+            }
+          },
+          "security": [
+            {
+              "basicAuth": []
+            }
+          ],
+          "summary": "Update blog",
+          "tags": [
+            "SaBlogs"
+          ]
+        }
+      },
       "/posts": {
         "get": {
           "description": "Returns a paginated list of all posts. Posts will include like status if user is authenticated.",
@@ -1768,6 +1825,29 @@ window.onload = function() {
           ]
         },
         "CreateBlogInputDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 15
+            },
+            "description": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "websiteUrl": {
+              "type": "string",
+              "maxLength": 100,
+              "pattern": "/^(http|https):\\/\\/[a-z0-9]+([-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$/"
+            }
+          },
+          "required": [
+            "name",
+            "description",
+            "websiteUrl"
+          ]
+        },
+        "UpdateBlogInputDto": {
           "type": "object",
           "properties": {
             "name": {
