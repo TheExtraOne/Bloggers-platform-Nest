@@ -29,14 +29,20 @@ import {
   CreateBlogSwagger,
   UpdateBlogSwagger,
   DeleteBlogSwagger,
+  CreateBlogPostSwagger,
 } from './swagger';
 import { PgBlogsQueryRepository } from '../infrastructure/query/pg.blogs.query-repository';
+import { CreatePostFromBlogInputDto } from '../../posts/api/input-dto/posts.input-dto';
+import { PgPostsViewDto } from '../../posts/api/view-dto/posts.view-dto';
+import { CreatePostCommand } from '../../posts/app/posts.use-cases/create-post.use-case';
+import { PgPostsQueryRepository } from '../../posts/infrastructure/query/pg.posts.query-repository';
 
 @Controller(PATHS.SA_BLOGS)
 export class SaBlogsController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly pgBlogsQueryRepository: PgBlogsQueryRepository,
+    private readonly pgPostsQueryRepository: PgPostsQueryRepository,
   ) {}
 
   @Get()
@@ -58,7 +64,7 @@ export class SaBlogsController {
   //   @Param('id') id: string,
   //   @Query() query: GetPostsQueryParams,
   //   @CurrentOptionalUserId() userId: string | null,
-  // ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+  // ): Promise<PaginatedViewDto<MgPostsViewDto[]>> {
   //   // Check if blog exists
   //   await this.mgBlogsQueryRepository.findBlogById(id);
 
@@ -91,23 +97,33 @@ export class SaBlogsController {
     return this.pgBlogsQueryRepository.getBlogById(blogId);
   }
 
-  // @Post(':id/posts')
-  // @UseGuards(BasicAuthGuard)
-  // @CreateBlogPostSwagger()
-  // async createPostByBlogId(
-  //   @Param('id') id: string,
-  //   @Body() postDto: CreatePostFromBlogInputDto,
-  // ): Promise<PostsViewDto> {
-  //   // Checking if blog exists
-  //   await this.mgBlogsQueryRepository.findBlogById(id);
-  //   const postId = await this.commandBus.execute(
-  //     new CreatePostCommand({
-  //       ...postDto,
-  //       blogId: id,
-  //     }),
-  //   );
-  //   return this.postsQueryRepository.findPostById(postId);
-  // }
+  @Post(':id/posts')
+  @UseGuards(BasicAuthGuard)
+  @CreateBlogPostSwagger()
+  async createPostByBlogId(
+    @Param('id') id: string,
+    @Body() postDto: CreatePostFromBlogInputDto,
+  ): Promise<PgPostsViewDto> {
+    // For MongoDb
+    // await this.mgBlogsQueryRepository.findBlogById(id);
+    // const postId = await this.commandBus.execute(
+    //   new CreatePostCommand({
+    //     ...postDto,
+    //     blogId: id,
+    //   }),
+    // );
+    // return this.postsQueryRepository.findPostById(postId);
+
+    // For Postgres
+    const postId = await this.commandBus.execute(
+      new CreatePostCommand({
+        ...postDto,
+        blogId: id,
+      }),
+    );
+
+    return this.pgPostsQueryRepository.findPostById(postId);
+  }
 
   @Put(':id')
   @UseGuards(BasicAuthGuard)

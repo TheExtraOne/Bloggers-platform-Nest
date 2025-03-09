@@ -1,13 +1,13 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostsViewDto } from '../../../posts/api/view-dto/posts.view-dto';
+import { MgPostsViewDto } from '../../../posts/api/view-dto/posts.view-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
 import { LikesService } from '../likes.service';
 
 export class EnrichPostsWithLikesCommand extends Command<
-  PaginatedViewDto<PostsViewDto[]>
+  PaginatedViewDto<MgPostsViewDto[]>
 > {
   constructor(
-    public readonly posts: PaginatedViewDto<PostsViewDto[]>,
+    public readonly posts: PaginatedViewDto<MgPostsViewDto[]>,
     public readonly userId: string | null,
   ) {
     super();
@@ -19,14 +19,14 @@ export class EnrichPostsWithLikesUseCase
   implements
     ICommandHandler<
       EnrichPostsWithLikesCommand,
-      PaginatedViewDto<PostsViewDto[]>
+      PaginatedViewDto<MgPostsViewDto[]>
     >
 {
   constructor(private readonly likesService: LikesService) {}
 
   async execute(
     command: EnrichPostsWithLikesCommand,
-  ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+  ): Promise<PaginatedViewDto<MgPostsViewDto[]>> {
     const { posts, userId } = command;
     return this.likesService.enrichMultipleEntitiesWithLikeStatus(
       posts,

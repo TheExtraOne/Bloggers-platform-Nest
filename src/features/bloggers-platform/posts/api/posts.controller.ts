@@ -12,10 +12,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PATHS } from '../../../../constants';
-import { PostsQueryRepository } from '../infrastructure/query/posts.query-repository';
+import { MgPostsQueryRepository } from '../infrastructure/query/mg.posts.query-repository';
 import { GetPostsQueryParams } from './input-dto/get-posts.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
-import { PostsViewDto } from './view-dto/posts.view-dto';
+import { MgPostsViewDto } from './view-dto/posts.view-dto';
 import {
   CreatePostInputDto,
   UpdatePostInputDto,
@@ -57,7 +57,7 @@ import {
 export class PostsController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly postsQueryRepository: MgPostsQueryRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
@@ -67,7 +67,7 @@ export class PostsController {
   async getAllPosts(
     @Query() query: GetPostsQueryParams,
     @CurrentOptionalUserId() userId: string | null,
-  ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+  ): Promise<PaginatedViewDto<MgPostsViewDto[]>> {
     // Get all posts
     const posts = await this.postsQueryRepository.findAll(query);
 
@@ -83,7 +83,7 @@ export class PostsController {
   async getPostById(
     @Param('id') id: string,
     @CurrentOptionalUserId() userId: string | null,
-  ): Promise<PostsViewDto> {
+  ): Promise<MgPostsViewDto> {
     // Get post by id
     const post = await this.postsQueryRepository.findPostById(id);
 
@@ -119,7 +119,7 @@ export class PostsController {
   @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @CreatePostSwagger()
-  async createPost(@Body() dto: CreatePostInputDto): Promise<PostsViewDto> {
+  async createPost(@Body() dto: CreatePostInputDto): Promise<MgPostsViewDto> {
     const postId = await this.commandBus.execute(new CreatePostCommand(dto));
 
     return await this.postsQueryRepository.findPostById(postId);

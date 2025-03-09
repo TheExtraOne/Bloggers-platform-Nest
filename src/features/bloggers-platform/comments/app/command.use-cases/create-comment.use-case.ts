@@ -1,6 +1,6 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateCommentInputDto } from '../../api/input-dto/comment.input.dto';
-import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
+import { MgPostsRepository } from '../../../posts/infrastructure/mg.posts.repository';
 import { NotFoundException } from '@nestjs/common';
 import { ERRORS } from '../../../../../constants';
 import { MgUsersRepository } from '../../../../user-accounts/users/infrastructure/mg.users.repository';
@@ -24,7 +24,7 @@ export class CreateCommentUseCase
 {
   constructor(
     @InjectModel(Comment.name) private CommentModel: CommentModelType,
-    private readonly postsRepository: PostsRepository,
+    private readonly postsRepository: MgPostsRepository,
     private readonly mgUsersRepository: MgUsersRepository,
     private readonly commentsRepository: CommentsRepository,
   ) {}

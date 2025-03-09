@@ -7,7 +7,7 @@ import {
 } from '../../../src/features/bloggers-platform/blogs/api/input-dto/blogs.input-dto';
 import { MgBlogsViewDto } from '../../../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
 import { CreatePostInputDto } from '../../../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
-import { PostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { MgPostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 
 export class BlogsTestManager {
   constructor(private app: INestApplication) {}
@@ -59,7 +59,7 @@ export class BlogsTestManager {
     statusCode: number = HttpStatus.CREATED,
     username: string = 'admin',
     password: string = 'qwerty',
-  ): Promise<PostsViewDto> {
+  ): Promise<MgPostsViewDto> {
     const response = await request(this.app.getHttpServer())
       .post(`/${PATHS.BLOGS}/${blogId}/posts`)
       .auth(username, password)

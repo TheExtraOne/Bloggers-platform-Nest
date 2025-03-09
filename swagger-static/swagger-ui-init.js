@@ -801,6 +801,70 @@ window.onload = function() {
           ]
         }
       },
+      "/sa/blogs/{id}/posts": {
+        "post": {
+          "description": "Creates a new post for a specific blog. Requires basic authentication.",
+          "operationId": "SaBlogsController_createPostByBlogId",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Blog ID",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePostFromBlogInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Post successfully created.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PostViewModel"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Invalid input data.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/APIErrorResultResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized."
+            },
+            "404": {
+              "description": "Blog not found."
+            }
+          },
+          "security": [
+            {
+              "basicAuth": []
+            }
+          ],
+          "summary": "Create new post for blog",
+          "tags": [
+            "SaBlogs"
+          ]
+        }
+      },
       "/sa/blogs/{id}": {
         "put": {
           "description": "Updates an existing blog by ID. Requires basic authentication.",
@@ -2001,27 +2065,26 @@ window.onload = function() {
             "websiteUrl"
           ]
         },
-        "UpdateBlogInputDto": {
+        "CreatePostFromBlogInputDto": {
           "type": "object",
           "properties": {
-            "name": {
+            "title": {
               "type": "string",
-              "maxLength": 15
+              "maxLength": 30
             },
-            "description": {
+            "shortDescription": {
               "type": "string",
-              "maxLength": 500
+              "maxLength": 100
             },
-            "websiteUrl": {
+            "content": {
               "type": "string",
-              "maxLength": 100,
-              "pattern": "/^(http|https):\\/\\/[a-z0-9]+([-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$/"
+              "maxLength": 1000
             }
           },
           "required": [
-            "name",
-            "description",
-            "websiteUrl"
+            "title",
+            "shortDescription",
+            "content"
           ]
         },
         "NewestLikeInfo": {
@@ -2133,6 +2196,29 @@ window.onload = function() {
             "blogName",
             "createdAt",
             "extendedLikesInfo"
+          ]
+        },
+        "UpdateBlogInputDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 15
+            },
+            "description": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "websiteUrl": {
+              "type": "string",
+              "maxLength": 100,
+              "pattern": "/^(http|https):\\/\\/[a-z0-9]+([-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$/"
+            }
+          },
+          "required": [
+            "name",
+            "description",
+            "websiteUrl"
           ]
         },
         "PaginatedPostsResponse": {

@@ -9,7 +9,7 @@ import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { deleteAllData } from './helpers/delete-all-data';
 import { LikeStatus } from '../src/features/bloggers-platform/likes/domain/like.entity';
 import { MgBlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
-import { PostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { MgPostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 
 describe('Likes (e2e)', () => {
   let app: INestApplication;
@@ -20,7 +20,7 @@ describe('Likes (e2e)', () => {
   let blogsTestManager: BlogsTestManager;
   let accessToken: string;
   let blog: MgBlogsViewDto;
-  let post: PostsViewDto;
+  let post: MgPostsViewDto;
 
   beforeAll(async () => {
     const result = await new TestSettingsInitializer().init();

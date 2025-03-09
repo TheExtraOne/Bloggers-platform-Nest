@@ -5,7 +5,7 @@ import { ObjectId } from 'mongodb';
 import { ERRORS } from '../../../../constants';
 
 @Injectable()
-export class PostsRepository {
+export class MgPostsRepository {
   constructor(@InjectModel(Post.name) private PostModel: PostModelType) {}
 
   async save(post: PostDocument): Promise<void> {

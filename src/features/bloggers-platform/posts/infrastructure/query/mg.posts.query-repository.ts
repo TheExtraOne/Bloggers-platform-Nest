@@ -3,16 +3,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Post, PostModelType } from '../../domain/post.entity';
 import { GetPostsQueryParams } from '../../api/input-dto/get-posts.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
-import { PostsViewDto } from '../../api/view-dto/posts.view-dto';
+import { MgPostsViewDto } from '../../api/view-dto/posts.view-dto';
 import { FilterQuery } from 'mongoose';
 import { ERRORS } from '../../../../../constants';
 import { ObjectId } from 'mongodb';
 
 @Injectable()
-export class PostsQueryRepository {
+export class MgPostsQueryRepository {
   constructor(@InjectModel(Post.name) private PostModel: PostModelType) {}
 
-  async findPostById(id: string): Promise<PostsViewDto> {
+  async findPostById(id: string): Promise<MgPostsViewDto> {
     if (!ObjectId.isValid(id))
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
 
@@ -23,12 +23,12 @@ export class PostsQueryRepository {
 
     if (!post) throw new NotFoundException(ERRORS.POST_NOT_FOUND);
 
-    return PostsViewDto.mapToView(post);
+    return MgPostsViewDto.mapToView(post);
   }
 
   async findAll(
     query: GetPostsQueryParams,
-  ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+  ): Promise<PaginatedViewDto<MgPostsViewDto[]>> {
     // Creating filter
     const filter: FilterQuery<Post> = {
       deletedAt: null,
@@ -42,7 +42,7 @@ export class PostsQueryRepository {
 
     const totalCount = await this.PostModel.countDocuments(filter);
 
-    const items = posts.map((post) => PostsViewDto.mapToView(post));
+    const items = posts.map((post) => MgPostsViewDto.mapToView(post));
 
     return PaginatedViewDto.mapToView({
       items,
@@ -55,7 +55,7 @@ export class PostsQueryRepository {
   async findAllPostsForBlogId(
     blogId: string,
     query: GetPostsQueryParams,
-  ): Promise<PaginatedViewDto<PostsViewDto[]>> {
+  ): Promise<PaginatedViewDto<MgPostsViewDto[]>> {
     // Creating filter
     const filter: FilterQuery<Post> = {
       deletedAt: null,
@@ -70,7 +70,7 @@ export class PostsQueryRepository {
 
     const totalCount = await this.PostModel.countDocuments(filter);
 
-    const items = posts.map((post) => PostsViewDto.mapToView(post));
+    const items = posts.map((post) => MgPostsViewDto.mapToView(post));
 
     return PaginatedViewDto.mapToView({
       items,

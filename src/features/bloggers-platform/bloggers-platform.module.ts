@@ -3,8 +3,8 @@ import { MgBlogsQueryRepository } from './blogs/infrastructure/query/mg.blogs.qu
 import { MongooseModule } from '@nestjs/mongoose';
 import { Blog, BlogSchema } from './blogs/domain/blog.entity';
 import { PostsController } from './posts/api/posts.controller';
-import { PostsQueryRepository } from './posts/infrastructure/query/posts.query-repository';
-import { PostsRepository } from './posts/infrastructure/posts.repository';
+import { MgPostsQueryRepository } from './posts/infrastructure/query/mg.posts.query-repository';
+import { MgPostsRepository } from './posts/infrastructure/mg.posts.repository';
 import { BlogsService } from './blogs/app/blog-service';
 import { CommentsRepository } from './comments/infrastructure/comments.repository';
 import { CreateCommentUseCase } from './comments/app/command.use-cases/create-comment.use-case';
@@ -35,6 +35,8 @@ import { BlogIdExistsRule } from './decorators/blog-id-exists.decorator';
 import { PgBlogsRepository } from './blogs/infrastructure/pg.blogs.repository';
 import { PgBlogsQueryRepository } from './blogs/infrastructure/query/pg.blogs.query-repository';
 import { BlogsController } from './blogs/api/blogs.controller';
+import { PgPostsRepository } from './posts/infrastructure/pg.posts.repository';
+import { PgPostsQueryRepository } from './posts/infrastructure/query/pg.posts.query-repository';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -85,8 +87,10 @@ const likesUseCases = [
     PgBlogsQueryRepository,
     MgBlogsRepository,
     PgBlogsRepository,
-    PostsRepository,
-    PostsQueryRepository,
+    MgPostsRepository,
+    PgPostsRepository,
+    MgPostsQueryRepository,
+    PgPostsQueryRepository,
     CommentsRepository,
     CommentsQueryRepository,
     LikesRepository,

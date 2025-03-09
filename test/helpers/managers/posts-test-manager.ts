@@ -5,7 +5,7 @@ import {
   CreatePostInputDto,
   UpdatePostInputDto,
 } from '../../../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
-import { PostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { MgPostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 import { CreateCommentInputDto } from '../../../src/features/bloggers-platform/comments/api/input-dto/comment.input.dto';
 import { CommentsViewDto } from '../../../src/features/bloggers-platform/comments/api/view-dto/comment.view-dto';
 import { UpdateLikeStatusInputDto } from '../../../src/features/bloggers-platform/likes/api/input-dto/update-like-input.dto';
@@ -18,7 +18,7 @@ export class PostsTestManager {
     statusCode: number = HttpStatus.CREATED,
     username: string = 'admin',
     password: string = 'qwerty',
-  ): Promise<PostsViewDto> {
+  ): Promise<MgPostsViewDto> {
     const response = await request(this.app.getHttpServer())
       .post(`/${PATHS.POSTS}`)
       .auth(username, password)
@@ -55,7 +55,7 @@ export class PostsTestManager {
   }
 
   async createSeveralPosts(blogId: string, count: number) {
-    const posts = [] as PostsViewDto[];
+    const posts = [] as MgPostsViewDto[];
 
     for (let i = 0; i < count; ++i) {
       const response = await this.createPost({
@@ -75,9 +75,8 @@ export class PostsTestManager {
     id: string,
     accessToken?: string,
     statusCode: number = HttpStatus.OK,
-  ): Promise<PostsViewDto> {
-    const req = request(this.app.getHttpServer())
-      .get(`/${PATHS.POSTS}/${id}`);
+  ): Promise<MgPostsViewDto> {
+    const req = request(this.app.getHttpServer()).get(`/${PATHS.POSTS}/${id}`);
 
     if (accessToken) {
       req.set('Authorization', `Bearer ${accessToken}`);

@@ -1,7 +1,7 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsService } from '../../../../../features/bloggers-platform/blogs/app/blog-service';
 import { UpdatePostInputDto } from '../../api/input-dto/posts.input-dto';
-import { PostsRepository } from '../../infrastructure/posts.repository';
+import { MgPostsRepository } from '../../infrastructure/mg.posts.repository';
 
 export class UpdatePostCommand extends Command<void> {
   constructor(
@@ -17,7 +17,7 @@ export class UpdatePostUseCase
   implements ICommandHandler<UpdatePostCommand, void>
 {
   constructor(
-    private readonly postsRepository: PostsRepository,
+    private readonly postsRepository: MgPostsRepository,
     private readonly blogsService: BlogsService,
   ) {}
 

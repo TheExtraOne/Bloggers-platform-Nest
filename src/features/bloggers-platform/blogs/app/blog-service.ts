@@ -3,6 +3,7 @@ import { MgBlogsViewDto } from '../api/view-dto/blogs.view-dto';
 import { Injectable } from '@nestjs/common';
 import { MgBlogsRepository } from '../infrastructure/mg.blogs.repository';
 
+// TODO: delete
 @Injectable()
 export class BlogsService {
   constructor(private readonly mgBlogsRepository: MgBlogsRepository) {}

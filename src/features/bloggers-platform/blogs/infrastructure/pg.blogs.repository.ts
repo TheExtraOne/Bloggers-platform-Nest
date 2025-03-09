@@ -27,7 +27,9 @@ export class PgBlogsRepository extends PgBaseRepository {
     return { blogId: result[0].id };
   }
 
-  async getBlogById(id: string): Promise<{ blogId: string } | null> {
+  async getBlogById(
+    id: string,
+  ): Promise<{ blogId: string; blogName: string } | null> {
     if (!this.isCorrectNumber(id)) {
       return null;
     }
@@ -38,7 +40,7 @@ export class PgBlogsRepository extends PgBaseRepository {
     const result = await this.dataSource.query(query, params);
     const blog = result[0];
 
-    return blog ? { blogId: blog.id } : null;
+    return blog ? { blogId: blog.id, blogName: blog.name } : null;
   }
 
   async updateBlog(

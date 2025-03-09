@@ -1,7 +1,7 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateLikeStatusInputDto } from '../../api/input-dto/update-like-input.dto';
 import { CommentsRepository } from '../../../comments/infrastructure/comments.repository';
-import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
+import { MgPostsRepository } from '../../../posts/infrastructure/mg.posts.repository';
 import { LikesRepository } from '../../infrastructure/likes.repository';
 import { Like, LikeDocument, LikeModelType } from '../../domain/like.entity';
 import { InjectModel } from '@nestjs/mongoose';
@@ -33,7 +33,7 @@ export class UpdateLikeStatusUseCase
     @InjectModel(Like.name) private LikeModel: LikeModelType,
     private readonly likesRepository: LikesRepository,
     private readonly commentsRepository: CommentsRepository,
-    private readonly postsRepository: PostsRepository,
+    private readonly postsRepository: MgPostsRepository,
     private readonly mgUsersRepository: MgUsersRepository,
   ) {}
 

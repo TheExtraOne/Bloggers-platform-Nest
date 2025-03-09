@@ -1,5 +1,5 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostsRepository } from '../../infrastructure/posts.repository';
+import { MgPostsRepository } from '../../infrastructure/mg.posts.repository';
 
 export class DeletePostCommand extends Command<void> {
   constructor(public id: string) {
@@ -11,7 +11,7 @@ export class DeletePostCommand extends Command<void> {
 export class DeletePostUseCase
   implements ICommandHandler<DeletePostCommand, void>
 {
-  constructor(private readonly postsRepository: PostsRepository) {}
+  constructor(private readonly postsRepository: MgPostsRepository) {}
 
   async execute(command: DeletePostCommand): Promise<void> {
     const post = await this.postsRepository.findPostById(command.id);
