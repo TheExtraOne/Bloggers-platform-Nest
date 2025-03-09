@@ -29,7 +29,7 @@ export class TestingController {
       public.users, 
       public.sessions,
       public.blogs,
-      public.posts,
+      public.posts
       RESTART IDENTITY CASCADE;
     `);
   }

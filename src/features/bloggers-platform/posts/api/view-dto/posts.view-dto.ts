@@ -57,7 +57,7 @@ export class PgPostsViewDto {
     dto.shortDescription = post.short_description;
     dto.content = post.content;
     dto.createdAt = post.created_at;
-    dto.blogId = post.blog_id;
+    dto.blogId = post.blog_id.toString();
     dto.blogName = post.blog_name;
     dto.extendedLikesInfo = {
       likesCount: 0,

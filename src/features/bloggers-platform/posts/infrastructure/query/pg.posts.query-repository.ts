@@ -72,7 +72,27 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     const { offset, limit } = this.getPaginationParams(pageNumber, pageSize);
 
     const [posts, totalCount] = await Promise.all([
-      this.findPosts(blogId, sortColumn, sortDirection, limit, offset),
+      this.findPostsByBlogId(blogId, sortColumn, sortDirection, limit, offset),
+      this.getTotalCount(),
+    ]);
+
+    return PaginatedViewDto.mapToView({
+      items: posts,
+      totalCount: +totalCount[0].count,
+      page: pageNumber,
+      size: pageSize,
+    });
+  }
+
+  async findAllPosts(
+    query: GetPostsQueryParams,
+  ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
+    const { sortBy, sortDirection, pageNumber, pageSize } = query;
+    const sortColumn = this.getSortColumn(sortBy, this.allowedColumns);
+    const { offset, limit } = this.getPaginationParams(pageNumber, pageSize);
+
+    const [posts, totalCount] = await Promise.all([
+      this.findPosts(sortColumn, sortDirection, limit, offset),
       this.getTotalCount(),
     ]);
 
@@ -94,7 +114,7 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     );
   }
 
-  private async findPosts(
+  private async findPostsByBlogId(
     blogId: string,
     sortColumn: string,
     sortDirection: string,
@@ -113,6 +133,28 @@ export class PgPostsQueryRepository extends PgBaseRepository {
       OFFSET $3
       `;
     const params = [blogId, limit, offset];
+    const result: TPgPost[] = await this.dataSource.query(query, params);
+
+    return result.map((post) => PgPostsViewDto.mapToView(post));
+  }
+
+  private async findPosts(
+    sortColumn: string,
+    sortDirection: string,
+    limit: number,
+    offset: number,
+  ): Promise<PgPostsViewDto[]> {
+    const query = `
+      SELECT posts.*, blogs.name as blog_name
+      FROM public.posts as posts
+      JOIN public.blogs as blogs
+      ON posts.blog_id = blogs.id
+      WHERE posts.deleted_at IS NULL
+      ORDER BY posts.${sortColumn} ${sortDirection}
+      LIMIT $1
+      OFFSET $2
+      `;
+    const params = [limit, offset];
     const result: TPgPost[] = await this.dataSource.query(query, params);
 
     return result.map((post) => PgPostsViewDto.mapToView(post));

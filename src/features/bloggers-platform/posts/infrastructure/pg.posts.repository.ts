@@ -43,16 +43,16 @@ export class PgPostsRepository extends PgBaseRepository {
     const { title, content, shortDescription } = dto;
     const query = `
       UPDATE public.posts
-      SET title = $1, content = $2, short_description = $3, updated_at = $5
-      WHERE id = $5 AND deleted_at IS NULL AND blog_id = $4;
+      SET title = $1, content = $2, short_description = $3, updated_at = $4
+      WHERE id = $5 AND deleted_at IS NULL AND blog_id = $6;
     `;
     const params = [
       title,
       content,
       shortDescription,
-      blogId,
-      postId,
       new Date(),
+      postId,
+      blogId,
     ];
     const result = await this.dataSource.query(query, params);
 
