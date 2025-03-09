@@ -802,6 +802,90 @@ window.onload = function() {
         }
       },
       "/sa/blogs/{id}/posts": {
+        "get": {
+          "description": "Returns a paginated list of all posts for a specific blog. Posts will include like status if user is authenticated.",
+          "operationId": "SaBlogsController_getPostsByBlogId",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Blog ID",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sortBy",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "createdAt",
+                "type": "string",
+                "enum": [
+                  "createdAt",
+                  "title",
+                  "shortDescription",
+                  "content",
+                  "blogId",
+                  "blogName"
+                ]
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            {
+              "name": "pageNumber",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "minimum": 1,
+                "default": 1,
+                "type": "number"
+              }
+            },
+            {
+              "name": "pageSize",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "minimum": 1,
+                "default": 10,
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved posts.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PaginatedPostsResponse"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Blog not found."
+            }
+          },
+          "summary": "Get all posts for a blog",
+          "tags": [
+            "SaBlogs"
+          ]
+        },
         "post": {
           "description": "Creates a new post for a specific blog. Requires basic authentication.",
           "operationId": "SaBlogsController_createPostByBlogId",
@@ -2042,51 +2126,6 @@ window.onload = function() {
             "pageSize"
           ]
         },
-        "CreateBlogInputDto": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string",
-              "maxLength": 15
-            },
-            "description": {
-              "type": "string",
-              "maxLength": 500
-            },
-            "websiteUrl": {
-              "type": "string",
-              "maxLength": 100,
-              "pattern": "/^(http|https):\\/\\/[a-z0-9]+([-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$/"
-            }
-          },
-          "required": [
-            "name",
-            "description",
-            "websiteUrl"
-          ]
-        },
-        "CreatePostFromBlogInputDto": {
-          "type": "object",
-          "properties": {
-            "title": {
-              "type": "string",
-              "maxLength": 30
-            },
-            "shortDescription": {
-              "type": "string",
-              "maxLength": 100
-            },
-            "content": {
-              "type": "string",
-              "maxLength": 1000
-            }
-          },
-          "required": [
-            "title",
-            "shortDescription",
-            "content"
-          ]
-        },
         "NewestLikeInfo": {
           "type": "object",
           "properties": {
@@ -2198,29 +2237,6 @@ window.onload = function() {
             "extendedLikesInfo"
           ]
         },
-        "UpdateBlogInputDto": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string",
-              "maxLength": 15
-            },
-            "description": {
-              "type": "string",
-              "maxLength": 500
-            },
-            "websiteUrl": {
-              "type": "string",
-              "maxLength": 100,
-              "pattern": "/^(http|https):\\/\\/[a-z0-9]+([-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$/"
-            }
-          },
-          "required": [
-            "name",
-            "description",
-            "websiteUrl"
-          ]
-        },
         "PaginatedPostsResponse": {
           "type": "object",
           "properties": {
@@ -2249,6 +2265,74 @@ window.onload = function() {
             "pagesCount",
             "page",
             "pageSize"
+          ]
+        },
+        "CreateBlogInputDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 15
+            },
+            "description": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "websiteUrl": {
+              "type": "string",
+              "maxLength": 100,
+              "pattern": "/^(http|https):\\/\\/[a-z0-9]+([-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$/"
+            }
+          },
+          "required": [
+            "name",
+            "description",
+            "websiteUrl"
+          ]
+        },
+        "CreatePostFromBlogInputDto": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "maxLength": 30
+            },
+            "shortDescription": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "content": {
+              "type": "string",
+              "maxLength": 1000
+            }
+          },
+          "required": [
+            "title",
+            "shortDescription",
+            "content"
+          ]
+        },
+        "UpdateBlogInputDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 15
+            },
+            "description": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "websiteUrl": {
+              "type": "string",
+              "maxLength": 100,
+              "pattern": "/^(http|https):\\/\\/[a-z0-9]+([-\\.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(\\/.*)?$/"
+            }
+          },
+          "required": [
+            "name",
+            "description",
+            "websiteUrl"
           ]
         },
         "CommentatorInfo": {

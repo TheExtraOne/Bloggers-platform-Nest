@@ -30,13 +30,18 @@ import {
   UpdateBlogSwagger,
   DeleteBlogSwagger,
   CreateBlogPostSwagger,
+  GetBlogPostsSwagger,
 } from './swagger';
 import { PgBlogsQueryRepository } from '../infrastructure/query/pg.blogs.query-repository';
 import { CreatePostFromBlogInputDto } from '../../posts/api/input-dto/posts.input-dto';
 import { PgPostsViewDto } from '../../posts/api/view-dto/posts.view-dto';
 import { CreatePostCommand } from '../../posts/app/posts.use-cases/create-post.use-case';
 import { PgPostsQueryRepository } from '../../posts/infrastructure/query/pg.posts.query-repository';
+import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
+import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts.query-params.input-dto';
+// import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 
+@UseGuards(BasicAuthGuard)
 @Controller(PATHS.SA_BLOGS)
 export class SaBlogsController {
   constructor(
@@ -57,31 +62,32 @@ export class SaBlogsController {
     return await this.pgBlogsQueryRepository.findAll(query);
   }
 
-  // @Get(':id/posts')
-  // @UseGuards(JwtOptionalAuthGuard)
-  // @GetBlogPostsSwagger()
-  // async getPostsByBlogId(
-  //   @Param('id') id: string,
-  //   @Query() query: GetPostsQueryParams,
-  //   @CurrentOptionalUserId() userId: string | null,
-  // ): Promise<PaginatedViewDto<MgPostsViewDto[]>> {
-  //   // Check if blog exists
-  //   await this.mgBlogsQueryRepository.findBlogById(id);
+  @Get(':id/posts')
+  @UseGuards(JwtOptionalAuthGuard)
+  @GetBlogPostsSwagger()
+  async getPostsByBlogId(
+    @Param('id') id: string,
+    @Query() query: GetPostsQueryParams,
+    // @CurrentOptionalUserId() userId: string | null,
+  ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
+    // For MongoDb
+    // Check if blog exists
+    // await this.mgBlogsQueryRepository.findBlogById(id);
+    // // Get posts for the blog
+    // const posts = await this.postsQueryRepository.findAllPostsForBlogId(
+    //   id,
+    //   query,
+    // );
+    // // Enrich posts with user's like status
+    // return this.commandBus.execute(
+    //   new EnrichPostsWithLikesCommand(posts, userId),
+    // );
 
-  //   // Get posts for the blog
-  //   const posts = await this.postsQueryRepository.findAllPostsForBlogId(
-  //     id,
-  //     query,
-  //   );
-
-  //   // Enrich posts with user's like status
-  //   return this.commandBus.execute(
-  //     new EnrichPostsWithLikesCommand(posts, userId),
-  //   );
-  // }
+    // For Postgres
+    return await this.pgPostsQueryRepository.findAllPostsForBlogId(id, query);
+  }
 
   @Post()
-  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @CreateBlogSwagger()
   async createBlog(
@@ -98,12 +104,11 @@ export class SaBlogsController {
   }
 
   @Post(':id/posts')
-  @UseGuards(BasicAuthGuard)
   @CreateBlogPostSwagger()
   async createPostByBlogId(
     @Param('id') id: string,
     @Body() postDto: CreatePostFromBlogInputDto,
-  ): Promise<PgPostsViewDto> {
+  ): Promise<PgPostsViewDto | null> {
     // For MongoDb
     // await this.mgBlogsQueryRepository.findBlogById(id);
     // const postId = await this.commandBus.execute(
@@ -126,7 +131,6 @@ export class SaBlogsController {
   }
 
   @Put(':id')
-  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @UpdateBlogSwagger()
   async updateBlogById(
@@ -137,7 +141,6 @@ export class SaBlogsController {
   }
 
   @Delete(':id')
-  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteBlogSwagger()
   async deleteBlogById(@Param('id') id: string): Promise<void> {
