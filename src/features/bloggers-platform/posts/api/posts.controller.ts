@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -16,10 +15,7 @@ import { MgPostsQueryRepository } from '../infrastructure/query/mg.posts.query-r
 import { GetPostsQueryParams } from './input-dto/get-posts.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
 import { MgPostsViewDto } from './view-dto/posts.view-dto';
-import {
-  CreatePostInputDto,
-  UpdatePostInputDto,
-} from './input-dto/posts.input-dto';
+import { CreatePostInputDto } from './input-dto/posts.input-dto';
 import { BasicAuthGuard } from 'src/features/user-accounts/guards/basic/basic-auth.guard';
 import { CommandBus } from '@nestjs/cqrs';
 import { JwtAuthGuard } from 'src/features/user-accounts/guards/jwt/jwt-auth.guard';
@@ -30,8 +26,6 @@ import { CommentsQueryRepository } from '../../comments/infrastructure/query/com
 import { CommentsViewDto } from '../../comments/api/view-dto/comment.view-dto';
 import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments.query-params.input-dto';
 import { CreatePostCommand } from '../app/posts.use-cases/create-post.use-case';
-import { DeletePostCommand } from '../app/posts.use-cases/delete-post.use-case';
-import { UpdatePostCommand } from '../app/posts.use-cases/update-post.use-case';
 import { JwtOptionalAuthGuard } from 'src/features/user-accounts/guards/jwt/jwt-optional-auth.guard';
 import { CurrentOptionalUserId } from 'src/features/user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
@@ -48,9 +42,7 @@ import {
   GetPostCommentsSwagger,
   CreatePostSwagger,
   CreatePostCommentSwagger,
-  UpdatePostSwagger,
   UpdatePostLikeStatusSwagger,
-  DeletePostSwagger,
 } from './swagger';
 
 @Controller(PATHS.POSTS)
@@ -141,19 +133,6 @@ export class PostsController {
     return await this.commentsQueryRepository.findCommentById(commentId);
   }
 
-  @Put(':id')
-  @UseGuards(BasicAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @UpdatePostSwagger()
-  async updatePostById(
-    @Param('id') id: string,
-    @Body() updatePostDto: UpdatePostInputDto,
-  ): Promise<void> {
-    return await this.commandBus.execute(
-      new UpdatePostCommand(id, updatePostDto),
-    );
-  }
-
   @Put(':id/like-status')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -171,13 +150,5 @@ export class PostsController {
         EntityType.Post,
       ),
     );
-  }
-
-  @Delete(':id')
-  @UseGuards(BasicAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @DeletePostSwagger()
-  async deletePostById(@Param('id') id: string): Promise<void> {
-    return await this.commandBus.execute(new DeletePostCommand(id));
   }
 }

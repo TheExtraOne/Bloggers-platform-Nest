@@ -1,5 +1,10 @@
 import { HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiBasicAuth, ApiParam } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiBasicAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 
 export const DeletePostSwagger = () => {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
@@ -9,7 +14,12 @@ export const DeletePostSwagger = () => {
     })(target, propertyKey, descriptor);
     ApiBasicAuth('basicAuth')(target, propertyKey, descriptor);
     ApiParam({
-      name: 'id',
+      name: 'blogId',
+      description: 'Blog ID',
+      type: String,
+    })(target, propertyKey, descriptor);
+    ApiParam({
+      name: 'postId',
       description: 'Post ID',
       type: String,
     })(target, propertyKey, descriptor);

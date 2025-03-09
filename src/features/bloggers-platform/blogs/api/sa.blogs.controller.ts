@@ -33,12 +33,18 @@ import {
   GetBlogPostsSwagger,
 } from './swagger';
 import { PgBlogsQueryRepository } from '../infrastructure/query/pg.blogs.query-repository';
-import { CreatePostFromBlogInputDto } from '../../posts/api/input-dto/posts.input-dto';
+import {
+  CreatePostFromBlogInputDto,
+  UpdatePostInputDto,
+} from '../../posts/api/input-dto/posts.input-dto';
 import { PgPostsViewDto } from '../../posts/api/view-dto/posts.view-dto';
 import { CreatePostCommand } from '../../posts/app/posts.use-cases/create-post.use-case';
 import { PgPostsQueryRepository } from '../../posts/infrastructure/query/pg.posts.query-repository';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
 import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts.query-params.input-dto';
+import { DeletePostSwagger, UpdatePostSwagger } from '../../posts/api/swagger';
+import { UpdatePostCommand } from '../../posts/app/posts.use-cases/update-post.use-case';
+import { DeletePostCommand } from '../../posts/app/posts.use-cases/delete-post.use-case';
 // import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 
 @UseGuards(BasicAuthGuard)
@@ -140,10 +146,33 @@ export class SaBlogsController {
     return this.commandBus.execute(new UpdateBlogCommand(id, updateBlogDto));
   }
 
+  @Put(':blogId/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UpdatePostSwagger()
+  async updatePostById(
+    @Param('blogId') blogId: string,
+    @Param('postId') postId: string,
+    @Body() updatePostDto: UpdatePostInputDto,
+  ): Promise<void> {
+    return await this.commandBus.execute(
+      new UpdatePostCommand(blogId, postId, updatePostDto),
+    );
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteBlogSwagger()
   async deleteBlogById(@Param('id') id: string): Promise<void> {
     return this.commandBus.execute(new DeleteBlogCommand(id));
+  }
+
+  @Delete(':blogId/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @DeletePostSwagger()
+  async deletePostById(
+    @Param('blogId') blogId: string,
+    @Param('postId') postId: string,
+  ): Promise<void> {
+    return await this.commandBus.execute(new DeletePostCommand(blogId, postId));
   }
 }

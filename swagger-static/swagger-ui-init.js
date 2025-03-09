@@ -1041,6 +1041,116 @@ window.onload = function() {
           ]
         }
       },
+      "/sa/blogs/{blogId}/posts/{postId}": {
+        "put": {
+          "description": "Updates an existing post by ID. Requires basic authentication.",
+          "operationId": "SaBlogsController_updatePostById",
+          "parameters": [
+            {
+              "name": "blogId",
+              "required": true,
+              "in": "path",
+              "description": "Blog ID",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "postId",
+              "required": true,
+              "in": "path",
+              "description": "Post ID",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdatePostInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "Post successfully updated."
+            },
+            "400": {
+              "description": "Invalid input data.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/APIErrorResultResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized."
+            },
+            "404": {
+              "description": "Post not found."
+            }
+          },
+          "security": [
+            {
+              "basicAuth": []
+            }
+          ],
+          "summary": "Update post",
+          "tags": [
+            "SaBlogs"
+          ]
+        },
+        "delete": {
+          "description": "Deletes a post by ID. Requires basic authentication.",
+          "operationId": "SaBlogsController_deletePostById",
+          "parameters": [
+            {
+              "name": "blogId",
+              "required": true,
+              "in": "path",
+              "description": "Blog ID",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "postId",
+              "required": true,
+              "in": "path",
+              "description": "Post ID",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Post successfully deleted."
+            },
+            "401": {
+              "description": "Unauthorized."
+            },
+            "404": {
+              "description": "Post not found."
+            }
+          },
+          "security": [
+            {
+              "basicAuth": []
+            }
+          ],
+          "summary": "Delete post",
+          "tags": [
+            "SaBlogs"
+          ]
+        }
+      },
       "/blogs": {
         "get": {
           "description": "Returns a paginated list of all blogs. Can be filtered by name and sorted.",
@@ -1155,6 +1265,79 @@ window.onload = function() {
             }
           },
           "summary": "Get blog by ID",
+          "tags": [
+            "Blogs"
+          ]
+        }
+      },
+      "/blogs/{id}/posts": {
+        "get": {
+          "operationId": "BlogsController_getAllPostsByBlogId",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sortBy",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "createdAt",
+                "type": "string",
+                "enum": [
+                  "createdAt",
+                  "title",
+                  "shortDescription",
+                  "content",
+                  "blogId",
+                  "blogName"
+                ]
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            {
+              "name": "pageNumber",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "minimum": 1,
+                "default": 1,
+                "type": "number"
+              }
+            },
+            {
+              "name": "pageSize",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "minimum": 1,
+                "default": 10,
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
           "tags": [
             "Blogs"
           ]
@@ -1314,96 +1497,6 @@ window.onload = function() {
             }
           },
           "summary": "Get post by ID",
-          "tags": [
-            "Posts"
-          ]
-        },
-        "put": {
-          "description": "Updates an existing post by ID. Requires basic authentication.",
-          "operationId": "PostsController_updatePostById",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "description": "Post ID",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdatePostInputDto"
-                }
-              }
-            }
-          },
-          "responses": {
-            "204": {
-              "description": "Post successfully updated."
-            },
-            "400": {
-              "description": "Invalid input data.",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/APIErrorResultResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized."
-            },
-            "404": {
-              "description": "Post not found."
-            }
-          },
-          "security": [
-            {
-              "basicAuth": []
-            }
-          ],
-          "summary": "Update post",
-          "tags": [
-            "Posts"
-          ]
-        },
-        "delete": {
-          "description": "Deletes a post by ID. Requires basic authentication.",
-          "operationId": "PostsController_deletePostById",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "description": "Post ID",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "204": {
-              "description": "Post successfully deleted."
-            },
-            "401": {
-              "description": "Unauthorized."
-            },
-            "404": {
-              "description": "Post not found."
-            }
-          },
-          "security": [
-            {
-              "basicAuth": []
-            }
-          ],
-          "summary": "Delete post",
           "tags": [
             "Posts"
           ]
@@ -2335,6 +2428,28 @@ window.onload = function() {
             "websiteUrl"
           ]
         },
+        "UpdatePostInputDto": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "maxLength": 30
+            },
+            "shortDescription": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "content": {
+              "type": "string",
+              "maxLength": 1000
+            }
+          },
+          "required": [
+            "title",
+            "shortDescription",
+            "content"
+          ]
+        },
         "CommentatorInfo": {
           "type": "object",
           "properties": {
@@ -2490,32 +2605,6 @@ window.onload = function() {
           },
           "required": [
             "content"
-          ]
-        },
-        "UpdatePostInputDto": {
-          "type": "object",
-          "properties": {
-            "title": {
-              "type": "string",
-              "maxLength": 30
-            },
-            "shortDescription": {
-              "type": "string",
-              "maxLength": 100
-            },
-            "content": {
-              "type": "string",
-              "maxLength": 1000
-            },
-            "blogId": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "title",
-            "shortDescription",
-            "content",
-            "blogId"
           ]
         },
         "UpdateLikeStatusInputModel": {

@@ -16,7 +16,12 @@ export const UpdatePostSwagger = () => {
     })(target, propertyKey, descriptor);
     ApiBasicAuth('basicAuth')(target, propertyKey, descriptor);
     ApiParam({
-      name: 'id',
+      name: 'blogId',
+      description: 'Blog ID',
+      type: String,
+    })(target, propertyKey, descriptor);
+    ApiParam({
+      name: 'postId',
       description: 'Post ID',
       type: String,
     })(target, propertyKey, descriptor);

@@ -32,10 +32,6 @@ export class UpdatePostInputDto {
   @IsStringWithTrim()
   @MaxLength(1000)
   content: string;
-
-  @IsStringWithTrim()
-  @BlogIdExists()
-  blogId: string;
 }
 
 export class CreatePostFromBlogInputDto {
