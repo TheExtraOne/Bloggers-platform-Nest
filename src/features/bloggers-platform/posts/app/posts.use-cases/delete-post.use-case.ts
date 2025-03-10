@@ -3,8 +3,8 @@ import { PgPostsRepository } from '../../infrastructure/pg.posts.repository';
 
 export class DeletePostCommand extends Command<void> {
   constructor(
-    public postId: string,
     public blogId: string,
+    public postId: string,
   ) {
     super();
   }

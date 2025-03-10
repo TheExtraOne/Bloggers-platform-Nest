@@ -78,11 +78,9 @@ export class PgBlogsRepository extends PgBaseRepository {
     const query = `
       UPDATE blogs
       SET deleted_at = $1
-      WHERE id = $2 AND deleted_at IS NULL;
+      WHERE id = $2 AND deleted_at IS NULL
     `;
     const params = [new Date(), id];
-
-    await this.dataSource.query(query, params);
 
     const result = await this.dataSource.query(query, params);
 

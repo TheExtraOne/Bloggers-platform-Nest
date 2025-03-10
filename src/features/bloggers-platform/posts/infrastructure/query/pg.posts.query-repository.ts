@@ -38,7 +38,7 @@ export class PgPostsQueryRepository extends PgBaseRepository {
 
   async findPostById(postId: string): Promise<PgPostsViewDto | null> {
     if (!this.isCorrectNumber(postId)) {
-      return null;
+      throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
     const query = `
     SELECT posts.*, blogs.name as blog_name
@@ -50,10 +50,13 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     `;
     const params = [postId];
     const result = await this.dataSource.query(query, params);
-    console.log(result);
     const post = result[0];
 
-    return post ? PgPostsViewDto.mapToView(post) : null;
+    if (!post) {
+      throw new NotFoundException(ERRORS.POST_NOT_FOUND);
+    }
+
+    return PgPostsViewDto.mapToView(post);
   }
 
   async findAllPostsForBlogId(
@@ -150,7 +153,7 @@ export class PgPostsQueryRepository extends PgBaseRepository {
       JOIN public.blogs as blogs
       ON posts.blog_id = blogs.id
       WHERE posts.deleted_at IS NULL
-      ORDER BY posts.${sortColumn} ${sortDirection}
+      ORDER BY ${sortColumn === 'blog_name' ? 'blogs.name' : `posts.${sortColumn}`} ${sortDirection}
       LIMIT $1
       OFFSET $2
       `;
