@@ -1454,6 +1454,86 @@ window.onload = function() {
         }
       },
       "/posts/{id}/comments": {
+        "get": {
+          "description": "Returns a paginated list of all comments for a specific post. Comments will include like status if user is authenticated.",
+          "operationId": "PostsController_getAllCommentsForPostId",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Post ID",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sortBy",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "createdAt",
+                "type": "string",
+                "enum": [
+                  "createdAt",
+                  "content"
+                ]
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            {
+              "name": "pageNumber",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "minimum": 1,
+                "default": 1,
+                "type": "number"
+              }
+            },
+            {
+              "name": "pageSize",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "minimum": 1,
+                "default": 10,
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved comments.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PaginatedCommentsResponse"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Post not found."
+            }
+          },
+          "summary": "Get all comments for a post",
+          "tags": [
+            "Posts"
+          ]
+        },
         "post": {
           "description": "Creates a new comment for a specific post. Requires JWT authentication.",
           "operationId": "PostsController_createCommentByPostId",
@@ -2263,21 +2343,6 @@ window.onload = function() {
             "content"
           ]
         },
-        "CreateCommentInputModel": {
-          "type": "object",
-          "properties": {
-            "content": {
-              "type": "string",
-              "description": "Content of the comment",
-              "minLength": 20,
-              "maxLength": 300,
-              "example": "This is a thoughtful comment that meets the minimum length requirement."
-            }
-          },
-          "required": [
-            "content"
-          ]
-        },
         "CommentatorInfo": {
           "type": "object",
           "properties": {
@@ -2362,6 +2427,51 @@ window.onload = function() {
             "commentatorInfo",
             "createdAt",
             "likesInfo"
+          ]
+        },
+        "PaginatedCommentsResponse": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CommentViewModel"
+              }
+            },
+            "totalCount": {
+              "type": "number"
+            },
+            "pagesCount": {
+              "type": "number"
+            },
+            "page": {
+              "type": "number"
+            },
+            "pageSize": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "items",
+            "totalCount",
+            "pagesCount",
+            "page",
+            "pageSize"
+          ]
+        },
+        "CreateCommentInputModel": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "string",
+              "description": "Content of the comment",
+              "minLength": 20,
+              "maxLength": 300,
+              "example": "This is a thoughtful comment that meets the minimum length requirement."
+            }
+          },
+          "required": [
+            "content"
           ]
         },
         "UpdateLikeStatusInputModel": {
