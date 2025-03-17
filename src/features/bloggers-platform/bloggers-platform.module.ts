@@ -5,7 +5,6 @@ import { Blog, BlogSchema } from './blogs/domain/blog.entity';
 import { PostsController } from './posts/api/posts.controller';
 import { MgPostsQueryRepository } from './posts/infrastructure/query/mg.posts.query-repository';
 import { MgPostsRepository } from './posts/infrastructure/mg.posts.repository';
-import { BlogsService } from './blogs/app/blog-service';
 import { CommentsRepository } from './comments/infrastructure/comments.repository';
 import { CreateCommentUseCase } from './comments/app/command.use-cases/create-comment.use-case';
 import { Comment, CommentSchema } from './comments/domain/comment.entity';
@@ -82,7 +81,6 @@ const likesUseCases = [
     CommentsController,
   ],
   providers: [
-    BlogsService,
     MgBlogsQueryRepository,
     PgBlogsQueryRepository,
     MgBlogsRepository,

@@ -12,7 +12,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { CoreConfig } from './core/core.config';
+import { CoreConfig } from './core/config/core.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 // TODO: add dynamic inserting of testing module

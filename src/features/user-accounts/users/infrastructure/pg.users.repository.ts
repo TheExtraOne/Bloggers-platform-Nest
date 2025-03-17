@@ -8,7 +8,6 @@ import { PasswordRecoveryStatus } from '../domain/password-recovery.schema';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 
 // TODO: refactor types
-// TODO: add'updated_at' field to all tables?
 @Injectable()
 export class PgUsersRepository extends PgBaseRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {
@@ -208,7 +207,7 @@ export class PgUsersRepository extends PgBaseRepository {
     }
     const query = `
       UPDATE public.users_email_confirmation
-      SET confirmation_code = $2, expiration_date = $3, confirmation_status = $4
+      SET confirmation_code = $2, expiration_date = $3, confirmation_status = $4, updated_at = NOW()
       WHERE user_id = $1;
     `;
     const params = [
@@ -255,7 +254,7 @@ export class PgUsersRepository extends PgBaseRepository {
     }
     const query = `
       UPDATE public.users_email_confirmation
-      SET confirmation_status = $2
+      SET confirmation_status = $2, updated_at = NOW()
       WHERE user_id = $1;
     `;
     const params = [userId, EmailConfirmationStatus.Confirmed];
@@ -278,7 +277,7 @@ export class PgUsersRepository extends PgBaseRepository {
     const query = `
       WITH update_password_recovery AS 
       (UPDATE public.users_password_recovery
-      SET recovery_code = null, expiration_date = null, recovery_status = $3
+      SET recovery_code = null, expiration_date = null, recovery_status = $3, updated_at = NOW()
       WHERE user_id = $1),
 
       update_user AS (UPDATE public.users

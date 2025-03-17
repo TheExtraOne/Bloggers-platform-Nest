@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IsNotEmpty } from 'class-validator';
-import { configValidationUtility } from '../../core/config-validation.utility';
+import { configValidationUtility } from '../../core/config/config-validation.utility';
 
 // Each module has it's own *.config.ts
 @Injectable()

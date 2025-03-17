@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { get } from 'http';
 import { createWriteStream } from 'fs';
-import { CoreConfig } from '../core/core.config';
+import { CoreConfig } from '../core/config/core.config';
 
 export function swaggerSetup(app: INestApplication) {
   const config = new DocumentBuilder()
