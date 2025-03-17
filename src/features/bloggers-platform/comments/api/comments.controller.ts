@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { PATHS } from '../../../../constants';
 import { CommandBus } from '@nestjs/cqrs';
-import { CommentsViewDto } from './view-dto/comment.view-dto';
-import { CommentsQueryRepository } from '../infrastructure/query/comments.query-repository';
+import { MgCommentsViewDto } from './view-dto/comment.view-dto';
+import { MgCommentsQueryRepository } from '../infrastructure/query/mg.comments.query-repository';
 import { JwtAuthGuard } from '../../../user-accounts/guards/jwt/jwt-auth.guard';
 import { UpdateCommentInputDto } from './input-dto/comment.input.dto';
 import { CurrentUserId } from '../../../user-accounts/guards/decorators/current-user-id.decorator';
@@ -36,7 +36,7 @@ import {
 @Controller(PATHS.COMMENTS)
 export class CommentsController {
   constructor(
-    private readonly commentsQueryRepository: CommentsQueryRepository,
+    private readonly mgCommentsQueryRepository: MgCommentsQueryRepository,
     private readonly commandBus: CommandBus,
   ) {}
 
@@ -46,9 +46,9 @@ export class CommentsController {
   async getCommentById(
     @Param('id') id: string,
     @CurrentOptionalUserId() userId: string | null,
-  ): Promise<CommentsViewDto> {
+  ): Promise<MgCommentsViewDto> {
     // Get comment by id
-    const comment = await this.commentsQueryRepository.findCommentById(id);
+    const comment = await this.mgCommentsQueryRepository.findCommentById(id);
 
     // Enrich comment with user's like status
     return this.commandBus.execute(

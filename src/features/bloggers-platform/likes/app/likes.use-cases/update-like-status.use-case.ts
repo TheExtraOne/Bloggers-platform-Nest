@@ -1,6 +1,6 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateLikeStatusInputDto } from '../../api/input-dto/update-like-input.dto';
-import { CommentsRepository } from '../../../comments/infrastructure/comments.repository';
+import { MgCommentsRepository } from '../../../comments/infrastructure/mg.comments.repository';
 import { MgPostsRepository } from '../../../posts/infrastructure/mg.posts.repository';
 import { LikesRepository } from '../../infrastructure/likes.repository';
 import { Like, LikeDocument, LikeModelType } from '../../domain/like.entity';
@@ -32,7 +32,7 @@ export class UpdateLikeStatusUseCase
   constructor(
     @InjectModel(Like.name) private LikeModel: LikeModelType,
     private readonly likesRepository: LikesRepository,
-    private readonly commentsRepository: CommentsRepository,
+    private readonly mgCommentsRepository: MgCommentsRepository,
     private readonly postsRepository: MgPostsRepository,
     private readonly mgUsersRepository: MgUsersRepository,
   ) {}
@@ -86,7 +86,7 @@ export class UpdateLikeStatusUseCase
     let post: PostDocument | null = null;
 
     if (entityType === EntityType.Comment) {
-      comment = await this.commentsRepository.findCommentById(parentId);
+      comment = await this.mgCommentsRepository.findCommentById(parentId);
       if (!comment) {
         throw new Error('Comment not found');
       }
@@ -165,7 +165,7 @@ export class UpdateLikeStatusUseCase
     if (comment) {
       comment.updateLikesCount(likesCount);
       comment.updateDislikesCount(dislikesCount);
-      await this.commentsRepository.save(comment);
+      await this.mgCommentsRepository.save(comment);
     }
 
     if (post) {

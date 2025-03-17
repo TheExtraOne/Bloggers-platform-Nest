@@ -1453,6 +1453,71 @@ window.onload = function() {
           ]
         }
       },
+      "/posts/{id}/comments": {
+        "post": {
+          "description": "Creates a new comment for a specific post. Requires JWT authentication.",
+          "operationId": "PostsController_createCommentByPostId",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Post ID",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "description": "Comment data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCommentInputModel"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Comment successfully created.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CommentViewModel"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Invalid input data.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/APIErrorResultResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized."
+            },
+            "404": {
+              "description": "Post not found."
+            }
+          },
+          "security": [
+            {
+              "JWT": []
+            }
+          ],
+          "summary": "Create new comment for post",
+          "tags": [
+            "Posts"
+          ]
+        }
+      },
       "/comments/{id}": {
         "get": {
           "description": "Returns a comment by ID. Like status will be included if user is authenticated.",
@@ -2198,6 +2263,21 @@ window.onload = function() {
             "content"
           ]
         },
+        "CreateCommentInputModel": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "string",
+              "description": "Content of the comment",
+              "minLength": 20,
+              "maxLength": 300,
+              "example": "This is a thoughtful comment that meets the minimum length requirement."
+            }
+          },
+          "required": [
+            "content"
+          ]
+        },
         "CommentatorInfo": {
           "type": "object",
           "properties": {
@@ -2282,21 +2362,6 @@ window.onload = function() {
             "commentatorInfo",
             "createdAt",
             "likesInfo"
-          ]
-        },
-        "CreateCommentInputModel": {
-          "type": "object",
-          "properties": {
-            "content": {
-              "type": "string",
-              "description": "Content of the comment",
-              "minLength": 20,
-              "maxLength": 300,
-              "example": "This is a thoughtful comment that meets the minimum length requirement."
-            }
-          },
-          "required": [
-            "content"
           ]
         },
         "UpdateLikeStatusInputModel": {

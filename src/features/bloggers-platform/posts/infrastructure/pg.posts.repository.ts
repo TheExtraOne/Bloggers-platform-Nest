@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { ERRORS } from '../../../../constants';
+import { PgPostsViewDto } from '../api/view-dto/posts.view-dto';
 
 @Injectable()
 export class PgPostsRepository extends PgBaseRepository {
@@ -78,5 +79,26 @@ export class PgPostsRepository extends PgBaseRepository {
     if (result[1] === 0) {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
+  }
+
+  async findPostById(postId: string): Promise<PgPostsViewDto | null> {
+    if (!this.isCorrectNumber(postId)) {
+      return null;
+    }
+    const query = `
+      SELECT posts.*
+      FROM public.posts as posts
+      WHERE posts.id = $1
+      AND posts.deleted_at IS NULL
+    `;
+    const params = [postId];
+    const result = await this.dataSource.query(query, params);
+    const post = result[0];
+
+    if (!post) {
+      return null;
+    }
+
+    return post;
   }
 }

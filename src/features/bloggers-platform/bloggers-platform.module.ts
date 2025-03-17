@@ -5,11 +5,11 @@ import { Blog, BlogSchema } from './blogs/domain/blog.entity';
 import { PostsController } from './posts/api/posts.controller';
 import { MgPostsQueryRepository } from './posts/infrastructure/query/mg.posts.query-repository';
 import { MgPostsRepository } from './posts/infrastructure/mg.posts.repository';
-import { CommentsRepository } from './comments/infrastructure/comments.repository';
+import { MgCommentsRepository } from './comments/infrastructure/mg.comments.repository';
 import { CreateCommentUseCase } from './comments/app/command.use-cases/create-comment.use-case';
 import { Comment, CommentSchema } from './comments/domain/comment.entity';
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
-import { CommentsQueryRepository } from './comments/infrastructure/query/comments.query-repository';
+import { MgCommentsQueryRepository } from './comments/infrastructure/query/mg.comments.query-repository';
 import { SaBlogsController } from './blogs/api/sa.blogs.controller';
 import { CreateBlogUseCase } from './blogs/app/blogs.use-cases/create-blog.use-case';
 import { DeleteBlogUseCase } from './blogs/app/blogs.use-cases/delete-blog.use-case';
@@ -36,6 +36,8 @@ import { PgBlogsQueryRepository } from './blogs/infrastructure/query/pg.blogs.qu
 import { BlogsController } from './blogs/api/blogs.controller';
 import { PgPostsRepository } from './posts/infrastructure/pg.posts.repository';
 import { PgPostsQueryRepository } from './posts/infrastructure/query/pg.posts.query-repository';
+import { PgCommentsRepository } from './comments/infrastructure/pg.comments.repository';
+import { PgCommentsQueryRepository } from './comments/infrastructure/query/pg.comments.query-repository';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -89,8 +91,10 @@ const likesUseCases = [
     PgPostsRepository,
     MgPostsQueryRepository,
     PgPostsQueryRepository,
-    CommentsRepository,
-    CommentsQueryRepository,
+    MgCommentsRepository,
+    PgCommentsRepository,
+    MgCommentsQueryRepository,
+    PgCommentsQueryRepository,
     LikesRepository,
     LikesService,
     ...blogsUseCases,

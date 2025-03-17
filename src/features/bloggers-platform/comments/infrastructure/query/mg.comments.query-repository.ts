@@ -3,18 +3,18 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ERRORS } from '../../../../../constants';
 import { ObjectId } from 'mongodb';
 import { Comment, CommentModelType } from '../../domain/comment.entity';
-import { CommentsViewDto } from '../../api/view-dto/comment.view-dto';
+import { MgCommentsViewDto } from '../../api/view-dto/comment.view-dto';
 import { GetCommentsQueryParams } from '../../api/input-dto/get-comments.query-params.input-dto';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
 import { FilterQuery } from 'mongoose';
 
 @Injectable()
-export class CommentsQueryRepository {
+export class MgCommentsQueryRepository {
   constructor(
     @InjectModel(Comment.name) private CommentModel: CommentModelType,
   ) {}
 
-  async findCommentById(id: string): Promise<CommentsViewDto> {
+  async findCommentById(id: string): Promise<MgCommentsViewDto> {
     if (!ObjectId.isValid(id))
       throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
 
@@ -25,13 +25,13 @@ export class CommentsQueryRepository {
 
     if (!comment) throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
 
-    return CommentsViewDto.mapToView(comment);
+    return MgCommentsViewDto.mapToView(comment);
   }
 
   async findAllCommentsForPostId(
     postId: string,
     query: GetCommentsQueryParams,
-  ): Promise<PaginatedViewDto<CommentsViewDto[]>> {
+  ): Promise<PaginatedViewDto<MgCommentsViewDto[]>> {
     // Creating filter
     const filter: FilterQuery<Comment> = {
       deletedAt: null,
@@ -46,7 +46,9 @@ export class CommentsQueryRepository {
 
     const totalCount = await this.CommentModel.countDocuments(filter);
 
-    const items = comments.map((comment) => CommentsViewDto.mapToView(comment));
+    const items = comments.map((comment) =>
+      MgCommentsViewDto.mapToView(comment),
+    );
 
     return PaginatedViewDto.mapToView({
       items,

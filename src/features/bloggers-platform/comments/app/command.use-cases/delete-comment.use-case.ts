@@ -1,6 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CommentsRepository } from '../../infrastructure/comments.repository';
+import { MgCommentsRepository } from '../../infrastructure/mg.comments.repository';
 
 export class DeleteCommentCommand extends Command<void> {
   constructor(
@@ -15,12 +15,12 @@ export class DeleteCommentCommand extends Command<void> {
 export class DeleteCommentUseCase
   implements ICommandHandler<DeleteCommentCommand, void>
 {
-  constructor(private readonly commentsRepository: CommentsRepository) {}
+  constructor(private readonly mgCommentsRepository: MgCommentsRepository) {}
 
   async execute(command: DeleteCommentCommand): Promise<void> {
     const { commentId, userId } = command;
     // Check, that comment exists
-    const comment = await this.commentsRepository.findCommentById(commentId);
+    const comment = await this.mgCommentsRepository.findCommentById(commentId);
 
     // Check, that user is able to delete the comment
     if (comment.commentatorInfo.userId !== userId)
@@ -28,6 +28,6 @@ export class DeleteCommentUseCase
 
     comment.makeDeleted();
 
-    await this.commentsRepository.save(comment);
+    await this.mgCommentsRepository.save(comment);
   }
 }

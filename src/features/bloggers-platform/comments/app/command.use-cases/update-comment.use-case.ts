@@ -1,6 +1,6 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateCommentInputDto } from '../../api/input-dto/comment.input.dto';
-import { CommentsRepository } from '../../infrastructure/comments.repository';
+import { MgCommentsRepository } from '../../infrastructure/mg.comments.repository';
 import { ForbiddenException } from '@nestjs/common';
 
 export class UpdateCommentCommand extends Command<void> {
@@ -17,12 +17,12 @@ export class UpdateCommentCommand extends Command<void> {
 export class UpdateCommentUseCase
   implements ICommandHandler<UpdateCommentCommand>
 {
-  constructor(private readonly commentsRepository: CommentsRepository) {}
+  constructor(private readonly mgCommentsRepository: MgCommentsRepository) {}
 
   async execute(command: UpdateCommentCommand): Promise<void> {
     const { commentId, userId, dto } = command;
     // Check, that comment exists
-    const comment = await this.commentsRepository.findCommentById(commentId);
+    const comment = await this.mgCommentsRepository.findCommentById(commentId);
 
     // Check, that user is able to update the comment
     if (comment.commentatorInfo.userId !== userId)
@@ -30,6 +30,6 @@ export class UpdateCommentUseCase
 
     comment.update(dto);
 
-    await this.commentsRepository.save(comment);
+    await this.mgCommentsRepository.save(comment);
   }
 }

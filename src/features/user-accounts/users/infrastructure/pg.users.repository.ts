@@ -92,6 +92,35 @@ export class PgUsersRepository extends PgBaseRepository {
       : null;
   }
 
+  async findUserById(userId: string): Promise<{
+    userId: string;
+  } | null> {
+    if (!this.isCorrectNumber(userId)) {
+      return null;
+    }
+
+    const result:
+      | [
+          {
+            user_id: string;
+          },
+        ]
+      | [] = await this.dataSource.query(
+      `
+        SELECT u.id as user_id
+        FROM public.users as u
+        WHERE u.id = $1 AND u.deleted_at IS NULL;
+      `,
+      [userId],
+    );
+    const user = result[0];
+    return user
+      ? {
+          userId: user.user_id,
+        }
+      : null;
+  }
+
   async findUserByLoginOrEmail(loginOrEmail: string): Promise<{
     id: string;
     confirmationStatus: EmailConfirmationStatus;

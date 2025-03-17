@@ -10,7 +10,7 @@ import { ERRORS } from '../../../../constants';
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
-export class CommentsRepository {
+export class MgCommentsRepository {
   constructor(
     @InjectModel(Comment.name) private CommentModel: CommentModelType,
   ) {}

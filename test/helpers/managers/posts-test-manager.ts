@@ -7,7 +7,7 @@ import {
 } from '../../../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
 import { MgPostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 import { CreateCommentInputDto } from '../../../src/features/bloggers-platform/comments/api/input-dto/comment.input.dto';
-import { CommentsViewDto } from '../../../src/features/bloggers-platform/comments/api/view-dto/comment.view-dto';
+import { MgCommentsViewDto } from '../../../src/features/bloggers-platform/comments/api/view-dto/comment.view-dto';
 import { UpdateLikeStatusInputDto } from '../../../src/features/bloggers-platform/likes/api/input-dto/update-like-input.dto';
 
 export class PostsTestManager {
@@ -91,7 +91,7 @@ export class PostsTestManager {
     dto: CreateCommentInputDto,
     accessToken: string,
     statusCode: number = HttpStatus.CREATED,
-  ): Promise<CommentsViewDto> {
+  ): Promise<MgCommentsViewDto> {
     const response = await request(this.app.getHttpServer())
       .post(`/${PATHS.POSTS}/${postId}/comments`)
       .set('Authorization', `Bearer ${accessToken}`)
