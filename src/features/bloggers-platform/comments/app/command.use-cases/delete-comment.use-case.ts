@@ -1,6 +1,7 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { MgCommentsRepository } from '../../infrastructure/mg.comments.repository';
+import { ERRORS } from '../../../../../constants';
+import { PgCommentsRepository } from '../../infrastructure/pg.comments.repository';
 
 export class DeleteCommentCommand extends Command<void> {
   constructor(
@@ -15,19 +16,34 @@ export class DeleteCommentCommand extends Command<void> {
 export class DeleteCommentUseCase
   implements ICommandHandler<DeleteCommentCommand, void>
 {
-  constructor(private readonly mgCommentsRepository: MgCommentsRepository) {}
+  constructor(private readonly pgCommentsRepository: PgCommentsRepository) {}
 
   async execute(command: DeleteCommentCommand): Promise<void> {
     const { commentId, userId } = command;
+    // For Mongo
     // Check, that comment exists
-    const comment = await this.mgCommentsRepository.findCommentById(commentId);
+    // const comment = await this.mgCommentsRepository.findCommentById(commentId);
+    // // Check, that user is able to delete the comment
+    // if (comment.commentatorInfo.userId !== userId)
+    //   throw new ForbiddenException();
+    // comment.makeDeleted();
+    // await this.mgCommentsRepository.save(comment);
 
-    // Check, that user is able to delete the comment
-    if (comment.commentatorInfo.userId !== userId)
+    // For Postgres
+    // Check, that comment exists
+    const comment: {
+      commentId: string;
+      commentatorId: string;
+    } | null = await this.pgCommentsRepository.findCommentById(commentId);
+    if (!comment) {
+      throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
+    }
+
+    // Check, that user is able to update the comment
+    if (comment.commentatorId !== userId) {
       throw new ForbiddenException();
+    }
 
-    comment.makeDeleted();
-
-    await this.mgCommentsRepository.save(comment);
+    await this.pgCommentsRepository.deleteComment(commentId, userId);
   }
 }

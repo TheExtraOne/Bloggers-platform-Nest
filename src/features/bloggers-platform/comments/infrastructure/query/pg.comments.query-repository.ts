@@ -32,6 +32,10 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
   }
 
   async findCommentById(commentId: string): Promise<PgCommentsViewDto | null> {
+    if (!this.isCorrectNumber(commentId)) {
+      throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
+    }
+
     const query = `
       SELECT comments.*, users.login as commentator_login, likes.likes_count, likes.dislikes_count
       FROM public.comments as comments
