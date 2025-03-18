@@ -65,7 +65,7 @@ export class PgPostsViewDto {
       likesCount: post.likes_count,
       dislikesCount: post.dislikes_count,
       myStatus: LikeStatus.None,
-      newestLikes: [],
+      newestLikes: post.recent_likes,
     };
 
     return dto;

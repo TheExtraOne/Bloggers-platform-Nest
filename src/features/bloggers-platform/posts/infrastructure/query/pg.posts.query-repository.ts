@@ -20,6 +20,7 @@ export type TPgPost = {
   updated_at: Date;
   likes_count: number;
   dislikes_count: number;
+  recent_likes: { userId: string; login: string; addedAt: Date }[];
 };
 
 @Injectable()
@@ -43,14 +44,37 @@ export class PgPostsQueryRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
     const query = `
-    SELECT posts.*, blogs.name as blog_name, likes.likes_count, likes.dislikes_count
-    FROM public.posts as posts
-    JOIN public.blogs as blogs 
-    ON posts.blog_id = blogs.id
-    JOIN public.posts_likes_information as likes
-    ON posts.id = likes.post_id
-    WHERE posts.id = $1
-    AND posts.deleted_at IS NULL
+      SELECT 
+          posts.*, 
+          blogs.name AS blog_name, 
+          likes.likes_count, 
+          likes.dislikes_count,
+          COALESCE(likes_details.likes, '[]') AS recent_likes
+      FROM public.posts AS posts
+      JOIN public.blogs AS blogs 
+          ON posts.blog_id = blogs.id
+      JOIN public.posts_likes_information AS likes
+          ON posts.id = likes.post_id
+      LEFT JOIN LATERAL (
+          SELECT json_agg(
+              json_build_object(
+                  'userId', users.id,
+                  'login', users.login,
+                  'addedAt', post_likes.created_at
+              ) ORDER BY post_likes.created_at DESC
+          ) AS likes
+          FROM (
+              SELECT post_likes.user_id, post_likes.created_at
+              FROM public.likes AS post_likes
+              WHERE post_likes.parent_id = posts.id
+              ORDER BY post_likes.created_at DESC
+              LIMIT 3
+          ) AS post_likes
+          JOIN public.users AS users
+              ON post_likes.user_id = users.id
+      ) AS likes_details ON true
+      WHERE posts.id = $1
+      AND posts.deleted_at IS NULL;
     `;
     const params = [postId];
     const result = await this.dataSource.query(query, params);
@@ -129,12 +153,30 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     offset: number,
   ): Promise<PgPostsViewDto[]> {
     const query = `
-      SELECT posts.*, blogs.name as blog_name, likes.likes_count, likes.dislikes_count
+      SELECT posts.*, blogs.name as blog_name, likes.likes_count, likes.dislikes_count, COALESCE(likes_details.likes, '[]') AS recent_likes
       FROM public.posts as posts
       JOIN public.blogs as blogs
       ON posts.blog_id = blogs.id
       JOIN public.posts_likes_information as likes
       ON posts.id = likes.post_id
+      LEFT JOIN LATERAL (
+          SELECT json_agg(
+              json_build_object(
+                  'user_id', users.id,
+                  'user_login', users.login,
+                  'created_at', post_likes.created_at
+              ) ORDER BY post_likes.created_at DESC
+          ) AS likes
+          FROM (
+              SELECT post_likes.user_id, post_likes.created_at
+              FROM public.likes AS post_likes
+              WHERE post_likes.parent_id = posts.id
+              ORDER BY post_likes.created_at DESC
+              LIMIT 3
+          ) AS post_likes
+          JOIN public.users AS users
+              ON post_likes.user_id = users.id
+      ) AS likes_details ON true
       WHERE posts.blog_id = $1
       AND posts.deleted_at IS NULL
       ORDER BY posts.${sortColumn} ${sortDirection}
@@ -154,12 +196,30 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     offset: number,
   ): Promise<PgPostsViewDto[]> {
     const query = `
-      SELECT posts.*, blogs.name as blog_name, likes.likes_count, likes.dislikes_count
+      SELECT posts.*, blogs.name as blog_name, likes.likes_count, likes.dislikes_count, COALESCE(likes_details.likes, '[]') AS recent_likes
       FROM public.posts as posts
       JOIN public.blogs as blogs
       ON posts.blog_id = blogs.id
       JOIN public.posts_likes_information as likes
       ON posts.id = likes.post_id
+            LEFT JOIN LATERAL (
+          SELECT json_agg(
+              json_build_object(
+                  'user_id', users.id,
+                  'user_login', users.login,
+                  'created_at', post_likes.created_at
+              ) ORDER BY post_likes.created_at DESC
+          ) AS likes
+          FROM (
+              SELECT post_likes.user_id, post_likes.created_at
+              FROM public.likes AS post_likes
+              WHERE post_likes.parent_id = posts.id
+              ORDER BY post_likes.created_at DESC
+              LIMIT 3
+          ) AS post_likes
+          JOIN public.users AS users
+              ON post_likes.user_id = users.id
+      ) AS likes_details ON true
       WHERE posts.deleted_at IS NULL
       ORDER BY ${sortColumn === 'blog_name' ? 'blogs.name' : `posts.${sortColumn}`} ${sortDirection}
       LIMIT $1
