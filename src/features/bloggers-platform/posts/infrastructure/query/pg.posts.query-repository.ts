@@ -129,10 +129,12 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     offset: number,
   ): Promise<PgPostsViewDto[]> {
     const query = `
-      SELECT posts.*, blogs.name as blog_name
+      SELECT posts.*, blogs.name as blog_name, likes.likes_count, likes.dislikes_count
       FROM public.posts as posts
       JOIN public.blogs as blogs
       ON posts.blog_id = blogs.id
+      JOIN public.posts_likes_information as likes
+      ON posts.id = likes.post_id
       WHERE posts.blog_id = $1
       AND posts.deleted_at IS NULL
       ORDER BY posts.${sortColumn} ${sortDirection}
@@ -152,10 +154,12 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     offset: number,
   ): Promise<PgPostsViewDto[]> {
     const query = `
-      SELECT posts.*, blogs.name as blog_name
+      SELECT posts.*, blogs.name as blog_name, likes.likes_count, likes.dislikes_count
       FROM public.posts as posts
       JOIN public.blogs as blogs
       ON posts.blog_id = blogs.id
+      JOIN public.posts_likes_information as likes
+      ON posts.id = likes.post_id
       WHERE posts.deleted_at IS NULL
       ORDER BY ${sortColumn === 'blog_name' ? 'blogs.name' : `posts.${sortColumn}`} ${sortDirection}
       LIMIT $1

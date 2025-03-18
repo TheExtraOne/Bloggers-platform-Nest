@@ -38,6 +38,7 @@ import {
   UpdateLikeStatusCommand,
 } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
+import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
 
 @Controller(PATHS.POSTS)
 export class PostsController {
@@ -48,30 +49,33 @@ export class PostsController {
   ) {}
 
   @Get()
-  // @UseGuards(JwtOptionalAuthGuard)
+  @UseGuards(JwtOptionalAuthGuard)
   @GetAllPostsSwagger()
   async getAllPosts(
     @Query() query: GetPostsQueryParams,
-    // @CurrentOptionalUserId() userId: string | null,
+    @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
-    // return this.commandBus.execute(
-    //   new EnrichPostsWithLikesCommand(posts, userId),
-    // );
+    const posts = await this.pgPostsQueryRepository.findAllPosts(query);
 
-    return await this.pgPostsQueryRepository.findAllPosts(query);
+    // Enrich post with user's like status
+    return this.commandBus.execute(
+      new EnrichEntitiesWithLikesCommand(posts, userId, EntityType.Post),
+    );
   }
 
   @Get(':id')
-  // @UseGuards(JwtOptionalAuthGuard)
+  @UseGuards(JwtOptionalAuthGuard)
   @GetPostByIdSwagger()
   async getPostById(
     @Param('id') id: string,
-    // @CurrentOptionalUserId() userId: string | null,
+    @CurrentOptionalUserId() userId: string | null,
   ): Promise<PgPostsViewDto | null> {
-    // Enrich post with user's like status
-    // return this.commandBus.execute(new EnrichPostWithLikeCommand(post, userId));
+    const post = await this.pgPostsQueryRepository.findPostById(id);
 
-    return await this.pgPostsQueryRepository.findPostById(id);
+    // Enrich post with user's like status
+    return this.commandBus.execute(
+      new EnrichEntityWithLikeCommand(post, userId, EntityType.Post),
+    );
   }
 
   @Get(':id/comments')

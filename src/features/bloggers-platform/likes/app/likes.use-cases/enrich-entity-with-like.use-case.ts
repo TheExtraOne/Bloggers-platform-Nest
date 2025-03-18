@@ -48,7 +48,7 @@ export class EnrichEntityWithLikeUseCase<T extends LikeableEntity>
     const myStatus = like ? (like.status as LikeStatus) : LikeStatus.None;
 
     // Handle both regular and extended likes info
-    if ('likesInfo' in entity) {
+    if (entityType === EntityType.Comment) {
       return {
         ...entity,
         likesInfo: {
@@ -56,7 +56,8 @@ export class EnrichEntityWithLikeUseCase<T extends LikeableEntity>
           myStatus,
         },
       };
-    } else {
+    }
+    if (entityType === EntityType.Post) {
       return {
         ...entity,
         extendedLikesInfo: {
@@ -65,5 +66,6 @@ export class EnrichEntityWithLikeUseCase<T extends LikeableEntity>
         },
       };
     }
+    return entity;
   }
 }
