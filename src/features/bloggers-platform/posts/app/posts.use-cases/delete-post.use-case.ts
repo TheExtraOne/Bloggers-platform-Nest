@@ -18,12 +18,7 @@ export class DeletePostUseCase
 
   async execute(command: DeletePostCommand): Promise<void> {
     const { postId, blogId } = command;
-    // For MongoDb
-    // const post = await this.postsRepository.findPostById(command.id);
-    // post.makeDeleted();
-    // await this.postsRepository.save(post);
 
-    // For Postgres
     await this.pgPostsRepository.deletePost(postId, blogId);
   }
 }

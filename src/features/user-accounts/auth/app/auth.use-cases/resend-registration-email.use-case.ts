@@ -23,12 +23,7 @@ export class ResendRegistrationEmailUseCase
   ) {}
 
   async execute(command: ResendRegistrationEmailCommand): Promise<void> {
-    // For MongoDB
-    // const user: UserDocument | null =
-    //   await this.mgUsersRepository.findUserByLoginOrEmail(command.dto.email);
-
     // TODO: refactor types
-    // For Postgres
     const user: {
       id: string;
       confirmationStatus: EmailConfirmationStatus;
@@ -54,15 +49,6 @@ export class ResendRegistrationEmailUseCase
       minutes: 30,
     });
 
-    // For MongoDB
-    // user.setNewConfirmationData({
-    //   confirmationStatus: EmailConfirmationStatus.Pending,
-    //   confirmationCode: newConfirmationCode,
-    //   expirationDate: newExpirationDate,
-    // });
-    // await this.mgUsersRepository.save(user);
-
-    // For Postgres
     await this.pgUsersRepository.setNewEmailConfirmationData(
       user.id,
       newConfirmationCode,

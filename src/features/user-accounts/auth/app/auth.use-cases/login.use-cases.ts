@@ -32,10 +32,6 @@ export class LoginUseCases implements ICommandHandler<LoginCommand> {
     command: LoginCommand,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const { userId, title, ip } = command;
-    // For MongoDb
-    // const deviceId = new ObjectId().toString();
-
-    // For Postgres
     const deviceId = uuidv4();
 
     const accessToken: string = await this.customJwtService.createAccessToken({

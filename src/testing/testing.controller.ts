@@ -11,14 +11,6 @@ export class TestingController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteAllDataSwagger()
   async deleteAll() {
-    // For MongoDB
-    // const collections = await this.databaseConnection.listCollections();
-    // const promises = collections.map((collection) =>
-    //   this.databaseConnection.collection(collection.name).deleteMany({}),
-    // );
-    // await Promise.all(promises);
-
-    // For Postgres
     // TRUNCATE TABLE - removes all data but keeps the table structure
     // RESTART IDENTITY - resets auto-incremented IDs (SERIAL primary keys)
     // CASCADE - removes dependent records in related tables to avoid foreign key constraints

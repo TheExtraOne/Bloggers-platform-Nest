@@ -16,17 +16,6 @@ export class CreateBlogUseCase
 
   async execute(command: CreateBlogCommand): Promise<string> {
     const { name, description, websiteUrl } = command.dto;
-    // For MongoDb
-    // const newBlog = this.BlogModel.createInstance({
-    //   name,
-    //   description,
-    //   websiteUrl,
-    // });
-    // await this.mgBlogsRepository.save(newBlog);
-
-    // return newBlog._id.toString();
-
-    // For Postgres
     const { blogId } = await this.pgBlogsRepository.createBlog({
       name,
       description,

@@ -32,11 +32,7 @@ export class SecurityController {
   async getAllActiveSessions(
     @CurrentUserData()
     { userId }: { userId: string },
-    // ): Promise<MgSessionsViewDto[]> {
   ): Promise<PgSessionsViewDto[]> {
-    // For MongoDb
-    // return this.mgSessionsQueryRepository.findAllSessionsByUserId(userId);
-    // For Postgres
     return this.pgSessionsQueryRepository.findAllSessionsByUserId(userId);
   }
 

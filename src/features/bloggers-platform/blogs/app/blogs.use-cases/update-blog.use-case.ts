@@ -21,17 +21,7 @@ export class UpdateBlogUseCase
 
   async execute(command: UpdateBlogCommand): Promise<void> {
     const { id, dto } = command;
-    // For MongoDb
-    // const blog = await this.mgBlogsRepository.findBlogById(id);
-    // const blog
-    // blog.update({
-    //   name: dto.name,
-    //   description: dto.description,
-    //   websiteUrl: dto.websiteUrl,
-    // });
-    // await this.mgBlogsRepository.save(blog);
 
-    // For Postgres
     const blog = await this.pgBlogsRepository.getBlogById(id);
     if (!blog) {
       throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);

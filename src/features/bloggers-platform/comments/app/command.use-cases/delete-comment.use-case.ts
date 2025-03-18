@@ -20,16 +20,7 @@ export class DeleteCommentUseCase
 
   async execute(command: DeleteCommentCommand): Promise<void> {
     const { commentId, userId } = command;
-    // For Mongo
-    // Check, that comment exists
-    // const comment = await this.mgCommentsRepository.findCommentById(commentId);
-    // // Check, that user is able to delete the comment
-    // if (comment.commentatorInfo.userId !== userId)
-    //   throw new ForbiddenException();
-    // comment.makeDeleted();
-    // await this.mgCommentsRepository.save(comment);
 
-    // For Postgres
     // Check, that comment exists
     const comment: {
       commentId: string;

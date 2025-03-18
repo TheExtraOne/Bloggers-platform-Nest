@@ -22,23 +22,7 @@ export class CreatePostUseCase
 
   async execute(command: CreatePostCommand): Promise<string> {
     const { blogId, title, content, shortDescription } = command.dto;
-    // For MongoDb
-    // const blog = await this.blogsService.getBlogById(blogId);
-    // const blogName = blog.name;
 
-    // const newPost = this.PostModel.createInstance({
-    //   blogId: blogId,
-    //   blogName: blogName,
-    //   title: title,
-    //   content: content,
-    //   shortDescription: shortDescription,
-    // });
-
-    // await this.postsRepository.save(newPost);
-
-    // return newPost._id.toString();
-
-    // For Postgres
     // Check that blog exists
     const blog: {
       blogId: string;

@@ -24,9 +24,7 @@ export class CheckIfUserIsAbleToLoginUseCase
 
   async execute(command: CheckIfUserIsAbleToLoginCommand): Promise<string> {
     const { loginOrEmail, password } = command;
-    // For MongoDB
-    // await this.mgUsersRepository.findUserByLoginOrEmail(loginOrEmail);
-    // For Postgres
+
     const user: {
       id: string;
       confirmationStatus: EmailConfirmationStatus;
@@ -50,9 +48,6 @@ export class CheckIfUserIsAbleToLoginUseCase
     );
     if (!isPasswordCorrect) throw new UnauthorizedException();
 
-    // For MongoDB
-    // return user._id.toString();
-    // For Postgres
     return user.id;
   }
 }

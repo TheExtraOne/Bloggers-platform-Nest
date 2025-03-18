@@ -20,13 +20,6 @@ export class DeleteAllSessionsUseCase
     const { deviceId, userId } = command;
 
     // Deleting all sessions except current
-    // For MongoDB
-    // await this.mgSessionsRepository.deleteManySessionsByUserAndDeviceId(
-    //   userId,
-    //   deviceId,
-    // );
-
-    // For PostgreSQL
     await this.pgSessionsRepository.deleteManySessionsByUserAndDeviceId(
       userId,
       deviceId,

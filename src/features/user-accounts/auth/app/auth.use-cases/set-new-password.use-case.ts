@@ -21,12 +21,6 @@ export class SetNewPasswordUseCase
   ) {}
 
   async execute({ dto }: SetNewPasswordCommand): Promise<void> {
-    // For MongoDB
-    // const user: UserDocument | null =
-    //   await this.mgUsersRepository.findUserByPasswordRecoveryCode(
-    //     dto.recoveryCode,
-    //   );
-    // For Postgres
     const user: {
       id: string;
       recoveryStatus: PasswordRecoveryStatus;
@@ -60,12 +54,6 @@ export class SetNewPasswordUseCase
       10,
     );
 
-    // For MongoDB
-    // user.updateLoginPassword({ passwordHash });
-    // user.confirmPasswordRecovery();
-    // await this.mgUsersRepository.save(user);
-
-    // For Postgres
     await this.pgUsersRepository.confirmPasswordRecovery(user.id, passwordHash);
   }
 }

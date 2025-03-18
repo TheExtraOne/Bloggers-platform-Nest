@@ -12,10 +12,6 @@ export class UsersService {
   ) {}
 
   async validateUserCredentials(login: string, email: string) {
-    // For MongoDB
-    // const userByLogin =
-    //   await this.mgUsersRepository.findUserByLoginOrEmail(login);
-    // For Postgres
     const userByLogin =
       await this.pgUsersRepository.findUserByLoginOrEmail(login);
 
@@ -26,10 +22,6 @@ export class UsersService {
       };
     }
 
-    // For MongoDB
-    // const userByEmail =
-    //   await this.mgUsersRepository.findUserByLoginOrEmail(email);
-    // For Postgres
     const userByEmail =
       await this.pgUsersRepository.findUserByLoginOrEmail(email);
 
@@ -62,14 +54,6 @@ export class UsersService {
       confirmationStatus: dto.confirmationStatus,
     };
 
-    // For MongoDB
-    //   const newUser = this.UserModel.createInstance(createUserDto);
-    //   await this.mgUsersRepository.save(newUser);
-    //   return {
-    //     userId: newUser._id.toString(),
-    //   };
-
-    // For PostgreSQL
     return await this.pgUsersRepository.createUser(createUserDto);
   }
 }

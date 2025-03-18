@@ -24,16 +24,6 @@ export class UpdateCommentUseCase
   async execute(command: UpdateCommentCommand): Promise<void> {
     const { commentId, userId, dto } = command;
 
-    // For Mongo
-    // Check, that comment exists
-    // const comment = await this.mgCommentsRepository.findCommentById(commentId);
-    // // Check, that user is able to update the comment
-    // if (comment.commentatorInfo.userId !== userId)
-    //   throw new ForbiddenException();
-    // comment.update(dto);
-    // await this.mgCommentsRepository.save(comment);
-
-    // For Postgres
     // Check, that comment exists
     const comment: {
       commentId: string;

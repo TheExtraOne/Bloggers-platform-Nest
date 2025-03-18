@@ -21,12 +21,6 @@ export class DeleteSessionByIdUseCase
   async execute(command: DeleteSessionByIdCommand): Promise<void> {
     const { deviceId, userId } = command;
 
-    // Find the session by deviceId
-    // For MongoDB
-    // const session =
-    //   await this.mgSessionsRepository.findSessionByDeviceId(deviceId);
-
-    // For PostgreSQL
     const session: {
       userId: string;
     } | null = await this.pgSessionsRepository.findSessionByDeviceId(deviceId);
@@ -39,11 +33,6 @@ export class DeleteSessionByIdUseCase
       throw new ForbiddenException();
     }
 
-    // For MongoDB
-    // session.makeDeleted();
-    // await this.mgSessionsRepository.save(session);
-
-    // For PostgreSQL
     await this.pgSessionsRepository.deleteSessionByDeviceId(deviceId);
   }
 }

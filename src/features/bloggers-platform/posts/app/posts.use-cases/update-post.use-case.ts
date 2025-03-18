@@ -20,19 +20,7 @@ export class UpdatePostUseCase
 
   async execute(command: UpdatePostCommand): Promise<void> {
     const { blogId, postId, dto } = command;
-    // For MongoDb
-    // const post = await this.postsRepository.findPostById(id);
-    // const blog = await this.blogsService.getBlogById(dto.blogId);
-    // post.update({
-    //   blogId: dto.blogId,
-    //   blogName: blog.name,
-    //   title: dto.title,
-    //   content: dto.content,
-    //   shortDescription: dto.shortDescription,
-    // });
-    // await this.postsRepository.save(post);
 
-    // For Postgres
     await this.pgPostsRepository.updatePost(postId, blogId, dto);
   }
 }

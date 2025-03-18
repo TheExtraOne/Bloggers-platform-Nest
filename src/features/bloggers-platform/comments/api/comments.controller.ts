@@ -47,16 +47,11 @@ export class CommentsController {
     @Param('id') id: string,
     // @CurrentOptionalUserId() userId: string | null,
   ): Promise<PgCommentsViewDto | null> {
-    // For Mongo
-    // // Get comment by id
-    // const comment = await this.mgCommentsQueryRepository.findCommentById(id);
-
     // // Enrich comment with user's like status
     // return this.commandBus.execute(
     //   new EnrichCommentWithLikeCommand(comment, userId),
     // );
 
-    // For Postgres
     return await this.pgCommentsQueryRepository.findCommentById(id);
   }
 

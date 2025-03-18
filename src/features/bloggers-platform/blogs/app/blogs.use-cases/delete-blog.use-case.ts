@@ -16,12 +16,6 @@ export class DeleteBlogUseCase
   constructor(private readonly pgBlogsRepository: PgBlogsRepository) {}
 
   async execute(command: DeleteBlogCommand): Promise<void> {
-    // For MongoDb
-    // const blog = await this.mgBlogsRepository.findBlogById(command.id);
-    // blog.makeDeleted();
-    // await this.mgBlogsRepository.save(blog);
-
-    // For Postgres
     const blog = await this.pgBlogsRepository.getBlogById(command.id);
     if (!blog) {
       throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);

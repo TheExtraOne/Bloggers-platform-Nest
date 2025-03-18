@@ -17,11 +17,6 @@ export class ConfirmEmailRegistrationUseCase
   constructor(private readonly pgUsersRepository: PgUsersRepository) {}
 
   async execute(command: ConfirmEmailRegistrationCommand): Promise<void> {
-    // For MongoDB
-    // const user: UserDocument | null =
-    //   await this.mgUsersRepository.findUserByConfirmationCode(command.dto.code);
-
-    // For Postgres
     const user: {
       id: string;
       confirmationStatus: EmailConfirmationStatus;
@@ -51,12 +46,6 @@ export class ConfirmEmailRegistrationUseCase
       ]);
     }
 
-    // If ok, then updating user flag
-    // For MongoDB
-    // user.confirmEmail();
-    // await this.mgUsersRepository.save(user);
-
-    // For Postgres
     await this.pgUsersRepository.confirmUserEmail(user.id);
   }
 }

@@ -61,10 +61,6 @@ export class SaBlogsController {
   async getAllBlogs(
     @Query() query: GetBlogsQueryParams,
   ): Promise<PaginatedViewDto<PgBlogsViewDto[]>> {
-    // For MongoDb
-    // return await this.mgBlogsQueryRepository.findAll(query);
-
-    // For Postgres
     return await this.pgBlogsQueryRepository.findAll(query);
   }
 
@@ -76,20 +72,11 @@ export class SaBlogsController {
     @Query() query: GetPostsQueryParams,
     // @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
-    // For MongoDb
-    // Check if blog exists
-    // await this.mgBlogsQueryRepository.findBlogById(id);
-    // // Get posts for the blog
-    // const posts = await this.postsQueryRepository.findAllPostsForBlogId(
-    //   id,
-    //   query,
-    // );
     // // Enrich posts with user's like status
     // return this.commandBus.execute(
     //   new EnrichPostsWithLikesCommand(posts, userId),
     // );
 
-    // For Postgres
     return await this.pgPostsQueryRepository.findAllPostsForBlogId(id, query);
   }
 
@@ -102,10 +89,6 @@ export class SaBlogsController {
     const blogId = await this.commandBus.execute(
       new CreateBlogCommand(createBlogDto),
     );
-    // For MongoDb
-    // return this.mgBlogsQueryRepository.findBlogById(blogId);
-
-    // For Postgres
     return this.pgBlogsQueryRepository.getBlogById(blogId);
   }
 
@@ -115,17 +98,6 @@ export class SaBlogsController {
     @Param('id') id: string,
     @Body() postDto: CreatePostFromBlogInputDto,
   ): Promise<PgPostsViewDto | null> {
-    // For MongoDb
-    // await this.mgBlogsQueryRepository.findBlogById(id);
-    // const postId = await this.commandBus.execute(
-    //   new CreatePostCommand({
-    //     ...postDto,
-    //     blogId: id,
-    //   }),
-    // );
-    // return this.postsQueryRepository.findPostById(postId);
-
-    // For Postgres
     const postId = await this.commandBus.execute(
       new CreatePostCommand({
         ...postDto,

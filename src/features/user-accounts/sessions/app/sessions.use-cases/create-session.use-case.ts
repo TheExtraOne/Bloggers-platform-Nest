@@ -33,15 +33,7 @@ export class CreateSessionUseCase
       userId,
     } = command.dto;
 
-    // For MongoDB
-    // if (!ObjectId.isValid(deviceId)) {
-    //   throw new InternalServerErrorException();
-    // }
-
     const newRefreshTokenMeta = {
-      // For MongoDB
-      // deviceId: new ObjectId(deviceId),
-      // For Postgres
       deviceId,
       ip,
       title,
@@ -50,12 +42,6 @@ export class CreateSessionUseCase
       userId,
     };
 
-    // For MongoDb
-    // const session: SessionDocument =
-    //   this.SessionModel.createInstance(newRefreshTokenMeta);
-    // await this.mgSessionsRepository.save(session);
-
-    // For Postgres
     await this.pgSessionsRepository.createSession(newRefreshTokenMeta);
   }
 }

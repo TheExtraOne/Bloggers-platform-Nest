@@ -18,12 +18,6 @@ export class DeleteSessionUseCase
 
   async execute(command: DeleteSessionCommand): Promise<void> {
     // Find the session by deviceId
-    // For MongoDB
-    // const session = await this.mgSessionsRepository.findSessionByDeviceId(
-    //   command.deviceId,
-    // );
-
-    // For PostgreSQL
     const session = await this.pgSessionsRepository.findSessionByDeviceId(
       command.deviceId,
     );
@@ -32,11 +26,6 @@ export class DeleteSessionUseCase
       throw new Error('Session not found');
     }
 
-    // For MongoDB
-    // session.makeDeleted();
-    // await this.mgSessionsRepository.save(session);
-
-    // For PostgreSQL
     await this.pgSessionsRepository.deleteSessionByDeviceId(command.deviceId);
   }
 }

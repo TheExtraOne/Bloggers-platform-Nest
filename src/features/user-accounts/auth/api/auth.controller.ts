@@ -60,9 +60,6 @@ export class AuthController {
   async getUserInformation(
     @CurrentUserId() userId: string,
   ): Promise<MeViewDto> {
-    // For MongoDB
-    // const result = await this.mgUsersQueryRepository.findUserById(userId);
-    // For Postgres
     const result = await this.pgUsersQueryRepository.findUserById(userId);
 
     const mappedUser: MeViewDto = {

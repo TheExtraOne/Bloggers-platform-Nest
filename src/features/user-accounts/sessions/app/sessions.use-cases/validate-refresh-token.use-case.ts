@@ -18,17 +18,8 @@ export class ValidateRefreshTokenUseCase
 
   async execute(
     command: ValidateRefreshTokenCommand,
-    // ): Promise<SessionDocument | null> {
   ): Promise<{ id: string } | null> {
     const { userId, deviceId, iat } = command;
-    // For MongoDB
-    // return this.mgSessionsRepository.findSessionByMultipleFilters(
-    //   userId,
-    //   deviceId,
-    //   convertUnixToDate(iat),
-    // );
-
-    // For PostgreSQL
     return this.pgSessionsRepository.findSessionByMultipleFilters(
       userId,
       deviceId,

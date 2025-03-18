@@ -22,11 +22,6 @@ export class SendRecoverPasswordEmailUseCase
   ) {}
 
   async execute(command: SendRecoverPasswordEmailCommand): Promise<void> {
-    // For MongoDB
-    // const user: UserDocument | null =
-    //   await this.mgUsersRepository.findUserByLoginOrEmail(command.dto.email);
-
-    // For Postgres
     const user: {
       id: string;
       confirmationStatus: EmailConfirmationStatus;
@@ -42,15 +37,6 @@ export class SendRecoverPasswordEmailUseCase
       minutes: 30,
     });
 
-    // For MongoDB
-    // user.setNewPasswordRecoveryData({
-    //   recoveryCode: newRecoveryCode,
-    //   expirationDate: newExpirationDate,
-    // });
-
-    // await this.mgUsersRepository.save(user);
-
-    // For Postgres
     await this.pgUsersRepository.createNewPasswordRecoveryData(
       user.id,
       newRecoveryCode,
