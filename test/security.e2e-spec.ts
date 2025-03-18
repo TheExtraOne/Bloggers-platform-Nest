@@ -4,7 +4,6 @@ import { deleteAllData } from './helpers/delete-all-data';
 import { AuthTestManager } from './helpers/managers/auth-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
 import { SessionsTestManager } from './helpers/managers/sessions-test-manager';
-import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 
 describe('SecurityController (e2e)', () => {
   let app: INestApplication;
@@ -26,7 +25,6 @@ describe('SecurityController (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await stopMongoMemoryServer();
   });
 
   describe('GET /security/devices', () => {

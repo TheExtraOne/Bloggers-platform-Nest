@@ -5,10 +5,8 @@ import { TestSettingsInitializer } from './helpers/init-settings';
 import { AuthTestManager } from './helpers/managers/auth-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
 import { SessionsTestManager } from './helpers/managers/sessions-test-manager';
-import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { deleteAllData } from './helpers/delete-all-data';
 import { CreateUserInputDto } from '../src/features/user-accounts/users/api/input-dto/users.input-dto';
-import { MeViewDto } from '../src/features/user-accounts/auth/api/view-dto/me.view-dto';
 import { EmailService } from '../src/features/user-accounts/utils/email.service';
 
 describe('Auth Controller (e2e)', () => {
@@ -33,7 +31,6 @@ describe('Auth Controller (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await stopMongoMemoryServer();
   });
 
   describe('POST /auth/registration', () => {
@@ -286,7 +283,7 @@ describe('Auth Controller (e2e)', () => {
     it('should return user information with valid token', async () => {
       const response = await authTestManager.me(accessToken, HttpStatus.OK);
 
-      const expectedResponse: MeViewDto = {
+      const expectedResponse = {
         email: validUser.email,
         login: validUser.login,
         userId: userId,
@@ -531,7 +528,6 @@ describe('Rate Limiting', () => {
 
   afterAll(async () => {
     await app.close();
-    await stopMongoMemoryServer();
   });
 
   const validUser = {

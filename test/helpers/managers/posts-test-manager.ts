@@ -5,9 +5,9 @@ import {
   CreatePostInputDto,
   UpdatePostInputDto,
 } from '../../../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
-import { MgPostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { PgPostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 import { CreateCommentInputDto } from '../../../src/features/bloggers-platform/comments/api/input-dto/comment.input.dto';
-import { MgCommentsViewDto } from '../../../src/features/bloggers-platform/comments/api/view-dto/comment.view-dto';
+import { PgCommentsViewDto } from '../../../src/features/bloggers-platform/comments/api/view-dto/comment.view-dto';
 import { UpdateLikeStatusInputDto } from '../../../src/features/bloggers-platform/likes/api/input-dto/update-like-input.dto';
 
 export class PostsTestManager {
@@ -18,7 +18,7 @@ export class PostsTestManager {
     statusCode: number = HttpStatus.CREATED,
     username: string = 'admin',
     password: string = 'qwerty',
-  ): Promise<MgPostsViewDto> {
+  ): Promise<PgPostsViewDto> {
     const response = await request(this.app.getHttpServer())
       .post(`/${PATHS.POSTS}`)
       .auth(username, password)
@@ -55,7 +55,7 @@ export class PostsTestManager {
   }
 
   async createSeveralPosts(blogId: string, count: number) {
-    const posts = [] as MgPostsViewDto[];
+    const posts = [] as PgPostsViewDto[];
 
     for (let i = 0; i < count; ++i) {
       const response = await this.createPost({
@@ -75,7 +75,7 @@ export class PostsTestManager {
     id: string,
     accessToken?: string,
     statusCode: number = HttpStatus.OK,
-  ): Promise<MgPostsViewDto> {
+  ): Promise<PgPostsViewDto> {
     const req = request(this.app.getHttpServer()).get(`/${PATHS.POSTS}/${id}`);
 
     if (accessToken) {
@@ -91,7 +91,7 @@ export class PostsTestManager {
     dto: CreateCommentInputDto,
     accessToken: string,
     statusCode: number = HttpStatus.CREATED,
-  ): Promise<MgCommentsViewDto> {
+  ): Promise<PgCommentsViewDto> {
     const response = await request(this.app.getHttpServer())
       .post(`/${PATHS.POSTS}/${postId}/comments`)
       .set('Authorization', `Bearer ${accessToken}`)

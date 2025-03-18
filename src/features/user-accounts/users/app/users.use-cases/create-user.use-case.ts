@@ -1,10 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ObjectId } from 'mongodb';
+import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
-import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
 import { EmailService } from '../../../utils/email.service';
 import { UsersService } from '../users.service';
+import { EmailConfirmationStatus } from '../../infrastructure/pg.users.repository';
 
 export class CreateUserCommand {
   constructor(
@@ -29,7 +29,7 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
     if (validationError) {
       throw new BadRequestException([validationError]);
     }
-    const confirmationCode = new ObjectId().toString();
+    const confirmationCode = uuidv4();
     const expirationDate = add(new Date(), { hours: 1, minutes: 30 });
 
     const result = await this.usersService.createUser({

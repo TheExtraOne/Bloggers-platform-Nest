@@ -2,12 +2,11 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { PATHS } from '../src/constants';
-import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { TestSettingsInitializer } from './helpers/init-settings';
 import { deleteAllData } from './helpers/delete-all-data';
 import { PostsTestManager } from './helpers/managers/posts-test-manager';
 import { BlogsTestManager } from './helpers/managers/blogs-test-manager';
-import { MgPostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { PgPostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 import { PaginatedViewDto } from '../src/core/dto/base.paginated-view.dto';
 import {
   CreatePostInputDto,
@@ -50,7 +49,6 @@ describe('Posts Controller (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await stopMongoMemoryServer();
   });
 
   describe('POST /posts', () => {
@@ -155,7 +153,7 @@ describe('Posts Controller (e2e)', () => {
         .get(`/${PATHS.POSTS}`)
         .expect(HttpStatus.OK);
 
-      const expectedResponse: PaginatedViewDto<MgPostsViewDto[]> = {
+      const expectedResponse: PaginatedViewDto<PgPostsViewDto[]> = {
         pagesCount: 0,
         page: 1,
         pageSize: 10,
@@ -214,7 +212,6 @@ describe('Posts Controller (e2e)', () => {
         title: 'Updated Post',
         shortDescription: 'Updated Short Description',
         content: 'Updated Content',
-        blogId: blogId,
       };
     });
 
@@ -232,7 +229,6 @@ describe('Posts Controller (e2e)', () => {
         title: updateDto.title,
         shortDescription: updateDto.shortDescription,
         content: updateDto.content,
-        blogId: updateDto.blogId,
         blogName: expect.any(String),
         createdAt: expect.any(String),
         extendedLikesInfo: {

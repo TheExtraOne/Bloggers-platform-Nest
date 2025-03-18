@@ -4,8 +4,6 @@ import { appSetup } from '../../src/setup/app.setup';
 import { UsersTestManager } from './managers/users-test-manager';
 import { deleteAllData } from './delete-all-data';
 import { EmailServiceMock } from '../mock/email-service.mock';
-import { startMongoMemoryServer } from './mongodb-memory-server';
-import { MongooseModule } from '@nestjs/mongoose';
 import { UserAccountsModule } from '../../src/features/user-accounts/user-accounts.module';
 import { BloggersPlatformModule } from '../../src/features/bloggers-platform/bloggers-platform.module';
 import { TestingModule } from '../../src/testing/testing.module';
@@ -29,12 +27,9 @@ export class TestSettingsInitializer {
     limit: number = this.defaultLimit,
     addSettingsToModuleBuilder?: (moduleBuilder: TestingModuleBuilder) => void,
   ) {
-    const mongoUri = await startMongoMemoryServer();
-
     const testingModuleBuilder = Test.createTestingModule({
       imports: [
         configModule,
-        MongooseModule.forRoot(mongoUri),
         ThrottlerModule.forRoot([
           {
             ttl,

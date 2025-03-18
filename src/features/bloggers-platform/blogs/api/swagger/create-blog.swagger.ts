@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBasicAuth } from '@nestjs/swagger';
-import { MgBlogsViewDto } from '../view-dto/blogs.view-dto';
+import { PgBlogsViewDto } from '../view-dto/blogs.view-dto';
 import { APIErrorResultResponse } from '../../../../user-accounts/users/api/swagger';
 
 export const CreateBlogSwagger = () => {
@@ -13,7 +13,7 @@ export const CreateBlogSwagger = () => {
     ApiResponse({
       status: HttpStatus.CREATED,
       description: 'Blog successfully created.',
-      type: MgBlogsViewDto,
+      type: PgBlogsViewDto,
     })(target, propertyKey, descriptor);
     ApiResponse({
       status: HttpStatus.BAD_REQUEST,

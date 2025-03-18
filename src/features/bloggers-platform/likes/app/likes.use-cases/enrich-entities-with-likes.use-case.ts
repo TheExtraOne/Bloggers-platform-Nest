@@ -2,7 +2,8 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
 import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
 import { EntityType } from './update-like-status.use-case';
-import { LikeStatus } from '../../domain/like.entity';
+import { LikeStatus } from '../../../likes/infrastructure/pg.likes.repository';
+
 import { LikeableEntity } from './enrich-entity-with-like.use-case';
 
 export class EnrichEntitiesWithLikesCommand<

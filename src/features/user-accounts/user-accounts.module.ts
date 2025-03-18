@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { UserController } from './users/api/users.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './users/domain/user.entity';
 import { AuthController } from './auth/api/auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './guards/local/local.strategy';
@@ -10,8 +8,6 @@ import { BasicStrategy } from './guards/basic/basic.strategy';
 import { JwtRefreshStrategy } from './guards/jwt/jwt-refresh.strategy';
 import { UserAccountsConfig } from './user-account.config';
 import { CreateSessionUseCase } from './sessions/app/sessions.use-cases/create-session.use-case';
-import { Session, SessionSchema } from './sessions/domain/session.entity';
-import { MgSessionsRepository } from './sessions/infrastructure/mg.sessions.repository';
 import { DeleteSessionUseCase } from './sessions/app/sessions.use-cases/delete-session.use-case';
 import { ConfirmEmailRegistrationUseCase } from './auth/app/auth.use-cases/confirm-email-registration.use-case';
 import { LoginUseCases } from './auth/app/auth.use-cases/login.use-cases';
@@ -25,10 +21,7 @@ import { EmailService } from './utils/email.service';
 import { CheckIfUserIsAbleToLoginUseCase } from './users/app/users.use-cases/check-user-able-login.use-case';
 import { CreateUserUseCase } from './users/app/users.use-cases/create-user.use-case';
 import { DeleteUserUseCase } from './users/app/users.use-cases/delete-user.use-case';
-import { MgUsersQueryRepository } from './users/infrastructure/query/mg.users.query-repository';
-import { MgUsersRepository } from './users/infrastructure/mg.users.repository';
 import { SecurityController } from './sessions/api/security.controller';
-import { MgSessionsQueryRepository } from './sessions/infrastructure/query/mg.sessions.query-repository';
 import { DeleteAllSessionsUseCase } from './sessions/app/sessions.use-cases/delete-all-sessions.use-case';
 import { DeleteSessionByIdUseCase } from './sessions/app/sessions.use-cases/delete-session-by-id.use-case';
 import { ValidateRefreshTokenUseCase } from './sessions/app/sessions.use-cases/validate-refresh-token.use-case';
@@ -74,21 +67,13 @@ const sessionsUseCases = [
 @Module({
   imports: [
     // TypeOrmModule.forFeature([User, Session]),
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      { name: Session.name, schema: SessionSchema },
-    ]),
     JwtModule.register({}),
     CoreModule,
   ],
   controllers: [UserController, AuthController, SecurityController],
   providers: [
-    MgUsersQueryRepository,
     PgUsersQueryRepository,
-    MgUsersRepository,
     PgUsersRepository,
-    MgSessionsRepository,
-    MgSessionsQueryRepository,
     PgSessionsRepository,
     PgSessionsQueryRepository,
     UserAccountsConfig,
@@ -99,6 +84,6 @@ const sessionsUseCases = [
     ...authUseCases,
     ...sessionsUseCases,
   ],
-  exports: [MgUsersRepository, PgUsersRepository],
+  exports: [PgUsersRepository],
 })
 export class UserAccountsModule {}

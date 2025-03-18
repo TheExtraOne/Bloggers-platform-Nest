@@ -1,8 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { EmailConfirmationStatus } from '../../../users/domain/email-confirmation.schema';
 import { ConfirmRegistrationInputDto } from '../../api/input-dto/confirm-registration.input-dto';
-import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
+import {
+  EmailConfirmationStatus,
+  PgUsersRepository,
+} from '../../../users/infrastructure/pg.users.repository';
 
 export class ConfirmEmailRegistrationCommand extends Command<void> {
   constructor(public readonly dto: ConfirmRegistrationInputDto) {

@@ -1,5 +1,4 @@
 import { INestApplication } from '@nestjs/common';
-import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { TestSettingsInitializer } from './helpers/init-settings';
 import { deleteAllData } from './helpers/delete-all-data';
 import { CommentsTestManager } from './helpers/managers/comments-test-manager';
@@ -103,7 +102,6 @@ describe('Comments Controller (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await stopMongoMemoryServer();
   });
 
   describe('POST /posts/:id/comments', () => {

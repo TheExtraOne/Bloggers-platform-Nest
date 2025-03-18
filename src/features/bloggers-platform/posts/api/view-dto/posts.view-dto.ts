@@ -1,5 +1,4 @@
-import { LikeStatus } from 'src/features/bloggers-platform/likes/domain/like.entity';
-import { PostDocument } from '../../domain/post.entity';
+import { LikeStatus } from '../../../likes/infrastructure/pg.likes.repository';
 import { TPgPost } from '../../infrastructure/query/pg.posts.query-repository';
 
 type TExtendedLikesInfo = {
@@ -9,37 +8,6 @@ type TExtendedLikesInfo = {
   newestLikes: { addedAt: Date; userId: string; login: string }[];
 };
 
-// TODO: clean mongo data
-export class MgPostsViewDto {
-  id: string;
-  title: string;
-  shortDescription: string;
-  content: string;
-  blogId: string;
-  blogName: string;
-  createdAt: Date;
-  extendedLikesInfo: TExtendedLikesInfo;
-
-  static mapToView(post: PostDocument): MgPostsViewDto {
-    const dto = new MgPostsViewDto();
-
-    dto.id = post._id.toString();
-    dto.title = post.title;
-    dto.shortDescription = post.shortDescription;
-    dto.content = post.content;
-    dto.createdAt = post.createdAt;
-    dto.blogId = post.blogId;
-    dto.blogName = post.blogName;
-    dto.extendedLikesInfo = {
-      likesCount: post.extendedLikesInfo.likesCount,
-      dislikesCount: post.extendedLikesInfo.dislikesCount,
-      myStatus: LikeStatus.None,
-      newestLikes: post.extendedLikesInfo.newestLikes,
-    };
-
-    return dto;
-  }
-}
 // TODO: check relations between tables, maybe we need to add/remove primary key
 export class PgPostsViewDto {
   id: string;

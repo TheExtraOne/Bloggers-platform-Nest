@@ -2,7 +2,6 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { PATHS } from '../src/constants';
-import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { deleteAllData } from './helpers/delete-all-data';
 import { BlogsTestManager } from './helpers/managers/blogs-test-manager';
 import { PaginatedViewDto } from '../src/core/dto/base.paginated-view.dto';
@@ -10,9 +9,9 @@ import {
   CreateBlogInputDto,
   UpdateBlogInputDto,
 } from '../src/features/bloggers-platform/blogs/api/input-dto/blogs.input-dto';
-import { MgBlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
+import { PgBlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
 import { CreatePostInputDto } from '../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
-import { MgPostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { PgPostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 import { TestSettingsInitializer } from './helpers/init-settings';
 
 describe('Blogs Controller (e2e)', () => {
@@ -33,7 +32,6 @@ describe('Blogs Controller (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await stopMongoMemoryServer();
   });
 
   describe('POST /blogs', () => {
@@ -157,7 +155,7 @@ describe('Blogs Controller (e2e)', () => {
         .get(`/${PATHS.BLOGS}?pageSize=3&pageNumber=2`)
         .expect(HttpStatus.OK);
 
-      const body = response.body as PaginatedViewDto<MgBlogsViewDto[]>;
+      const body = response.body as PaginatedViewDto<PgBlogsViewDto[]>;
       expect(body.items).toHaveLength(2); // Second page should have 2 items
       expect(body.totalCount).toBe(5);
       expect(body.pagesCount).toBe(2);
@@ -182,7 +180,7 @@ describe('Blogs Controller (e2e)', () => {
         .get(`/${PATHS.BLOGS}?searchNameTerm=First`)
         .expect(HttpStatus.OK);
 
-      const body = response.body as PaginatedViewDto<MgBlogsViewDto[]>;
+      const body = response.body as PaginatedViewDto<PgBlogsViewDto[]>;
       expect(body.items).toHaveLength(1);
       expect(body.items[0].name).toBe('First Blog');
     });
@@ -462,7 +460,7 @@ describe('Blogs Controller (e2e)', () => {
         .get(`/${PATHS.BLOGS}/${blog.id}/posts?pageSize=3&pageNumber=2`)
         .expect(HttpStatus.OK);
 
-      const body = response.body as PaginatedViewDto<MgPostsViewDto[]>;
+      const body = response.body as PaginatedViewDto<PgPostsViewDto[]>;
       expect(body.items).toHaveLength(2); // Second page should have 2 items
       expect(body.totalCount).toBe(5);
       expect(body.pagesCount).toBe(2);

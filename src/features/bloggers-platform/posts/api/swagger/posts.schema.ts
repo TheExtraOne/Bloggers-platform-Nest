@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { LikeStatus } from '../../../likes/domain/like.entity';
+import { LikeStatus } from '../../../likes/infrastructure/pg.likes.repository';
 
 export class NewestLikeInfo {
   @ApiProperty({
@@ -35,7 +35,7 @@ export class ExtendedLikesInfo {
   dislikesCount: number;
 
   @ApiProperty({
-    description: 'Current user\'s like status',
+    description: "Current user's like status",
     enum: LikeStatus,
     example: LikeStatus.None,
   })

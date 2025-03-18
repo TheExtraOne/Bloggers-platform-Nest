@@ -18,7 +18,6 @@ import { NewPasswordInputDto } from './input-dto/new-password.input-dto';
 import { JwtAuthGuard } from '../../guards/jwt/jwt-auth.guard';
 import { LocalAuthGuard } from '../../guards/local/local-auth.guard';
 import { CurrentUserId } from '../../guards/decorators/current-user-id.decorator';
-import { MeViewDto } from './view-dto/me.view-dto';
 import { ThrottlerGuard, SkipThrottle } from '@nestjs/throttler';
 import { LoginCommand } from '../app/auth.use-cases/login.use-cases';
 import { CreateUserCommand } from '../../users/app/users.use-cases/create-user.use-case';
@@ -58,12 +57,14 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   @GetMeSwagger()
-  async getUserInformation(
-    @CurrentUserId() userId: string,
-  ): Promise<MeViewDto> {
+  async getUserInformation(@CurrentUserId() userId: string): Promise<{
+    email: string;
+    login: string;
+    userId: string;
+  }> {
     const result = await this.pgUsersQueryRepository.findUserById(userId);
 
-    const mappedUser: MeViewDto = {
+    const mappedUser = {
       email: result.email,
       login: result.login,
       userId: result.id,

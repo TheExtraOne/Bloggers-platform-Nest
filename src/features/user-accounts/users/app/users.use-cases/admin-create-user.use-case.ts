@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { EmailConfirmationStatus } from '../../domain/email-confirmation.schema';
 import { UsersService } from '../users.service';
+import { EmailConfirmationStatus } from '../../infrastructure/pg.users.repository';
 
 export class AdminCreateUserCommand {
   constructor(

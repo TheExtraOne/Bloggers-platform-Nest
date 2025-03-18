@@ -2,8 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { DataSource } from 'typeorm';
-import { LikeStatus } from '../domain/like.entity';
 import { EntityType } from '../app/likes.use-cases/update-like-status.use-case';
+
+export enum LikeStatus {
+  Like = 'Like',
+  Dislike = 'Dislike',
+  None = 'None',
+}
 
 @Injectable()
 export class PgLikesRepository extends PgBaseRepository {

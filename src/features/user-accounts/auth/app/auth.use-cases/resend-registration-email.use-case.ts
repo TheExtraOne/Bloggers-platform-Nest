@@ -1,11 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
+import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EmailService } from '../../../utils/email.service';
-import { EmailConfirmationStatus } from '../../../users/domain/email-confirmation.schema';
 import { ResendRegistrationInputDto } from '../../api/input-dto/resend-registration.input-dto';
-import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
+import {
+  EmailConfirmationStatus,
+  PgUsersRepository,
+} from '../../../users/infrastructure/pg.users.repository';
 
 export class ResendRegistrationEmailCommand extends Command<void> {
   constructor(public readonly dto: ResendRegistrationInputDto) {
@@ -43,7 +45,7 @@ export class ResendRegistrationEmailUseCase
     }
 
     // Update user confirmationCode and expirationDate
-    const newConfirmationCode = new ObjectId().toString();
+    const newConfirmationCode = uuidv4();
     const newExpirationDate = add(new Date(), {
       hours: 1,
       minutes: 30,

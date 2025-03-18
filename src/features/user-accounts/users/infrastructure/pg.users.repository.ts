@@ -1,11 +1,33 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { CreateUserDomainDto } from '../domain/dto/create-user.domain.dto';
 import { ERRORS } from '../../../../constants';
-import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
-import { PasswordRecoveryStatus } from '../domain/password-recovery.schema';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
+
+export class CreateUserDomainDto {
+  login: string;
+  email: string;
+  passwordHash: string;
+  confirmationCode: string | null;
+  expirationDate: Date | null;
+  confirmationStatus: EmailConfirmationStatus;
+}
+
+export enum EmailConfirmationStatus {
+  Pending = 'pending',
+  Confirmed = 'confirmed',
+}
+
+export enum PasswordRecoveryStatus {
+  Pending = 'pending',
+  Confirmed = 'confirmed',
+}
+
+export class SetNewConfirmationDataDto {
+  confirmationCode: string | null;
+  expirationDate: Date | null;
+  confirmationStatus: EmailConfirmationStatus;
+}
 
 // TODO: refactor types
 @Injectable()

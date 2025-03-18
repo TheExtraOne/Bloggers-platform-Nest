@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { MgSessionsViewDto } from '../view-dto/sessions.view-dto';
+import { PgSessionsViewDto } from '../view-dto/sessions.view-dto';
 
 export const GetAllActiveSessionsSwagger = {
   decorator: () => {
@@ -14,7 +14,7 @@ export const GetAllActiveSessionsSwagger = {
       ApiResponse({
         status: 200,
         description: 'List of active sessions successfully returned',
-        type: MgSessionsViewDto,
+        type: PgSessionsViewDto,
         isArray: true,
       }),
       ApiResponse({

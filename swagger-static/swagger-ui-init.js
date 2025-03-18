@@ -150,7 +150,7 @@ window.onload = function() {
               "content": {
                 "application/json": {
                   "schema": {
-                    "$ref": "#/components/schemas/MongoUserViewDto"
+                    "$ref": "#/components/schemas/PGUserViewDto"
                   }
                 }
               }
@@ -570,7 +570,7 @@ window.onload = function() {
                   "schema": {
                     "type": "array",
                     "items": {
-                      "$ref": "#/components/schemas/MgSessionsViewDto"
+                      "$ref": "#/components/schemas/PgSessionsViewDto"
                     }
                   }
                 }
@@ -771,7 +771,7 @@ window.onload = function() {
               "content": {
                 "application/json": {
                   "schema": {
-                    "$ref": "#/components/schemas/MgBlogsViewDto"
+                    "$ref": "#/components/schemas/PgBlogsViewDto"
                   }
                 }
               }
@@ -1255,7 +1255,7 @@ window.onload = function() {
               "content": {
                 "application/json": {
                   "schema": {
-                    "$ref": "#/components/schemas/MgBlogsViewDto"
+                    "$ref": "#/components/schemas/PgBlogsViewDto"
                   }
                 }
               }
@@ -1869,7 +1869,7 @@ window.onload = function() {
         }
       },
       "schemas": {
-        "MongoUserViewDto": {
+        "PGUserViewDto": {
           "type": "object",
           "properties": {
             "id": {
@@ -1882,7 +1882,6 @@ window.onload = function() {
               "type": "string"
             },
             "createdAt": {
-              "format": "date-time",
               "type": "string"
             }
           },
@@ -1899,7 +1898,7 @@ window.onload = function() {
             "items": {
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/MongoUserViewDto"
+                "$ref": "#/components/schemas/PGUserViewDto"
               }
             },
             "totalCount": {
@@ -2084,7 +2083,7 @@ window.onload = function() {
             "recoveryCode"
           ]
         },
-        "MgSessionsViewDto": {
+        "PgSessionsViewDto": {
           "type": "object",
           "properties": {
             "ip": {
@@ -2108,7 +2107,7 @@ window.onload = function() {
             "deviceId"
           ]
         },
-        "MgBlogsViewDto": {
+        "PgBlogsViewDto": {
           "type": "object",
           "properties": {
             "id": {
@@ -2146,7 +2145,7 @@ window.onload = function() {
             "items": {
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/MgBlogsViewDto"
+                "$ref": "#/components/schemas/PgBlogsViewDto"
               }
             },
             "totalCount": {

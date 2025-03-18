@@ -5,11 +5,10 @@ import { PostsTestManager } from './helpers/managers/posts-test-manager';
 import { CommentsTestManager } from './helpers/managers/comments-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
 import { BlogsTestManager } from './helpers/managers/blogs-test-manager';
-import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { deleteAllData } from './helpers/delete-all-data';
-import { LikeStatus } from '../src/features/bloggers-platform/likes/domain/like.entity';
-import { MgBlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
-import { MgPostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { LikeStatus } from '../src/features/bloggers-platform/likes/infrastructure/pg.likes.repository';
+import { PgBlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
+import { PgPostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
 
 describe('Likes (e2e)', () => {
   let app: INestApplication;
@@ -19,8 +18,8 @@ describe('Likes (e2e)', () => {
   let usersTestManager: UsersTestManager;
   let blogsTestManager: BlogsTestManager;
   let accessToken: string;
-  let blog: MgBlogsViewDto;
-  let post: MgPostsViewDto;
+  let blog: PgBlogsViewDto;
+  let post: PgPostsViewDto;
 
   beforeAll(async () => {
     const result = await new TestSettingsInitializer().init();
@@ -70,7 +69,6 @@ describe('Likes (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await stopMongoMemoryServer();
   });
 
   describe('PUT /posts/:id/like-status', () => {

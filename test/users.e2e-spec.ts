@@ -1,11 +1,10 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { CreateUserInputDto } from '../src/features/user-accounts/users/api/input-dto/users.input-dto';
-import { stopMongoMemoryServer } from './helpers/mongodb-memory-server';
 import { TestSettingsInitializer } from './helpers/init-settings';
 import { deleteAllData } from './helpers/delete-all-data';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
-import { MongoUserViewDto } from '../src/features/user-accounts/users/api/view-dto/users.view-dto';
+import { PGUserViewDto } from '../src/features/user-accounts/users/api/view-dto/users.view-dto';
 import { PaginatedViewDto } from '../src/core/dto/base.paginated-view.dto';
 import { App } from 'supertest/types';
 import { PATHS } from 'src/constants';
@@ -28,7 +27,6 @@ describe('Users Controller (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await stopMongoMemoryServer();
   });
 
   describe('POST /users', () => {
@@ -163,7 +161,7 @@ describe('Users Controller (e2e)', () => {
         .auth('admin', 'qwerty')
         .expect(HttpStatus.OK);
 
-      const body = response.body as PaginatedViewDto<MongoUserViewDto[]>;
+      const body = response.body as PaginatedViewDto<PGUserViewDto[]>;
       expect(body.items).toHaveLength(2); // Second page should have 2 items
       expect(body.totalCount).toBe(5);
       expect(body.pagesCount).toBe(2);
@@ -189,7 +187,7 @@ describe('Users Controller (e2e)', () => {
         .auth('admin', 'qwerty')
         .expect(HttpStatus.OK);
 
-      const body = response.body as PaginatedViewDto<MongoUserViewDto[]>;
+      const body = response.body as PaginatedViewDto<PGUserViewDto[]>;
       expect(body.items).toHaveLength(1);
       expect(body.items[0].login).toBe('john123');
     });
@@ -216,7 +214,7 @@ describe('Users Controller (e2e)', () => {
         .auth('admin', 'qwerty')
         .expect(HttpStatus.OK);
 
-      const body = response.body as PaginatedViewDto<MongoUserViewDto[]>;
+      const body = response.body as PaginatedViewDto<PGUserViewDto[]>;
       expect(body.items).toHaveLength(0);
     });
 

@@ -7,7 +7,7 @@ import { PgUsersRepository } from '../../../../user-accounts/users/infrastructur
 import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
 import { NotFoundException } from '@nestjs/common';
 import { ERRORS } from '../../../../../constants';
-import { LikeStatus } from '../../domain/like.entity';
+import { LikeStatus } from '../../../likes/infrastructure/pg.likes.repository';
 
 export enum EntityType {
   Comment = 'comment',

@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { BcryptService } from '../../utils/bcrypt.service';
-import { CreateUserDomainDto } from '../domain/dto/create-user.domain.dto';
-import { EmailConfirmationStatus } from '../domain/email-confirmation.schema';
-import { PgUsersRepository } from '../infrastructure/pg.users.repository';
+import {
+  CreateUserDomainDto,
+  EmailConfirmationStatus,
+  PgUsersRepository,
+} from '../infrastructure/pg.users.repository';
 
 @Injectable()
 export class UsersService {

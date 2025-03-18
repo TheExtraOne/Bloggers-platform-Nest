@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { PATHS } from '../../../src/constants';
 import { UpdateCommentInputDto } from '../../../src/features/bloggers-platform/comments/api/input-dto/comment.input.dto';
-import { MgCommentsViewDto } from '../../../src/features/bloggers-platform/comments/api/view-dto/comment.view-dto';
+import { PgCommentsViewDto } from '../../../src/features/bloggers-platform/comments/api/view-dto/comment.view-dto';
 import { UpdateLikeStatusInputDto } from '../../../src/features/bloggers-platform/likes/api/input-dto/update-like-input.dto';
 
 export class CommentsTestManager {
@@ -12,7 +12,7 @@ export class CommentsTestManager {
     id: string,
     accessToken?: string,
     expectedStatusCode = 200,
-  ): Promise<MgCommentsViewDto> {
+  ): Promise<PgCommentsViewDto> {
     const req = request(this.app.getHttpServer()).get(
       `/${PATHS.COMMENTS}/${id}`,
     );

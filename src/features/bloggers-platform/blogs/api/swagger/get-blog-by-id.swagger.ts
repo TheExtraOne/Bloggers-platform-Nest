@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { MgBlogsViewDto } from '../view-dto/blogs.view-dto';
+import { PgBlogsViewDto } from '../view-dto/blogs.view-dto';
 
 export const GetBlogByIdSwagger = () => {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
@@ -16,7 +16,7 @@ export const GetBlogByIdSwagger = () => {
     ApiResponse({
       status: HttpStatus.OK,
       description: 'Successfully retrieved blog.',
-      type: MgBlogsViewDto,
+      type: PgBlogsViewDto,
     })(target, propertyKey, descriptor);
     ApiResponse({
       status: HttpStatus.NOT_FOUND,

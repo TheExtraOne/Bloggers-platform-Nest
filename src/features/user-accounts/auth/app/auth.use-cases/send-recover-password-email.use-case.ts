@@ -1,10 +1,12 @@
-import { ObjectId } from 'mongodb';
+import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EmailService } from '../../../utils/email.service';
 import { PasswordRecoveryInputDto } from '../../api/input-dto/password-recovery.input-dto';
-import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
-import { EmailConfirmationStatus } from 'src/features/user-accounts/users/domain/email-confirmation.schema';
+import {
+  EmailConfirmationStatus,
+  PgUsersRepository,
+} from '../../../users/infrastructure/pg.users.repository';
 
 export class SendRecoverPasswordEmailCommand extends Command<void> {
   constructor(public readonly dto: PasswordRecoveryInputDto) {
@@ -31,7 +33,7 @@ export class SendRecoverPasswordEmailUseCase
     if (!user) return;
 
     // Set recovery code, status and expiration date
-    const newRecoveryCode = new ObjectId().toString();
+    const newRecoveryCode = uuidv4();
     const newExpirationDate = add(new Date(), {
       hours: 1,
       minutes: 30,
