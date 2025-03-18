@@ -31,7 +31,7 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
     super();
   }
 
-  async findCommentById(commentId: string): Promise<PgCommentsViewDto | null> {
+  async findCommentById(commentId: string): Promise<PgCommentsViewDto> {
     if (!this.isCorrectNumber(commentId)) {
       throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
     }
@@ -49,7 +49,11 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
     const params = [commentId];
     const result = await this.dataSource.query(query, params);
 
-    return result[0] ? PgCommentsViewDto.mapToView(result[0]) : null;
+    if (!result[0]) {
+      throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
+    }
+
+    return PgCommentsViewDto.mapToView(result[0]);
   }
 
   async findAllCommentsForPostId(
@@ -73,7 +77,7 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
         limit,
         offset,
       ),
-      this.getTotalCount(),
+      this.getTotalCount(postId),
     ]);
 
     return PaginatedViewDto.mapToView({
@@ -84,13 +88,15 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
     });
   }
 
-  private async getTotalCount(): Promise<[{ count: string }]> {
+  private async getTotalCount(postId: string): Promise<[{ count: string }]> {
     return this.dataSource.query(
       `
       SELECT COUNT(*)
       FROM public.comments
       WHERE comments.deleted_at IS NULL
+      AND comments.post_id = $1
     `,
+      [postId],
     );
   }
 

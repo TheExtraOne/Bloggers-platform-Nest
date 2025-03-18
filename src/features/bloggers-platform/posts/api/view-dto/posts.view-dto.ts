@@ -62,10 +62,15 @@ export class PgPostsViewDto {
     dto.blogId = post.blog_id.toString();
     dto.blogName = post.blog_name;
     dto.extendedLikesInfo = {
-      likesCount: post.likes_count,
-      dislikesCount: post.dislikes_count,
+      likesCount: post.likes_count ?? 0,
+      dislikesCount: post.dislikes_count ?? 0,
       myStatus: LikeStatus.None,
-      newestLikes: post.recent_likes,
+      newestLikes: post.recent_likes.length
+        ? post.recent_likes.map((like) => ({
+            ...like,
+            userId: like.userId.toString(),
+          }))
+        : [],
     };
 
     return dto;

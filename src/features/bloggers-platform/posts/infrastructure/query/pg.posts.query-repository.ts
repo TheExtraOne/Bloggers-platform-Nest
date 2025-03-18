@@ -67,6 +67,7 @@ export class PgPostsQueryRepository extends PgBaseRepository {
               SELECT post_likes.user_id, post_likes.created_at
               FROM public.likes AS post_likes
               WHERE post_likes.parent_id = posts.id
+              AND post_likes.like_status = 'Like'
               ORDER BY post_likes.created_at DESC
               LIMIT 3
           ) AS post_likes
@@ -104,7 +105,7 @@ export class PgPostsQueryRepository extends PgBaseRepository {
 
     const [posts, totalCount] = await Promise.all([
       this.findPostsByBlogId(blogId, sortColumn, sortDirection, limit, offset),
-      this.getTotalCount(),
+      this.getTotalCountForBlog(blogId),
     ]);
 
     return PaginatedViewDto.mapToView({
@@ -113,6 +114,20 @@ export class PgPostsQueryRepository extends PgBaseRepository {
       page: pageNumber,
       size: pageSize,
     });
+  }
+
+  private async getTotalCountForBlog(
+    blogId: string,
+  ): Promise<[{ count: string }]> {
+    return this.dataSource.query(
+      `
+      SELECT COUNT(*)
+      FROM public.posts
+      WHERE posts.deleted_at IS NULL
+      AND posts.blog_id = $1
+    `,
+      [blogId],
+    );
   }
 
   async findAllPosts(
@@ -162,15 +177,16 @@ export class PgPostsQueryRepository extends PgBaseRepository {
       LEFT JOIN LATERAL (
           SELECT json_agg(
               json_build_object(
-                  'user_id', users.id,
-                  'user_login', users.login,
-                  'created_at', post_likes.created_at
+                  'userId', users.id,
+                  'login', users.login,
+                  'addedAt', post_likes.created_at
               ) ORDER BY post_likes.created_at DESC
           ) AS likes
           FROM (
               SELECT post_likes.user_id, post_likes.created_at
               FROM public.likes AS post_likes
               WHERE post_likes.parent_id = posts.id
+              AND post_likes.like_status = 'Like'
               ORDER BY post_likes.created_at DESC
               LIMIT 3
           ) AS post_likes
@@ -205,15 +221,16 @@ export class PgPostsQueryRepository extends PgBaseRepository {
             LEFT JOIN LATERAL (
           SELECT json_agg(
               json_build_object(
-                  'user_id', users.id,
-                  'user_login', users.login,
-                  'created_at', post_likes.created_at
+                  'userId', users.id,
+                  'login', users.login,
+                  'addedAt', post_likes.created_at
               ) ORDER BY post_likes.created_at DESC
           ) AS likes
           FROM (
               SELECT post_likes.user_id, post_likes.created_at
               FROM public.likes AS post_likes
               WHERE post_likes.parent_id = posts.id
+              AND post_likes.like_status = 'Like'
               ORDER BY post_likes.created_at DESC
               LIMIT 3
           ) AS post_likes
