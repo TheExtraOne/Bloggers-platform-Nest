@@ -1,13 +1,12 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateLikeStatusInputDto } from '../../api/input-dto/update-like-input.dto';
-import { MgCommentsRepository } from '../../../comments/infrastructure/mg.comments.repository';
-import { MgPostsRepository } from '../../../posts/infrastructure/mg.posts.repository';
-import { LikesRepository } from '../../infrastructure/likes.repository';
-import { Like, LikeDocument, LikeModelType } from '../../domain/like.entity';
-import { InjectModel } from '@nestjs/mongoose';
-import { CommentDocument } from '../../../comments/domain/comment.entity';
-import { PostDocument } from '../../../posts/domain/post.entity';
-import { MgUsersRepository } from '../../../../user-accounts/users/infrastructure/mg.users.repository';
+import { PgCommentsRepository } from '../../../comments/infrastructure/pg.comments.repository';
+import { PgPostsRepository } from '../../../posts/infrastructure/pg.posts.repository';
+import { TPgPost } from '../../../posts/infrastructure/query/pg.posts.query-repository';
+import { PgUsersRepository } from '../../../../user-accounts/users/infrastructure/pg.users.repository';
+import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
+import { NotFoundException } from '@nestjs/common';
+import { ERRORS } from '../../../../../constants';
 
 export enum EntityType {
   Comment = 'comment',
@@ -30,172 +29,178 @@ export class UpdateLikeStatusUseCase
   implements ICommandHandler<UpdateLikeStatusCommand>
 {
   constructor(
-    @InjectModel(Like.name) private LikeModel: LikeModelType,
-    private readonly likesRepository: LikesRepository,
-    private readonly mgCommentsRepository: MgCommentsRepository,
-    private readonly postsRepository: MgPostsRepository,
-    private readonly mgUsersRepository: MgUsersRepository,
+    private readonly pgLikesRepository: PgLikesRepository,
+    private readonly pgCommentsRepository: PgCommentsRepository,
+    private readonly pgPostsRepository: PgPostsRepository,
+    private readonly pgUsersRepository: PgUsersRepository,
   ) {}
 
   async execute(command: UpdateLikeStatusCommand): Promise<void> {
     const { parentId, entityType, userId, updateLikeStatusDto } = command;
+    // Check if comment or post exists
+    await this.validateParentId(parentId, entityType);
 
-    const { comment, post } = await this.validateAndGetEntity(
+    // Check if user exists
+    // TODO: do we need a login?
+    const user: {
+      userId: string;
+      login: string;
+    } = await this.validateAndGetUser(userId);
+
+    // Check if like already exists
+    const existingLike: {
+      likeId: string;
+    } | null = await this.pgLikesRepository.findLikeByAuthorIdAndParentId(
+      user.userId,
       parentId,
       entityType,
     );
-    const user = await this.validateAndGetUser(userId);
-
-    const existingLike =
-      await this.likesRepository.findLikeByAuthorIdAndParentId(
-        userId,
-        parentId,
-      );
 
     if (existingLike) {
-      await this.handleExistingLike(
-        existingLike,
-        updateLikeStatusDto,
-        parentId,
-        comment,
-        post,
-      );
+      // TODO: implement handling existing like
+      // await this.handleExistingLike(
+      //   existingLike,
+      //   updateLikeStatusDto,
+      //   parentId,
+      //   comment,
+      //   post,
+      // );
     } else {
       await this.handleNewLike(
-        user,
+        user.userId,
         parentId,
         updateLikeStatusDto,
-        comment,
-        post,
+        entityType,
       );
     }
   }
 
-  private async validateAndGetEntity(
+  private async validateParentId(
     parentId: string,
     entityType: EntityType,
-  ): Promise<{
-    comment: CommentDocument | null;
-    post: PostDocument | null;
-  }> {
+  ): Promise<void> {
     if (entityType !== EntityType.Comment && entityType !== EntityType.Post) {
       throw new Error('Entity type must be either "comment" or "post"');
     }
 
-    let comment: CommentDocument | null = null;
-    let post: PostDocument | null = null;
+    let comment: { commentId: string; commentatorId: string } | null = null;
+    let post: TPgPost | null = null;
 
     if (entityType === EntityType.Comment) {
-      comment = await this.mgCommentsRepository.findCommentById(parentId);
+      comment = await this.pgCommentsRepository.findCommentById(parentId);
       if (!comment) {
-        throw new Error('Comment not found');
+        throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
       }
     } else {
-      post = await this.postsRepository.findPostById(parentId);
+      post = await this.pgPostsRepository.findPostById(parentId);
       if (!post) {
-        throw new Error('Post not found');
+        throw new NotFoundException(ERRORS.POST_NOT_FOUND);
       }
     }
-
-    return { comment, post };
   }
 
-  private async validateAndGetUser(userId: string) {
-    const user = await this.mgUsersRepository.findUserById(userId);
+  private async validateAndGetUser(userId: string): Promise<{
+    userId: string;
+    login: string;
+  }> {
+    const user: {
+      userId: string;
+      login: string;
+    } | null = await this.pgUsersRepository.findUserById(userId);
     if (!user) {
       throw new Error('User not found');
     }
     return user;
   }
 
-  private async handleExistingLike(
-    like: LikeDocument,
-    updateLikeStatusDto: UpdateLikeStatusInputDto,
-    parentId: string,
-    comment: CommentDocument | null,
-    post: PostDocument | null,
-  ): Promise<void> {
-    if (like.status === updateLikeStatusDto.likeStatus) {
-      return;
-    }
+  // private async handleExistingLike(
+  //   like: LikeDocument,
+  //   updateLikeStatusDto: UpdateLikeStatusInputDto,
+  //   parentId: string,
+  //   comment: CommentDocument | null,
+  //   post: PostDocument | null,
+  // ): Promise<void> {
+  //   if (like.status === updateLikeStatusDto.likeStatus) {
+  //     return;
+  //   }
 
-    like.update({ status: updateLikeStatusDto.likeStatus });
-    await this.likesRepository.save(like);
-    await this.updateLikesAmount({ parentId, comment, post });
+  //   like.update({ status: updateLikeStatusDto.likeStatus });
+  //   await this.mgLikesRepository.save(like);
+  //   await this.updateLikesAmount({ parentId, comment, post });
 
-    if (post) {
-      await this.updateNewestLikes({ parentId, post });
-    }
-  }
+  //   if (post) {
+  //     await this.updateNewestLikes({ parentId, post });
+  //   }
+  // }
 
   private async handleNewLike(
-    user: any,
+    userId: string,
     parentId: string,
     updateLikeStatusDto: UpdateLikeStatusInputDto,
-    comment: CommentDocument | null,
-    post: PostDocument | null,
+    entityType: EntityType,
   ): Promise<void> {
-    const newLike = this.LikeModel.createInstance({
-      login: user.login,
-      userId: user.id,
+    await this.pgLikesRepository.createLike({
+      userId,
       parentId,
       status: updateLikeStatusDto.likeStatus,
+      parentType: entityType,
     });
 
-    await this.likesRepository.save(newLike);
-    await this.updateLikesAmount({ parentId, comment, post });
+    // Updating amount of likes/dislikes in parent entity
+    await this.updateLikesAmount({ parentId, entityType });
 
-    if (post) {
-      await this.updateNewestLikes({ parentId, post });
+    if (entityType === EntityType.Post) {
+      // TODO: implement newest likes update for Post
+      // await this.updateNewestLikes({ parentId, post });
     }
   }
 
   private async updateLikesAmount({
     parentId,
-    comment,
-    post,
+    entityType,
   }: {
     parentId: string;
-    comment: CommentDocument | null;
-    post: PostDocument | null;
+    entityType: EntityType;
   }): Promise<void> {
     const { likesCount, dislikesCount } =
-      await this.likesRepository.getLikesAndDislikesCount(parentId);
+      await this.pgLikesRepository.getLikesAndDislikesCount(parentId);
 
-    if (comment) {
-      comment.updateLikesCount(likesCount);
-      comment.updateDislikesCount(dislikesCount);
-      await this.mgCommentsRepository.save(comment);
+    if (entityType === EntityType.Comment) {
+      await this.pgCommentsRepository.updateLikesCount({
+        commentId: parentId,
+        likesCount,
+        dislikesCount,
+      });
     }
 
-    if (post) {
-      post.updateLikesCount(likesCount);
-      post.updateDislikesCount(dislikesCount);
-      await this.postsRepository.save(post);
-    }
+    // if (entityType === EntityType.Post) {
+    //   post.updateLikesCount(likesCount);
+    //   post.updateDislikesCount(dislikesCount);
+    //   await this.postsRepository.save(post);
+    // }
   }
 
-  private async updateNewestLikes({
-    parentId,
-    post,
-  }: {
-    parentId: string;
-    post: PostDocument;
-  }) {
-    const likes = await this.likesRepository.getLikesByParentIdWithDateSort({
-      parentId,
-    });
+  // private async updateNewestLikes({
+  //   parentId,
+  //   post,
+  // }: {
+  //   parentId: string;
+  //   post: PostDocument;
+  // }) {
+  //   const likes = await this.mgLikesRepository.getLikesByParentIdWithDateSort({
+  //     parentId,
+  //   });
 
-    if (!likes.length) {
-      post.updateNewestLikes([]);
+  //   if (!likes.length) {
+  //     post.updateNewestLikes([]);
 
-      await this.postsRepository.save(post);
-      return;
-    }
+  //     await this.postsRepository.save(post);
+  //     return;
+  //   }
 
-    // Finding 3 latest likes
-    post.updateNewestLikes(likes.slice(0, 3));
+  //   // Finding 3 latest likes
+  //   post.updateNewestLikes(likes.slice(0, 3));
 
-    await this.postsRepository.save(post);
-  }
+  //   await this.postsRepository.save(post);
+  // }
 }

@@ -31,7 +31,8 @@ export class TestingController {
       public.blogs,
       public.posts,
       public.comments,
-      public.comments_likes_information
+      public.comments_likes_information,
+      public.likes
       RESTART IDENTITY CASCADE;
     `);
   }

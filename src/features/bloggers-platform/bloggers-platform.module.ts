@@ -23,7 +23,7 @@ import { CommentsController } from './comments/api/comments.controller';
 import { UpdateCommentUseCase } from './comments/app/command.use-cases/update-comment.use-case';
 import { DeleteCommentUseCase } from './comments/app/command.use-cases/delete-comment.use-case';
 import { UpdateLikeStatusUseCase } from './likes/app/likes.use-cases/update-like-status.use-case';
-import { LikesRepository } from './likes/infrastructure/likes.repository';
+import { MgLikesRepository } from './likes/infrastructure/mg.likes.repository';
 import { Like, LikeSchema } from './likes/domain/like.entity';
 import { EnrichPostsWithLikesUseCase } from './likes/app/likes.use-cases/enrich-posts-with-likes.use-case';
 import { EnrichPostWithLikeUseCase } from './likes/app/likes.use-cases/enrich-post-with-like.use-case';
@@ -38,6 +38,7 @@ import { PgPostsRepository } from './posts/infrastructure/pg.posts.repository';
 import { PgPostsQueryRepository } from './posts/infrastructure/query/pg.posts.query-repository';
 import { PgCommentsRepository } from './comments/infrastructure/pg.comments.repository';
 import { PgCommentsQueryRepository } from './comments/infrastructure/query/pg.comments.query-repository';
+import { PgLikesRepository } from './likes/infrastructure/pg.likes.repository';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -95,7 +96,8 @@ const likesUseCases = [
     PgCommentsRepository,
     MgCommentsQueryRepository,
     PgCommentsQueryRepository,
-    LikesRepository,
+    MgLikesRepository,
+    PgLikesRepository,
     LikesService,
     ...blogsUseCases,
     ...postsUseCases,

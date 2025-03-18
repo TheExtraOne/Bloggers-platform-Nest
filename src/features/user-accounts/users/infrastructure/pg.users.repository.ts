@@ -94,6 +94,7 @@ export class PgUsersRepository extends PgBaseRepository {
 
   async findUserById(userId: string): Promise<{
     userId: string;
+    login: string;
   } | null> {
     if (!this.isCorrectNumber(userId)) {
       return null;
@@ -103,11 +104,12 @@ export class PgUsersRepository extends PgBaseRepository {
       | [
           {
             user_id: string;
+            login: string;
           },
         ]
       | [] = await this.dataSource.query(
       `
-        SELECT u.id as user_id
+        SELECT u.id as user_id, u.login
         FROM public.users as u
         WHERE u.id = $1 AND u.deleted_at IS NULL;
       `,
@@ -117,6 +119,7 @@ export class PgUsersRepository extends PgBaseRepository {
     return user
       ? {
           userId: user.user_id,
+          login: user.login,
         }
       : null;
   }

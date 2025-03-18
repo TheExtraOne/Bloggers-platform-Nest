@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SortDirection } from 'src/core/dto/base.query-params.input-dto';
 
 @Injectable()
-export class LikesRepository {
+export class MgLikesRepository {
   constructor(@InjectModel(Like.name) private LikeModel: LikeModelType) {}
 
   async save(like: LikeDocument): Promise<void> {

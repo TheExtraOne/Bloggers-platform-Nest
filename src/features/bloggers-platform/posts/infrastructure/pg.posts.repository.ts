@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { ERRORS } from '../../../../constants';
-import { PgPostsViewDto } from '../api/view-dto/posts.view-dto';
+import { TPgPost } from './query/pg.posts.query-repository';
 
 @Injectable()
 export class PgPostsRepository extends PgBaseRepository {
@@ -81,7 +81,7 @@ export class PgPostsRepository extends PgBaseRepository {
     }
   }
 
-  async findPostById(postId: string): Promise<PgPostsViewDto | null> {
+  async findPostById(postId: string): Promise<TPgPost | null> {
     if (!this.isCorrectNumber(postId)) {
       return null;
     }

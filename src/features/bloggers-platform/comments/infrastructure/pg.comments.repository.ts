@@ -90,4 +90,22 @@ export class PgCommentsRepository extends PgBaseRepository {
     const params = [commentId, userId];
     await this.dataSource.query(query, params);
   }
+
+  async updateLikesCount({
+    commentId,
+    likesCount,
+    dislikesCount,
+  }: {
+    commentId: string;
+    likesCount: number;
+    dislikesCount: number;
+  }): Promise<void> {
+    const query = `
+      UPDATE public.comments_likes_information
+      SET likes_count = $1, dislikes_count = $2, updated_at = NOW()
+      WHERE comment_id = $3;
+    `;
+    const params = [likesCount, dislikesCount, commentId];
+    await this.dataSource.query(query, params);
+  }
 }

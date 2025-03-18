@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { LikesRepository } from '../infrastructure/likes.repository';
+import { MgLikesRepository } from '../infrastructure/mg.likes.repository';
 import { LikeStatus } from '../domain/like.entity';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
 
@@ -15,7 +15,7 @@ interface LikeableEntity {
 
 @Injectable()
 export class LikesService {
-  constructor(private readonly likesRepository: LikesRepository) {}
+  constructor(private readonly mgLikesRepository: MgLikesRepository) {}
 
   async enrichSingleEntityWithLikeStatus<T extends LikeableEntity>(
     entity: T,
@@ -24,7 +24,7 @@ export class LikesService {
     // If there's no jwt - returning default (NONE) status
     if (!userId) return entity;
 
-    const like = await this.likesRepository.findLikeByAuthorIdAndParentId(
+    const like = await this.mgLikesRepository.findLikeByAuthorIdAndParentId(
       userId,
       entity.id,
     );
@@ -61,7 +61,7 @@ export class LikesService {
     // Get all user's likes for passed parentIds
     const parentIds = paginatedEntities.items.map((entity) => entity.id);
     const userLikes =
-      await this.likesRepository.findLikesByAuthorIdAndParentIdArray(
+      await this.mgLikesRepository.findLikesByAuthorIdAndParentIdArray(
         userId,
         parentIds,
       );
