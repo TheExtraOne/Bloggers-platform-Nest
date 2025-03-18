@@ -45,6 +45,7 @@ import {
 } from './swagger';
 import { PgUsersQueryRepository } from '../../users/infrastructure/query/pg.users.query-repository';
 
+// TODO: check all endpoints, refactor
 @UseGuards(ThrottlerGuard)
 @Controller(PATHS.AUTH)
 export class AuthController {

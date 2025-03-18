@@ -25,11 +25,7 @@ import { DeleteCommentUseCase } from './comments/app/command.use-cases/delete-co
 import { UpdateLikeStatusUseCase } from './likes/app/likes.use-cases/update-like-status.use-case';
 import { MgLikesRepository } from './likes/infrastructure/mg.likes.repository';
 import { Like, LikeSchema } from './likes/domain/like.entity';
-import { EnrichPostsWithLikesUseCase } from './likes/app/likes.use-cases/enrich-posts-with-likes.use-case';
-import { EnrichPostWithLikeUseCase } from './likes/app/likes.use-cases/enrich-post-with-like.use-case';
-import { EnrichCommentsWithLikesUseCase } from './likes/app/likes.use-cases/enrich-comments-with-likes.use-case';
-import { EnrichCommentWithLikeUseCase } from './likes/app/likes.use-cases/enrich-comment-with-like.use-case';
-import { LikesService } from './likes/app/likes.service';
+import { EnrichEntityWithLikeUseCase } from './likes/app/likes.use-cases/enrich-entity-with-like.use-case';
 import { BlogIdExistsRule } from './decorators/blog-id-exists.decorator';
 import { PgBlogsRepository } from './blogs/infrastructure/pg.blogs.repository';
 import { PgBlogsQueryRepository } from './blogs/infrastructure/query/pg.blogs.query-repository';
@@ -39,6 +35,7 @@ import { PgPostsQueryRepository } from './posts/infrastructure/query/pg.posts.qu
 import { PgCommentsRepository } from './comments/infrastructure/pg.comments.repository';
 import { PgCommentsQueryRepository } from './comments/infrastructure/query/pg.comments.query-repository';
 import { PgLikesRepository } from './likes/infrastructure/pg.likes.repository';
+import { EnrichEntitiesWithLikesUseCase } from './likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -49,10 +46,8 @@ const commentsUseCases = [
 ];
 const likesUseCases = [
   UpdateLikeStatusUseCase,
-  EnrichPostsWithLikesUseCase,
-  EnrichPostWithLikeUseCase,
-  EnrichCommentsWithLikesUseCase,
-  EnrichCommentWithLikeUseCase,
+  EnrichEntityWithLikeUseCase,
+  EnrichEntitiesWithLikesUseCase,
 ];
 
 @Module({
@@ -98,7 +93,6 @@ const likesUseCases = [
     PgCommentsQueryRepository,
     MgLikesRepository,
     PgLikesRepository,
-    LikesService,
     ...blogsUseCases,
     ...postsUseCases,
     ...commentsUseCases,

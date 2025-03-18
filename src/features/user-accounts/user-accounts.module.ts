@@ -12,7 +12,6 @@ import { UserAccountsConfig } from './user-account.config';
 import { CreateSessionUseCase } from './sessions/app/sessions.use-cases/create-session.use-case';
 import { Session, SessionSchema } from './sessions/domain/session.entity';
 import { MgSessionsRepository } from './sessions/infrastructure/mg.sessions.repository';
-import { UpdateSessionTimeUseCase } from './sessions/app/sessions.use-cases/update-session-time.use-case';
 import { DeleteSessionUseCase } from './sessions/app/sessions.use-cases/delete-session.use-case';
 import { ConfirmEmailRegistrationUseCase } from './auth/app/auth.use-cases/confirm-email-registration.use-case';
 import { LoginUseCases } from './auth/app/auth.use-cases/login.use-cases';
@@ -66,7 +65,6 @@ const authUseCases = [
 
 const sessionsUseCases = [
   CreateSessionUseCase,
-  UpdateSessionTimeUseCase,
   DeleteSessionUseCase,
   DeleteAllSessionsUseCase,
   DeleteSessionByIdUseCase,

@@ -1,11 +1,7 @@
-import {
-  Command,
-  CommandBus,
-  CommandHandler,
-  ICommandHandler,
-} from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CustomJwtService } from '../../../utils/custom-jwt.service';
-import { UpdateSessionTimeCommand } from '../../../sessions/app/sessions.use-cases/update-session-time.use-case';
+import { PgSessionsRepository } from '../../../sessions/infrastructure/pg.sessions.repository';
+import { convertUnixToDate } from '../../../../../core/utils/time.utils';
 
 export class RefreshTokenCommand extends Command<{
   accessToken: string;
@@ -24,8 +20,8 @@ export class RefreshTokenUseCases
   implements ICommandHandler<RefreshTokenCommand>
 {
   constructor(
-    private readonly commandBus: CommandBus,
     private readonly customJwtService: CustomJwtService,
+    private readonly pgSessionsRepository: PgSessionsRepository,
   ) {}
 
   async execute(
@@ -47,9 +43,19 @@ export class RefreshTokenUseCases
     // Extracting exp and iat from refresh token
     const { exp: newExp, iat: newIat } =
       await this.customJwtService.extractTimeFromRefreshToken(refreshToken);
+
     // Updating session: sliding expiration time
-    await this.commandBus.execute(
-      new UpdateSessionTimeCommand(newExp, newIat, deviceId),
+    const session: { userId: string } | null =
+      await this.pgSessionsRepository.findSessionByDeviceId(deviceId);
+
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    await this.pgSessionsRepository.updateSessionTime(
+      deviceId,
+      convertUnixToDate(newExp),
+      convertUnixToDate(newIat),
     );
 
     return { accessToken, refreshToken };

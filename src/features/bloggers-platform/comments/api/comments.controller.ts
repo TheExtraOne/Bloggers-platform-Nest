@@ -23,8 +23,7 @@ import {
   UpdateLikeStatusCommand,
 } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
-// import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
-// import { EnrichCommentWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-comment-with-like.use-case';
+import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 import {
   GetCommentByIdSwagger,
   UpdateCommentSwagger,
@@ -32,6 +31,7 @@ import {
   DeleteCommentSwagger,
 } from './swagger';
 import { PgCommentsQueryRepository } from '../infrastructure/query/pg.comments.query-repository';
+import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
 
 @Controller(PATHS.COMMENTS)
 export class CommentsController {
@@ -45,14 +45,15 @@ export class CommentsController {
   @GetCommentByIdSwagger()
   async getCommentById(
     @Param('id') id: string,
-    // @CurrentOptionalUserId() userId: string | null,
+    @CurrentOptionalUserId() userId: string | null,
   ): Promise<PgCommentsViewDto | null> {
-    // // Enrich comment with user's like status
-    // return this.commandBus.execute(
-    //   new EnrichCommentWithLikeCommand(comment, userId),
-    // );
+    const comment: PgCommentsViewDto | null =
+      await this.pgCommentsQueryRepository.findCommentById(id);
 
-    return await this.pgCommentsQueryRepository.findCommentById(id);
+    // Enrich comment with user's like status
+    return this.commandBus.execute(
+      new EnrichEntityWithLikeCommand(comment, userId, EntityType.Comment),
+    );
   }
 
   @Put(':id')

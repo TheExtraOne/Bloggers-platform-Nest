@@ -7,6 +7,7 @@ import { PgUsersRepository } from '../../../../user-accounts/users/infrastructur
 import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
 import { NotFoundException } from '@nestjs/common';
 import { ERRORS } from '../../../../../constants';
+import { LikeStatus } from '../../domain/like.entity';
 
 export enum EntityType {
   Comment = 'comment',
@@ -50,6 +51,7 @@ export class UpdateLikeStatusUseCase
     // Check if like already exists
     const existingLike: {
       likeId: string;
+      status: LikeStatus;
     } | null = await this.pgLikesRepository.findLikeByAuthorIdAndParentId(
       user.userId,
       parentId,
@@ -57,14 +59,12 @@ export class UpdateLikeStatusUseCase
     );
 
     if (existingLike) {
-      // TODO: implement handling existing like
-      // await this.handleExistingLike(
-      //   existingLike,
-      //   updateLikeStatusDto,
-      //   parentId,
-      //   comment,
-      //   post,
-      // );
+      await this.handleExistingLike(
+        existingLike,
+        updateLikeStatusDto.likeStatus,
+        parentId,
+        entityType,
+      );
     } else {
       await this.handleNewLike(
         user.userId,
@@ -113,25 +113,24 @@ export class UpdateLikeStatusUseCase
     return user;
   }
 
-  // private async handleExistingLike(
-  //   like: LikeDocument,
-  //   updateLikeStatusDto: UpdateLikeStatusInputDto,
-  //   parentId: string,
-  //   comment: CommentDocument | null,
-  //   post: PostDocument | null,
-  // ): Promise<void> {
-  //   if (like.status === updateLikeStatusDto.likeStatus) {
-  //     return;
-  //   }
+  private async handleExistingLike(
+    like: { likeId: string; status: LikeStatus },
+    newStatus: LikeStatus,
+    parentId: string,
+    entityType: EntityType,
+  ): Promise<void> {
+    if (like.status === newStatus) {
+      return;
+    }
 
-  //   like.update({ status: updateLikeStatusDto.likeStatus });
-  //   await this.mgLikesRepository.save(like);
-  //   await this.updateLikesAmount({ parentId, comment, post });
+    await this.pgLikesRepository.updateLikeStatus(like.likeId, newStatus);
+    await this.updateLikesAmount({ parentId, entityType });
 
-  //   if (post) {
-  //     await this.updateNewestLikes({ parentId, post });
-  //   }
-  // }
+    // TODO: post update
+    // if (post) {
+    //   await this.updateNewestLikes({ parentId, post });
+    // }
+  }
 
   private async handleNewLike(
     userId: string,
@@ -172,7 +171,7 @@ export class UpdateLikeStatusUseCase
         dislikesCount,
       });
     }
-
+    // TODO: post update
     // if (entityType === EntityType.Post) {
     //   post.updateLikesCount(likesCount);
     //   post.updateDislikesCount(dislikesCount);

@@ -29,7 +29,7 @@ export class PgLikesRepository extends PgBaseRepository {
     userId: string,
     parentId: string,
     entityType: EntityType,
-  ): Promise<{ likeId: string } | null> {
+  ): Promise<{ likeId: string; status: LikeStatus } | null> {
     if (!this.isCorrectNumber(userId) || !this.isCorrectNumber(parentId)) {
       return null;
     }
@@ -44,7 +44,43 @@ export class PgLikesRepository extends PgBaseRepository {
     const params = [userId, parentId, entityType];
     const result = await this.dataSource.query(query, params);
     const like = result[0];
-    return like ? { likeId: like.id } : null;
+    return like ? { likeId: like.id, status: like.like_status } : null;
+  }
+
+  async findLikesByAuthorIdAndParentIdArray(
+    userId: string,
+    parentIds: string[],
+    entityType: EntityType,
+  ): Promise<
+    | {
+        id: number;
+        user_id: string;
+        parent_id: string;
+        created_at: Date;
+        updated_at: Date;
+        parent_type: EntityType;
+        like_status: LikeStatus;
+      }[]
+    | []
+  > {
+    if (
+      !this.isCorrectNumber(userId) ||
+      !parentIds.every(this.isCorrectNumber)
+    ) {
+      return [];
+    }
+    const query = `
+      SELECT likes.*
+      FROM public.likes as likes
+      WHERE likes.user_id = $1
+      AND likes.parent_id = ANY($2)
+      AND likes.parent_type = $3
+    `;
+
+    const params = [userId, parentIds, entityType];
+    const result = await this.dataSource.query(query, params);
+
+    return result.length ? result : [];
   }
 
   async getLikesAndDislikesCount(
@@ -70,5 +106,18 @@ export class PgLikesRepository extends PgBaseRepository {
     return result[0]
       ? { likesCount: like_count, dislikesCount: dislike_count }
       : { likesCount: 0, dislikesCount: 0 };
+  }
+
+  async updateLikeStatus(likeId: string, newStatus: LikeStatus): Promise<void> {
+    if (!this.isCorrectNumber(likeId)) {
+      return;
+    }
+    const query = `
+      UPDATE public.likes
+      SET like_status = $1
+      WHERE id = $2
+    `;
+    const params = [newStatus, likeId];
+    await this.dataSource.query(query, params);
   }
 }
