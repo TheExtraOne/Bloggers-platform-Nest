@@ -13,7 +13,7 @@ export enum EntityType {
   Comment = 'comment',
   Post = 'post',
 }
-
+// TODO: delete tables for posts and comments likes. Use join instead
 export class UpdateLikeStatusCommand extends Command<void> {
   constructor(
     public readonly parentId: string,
@@ -42,18 +42,14 @@ export class UpdateLikeStatusUseCase
     await this.validateParentId(parentId, entityType);
 
     // Check if user exists
-    // TODO: do we need a login?
-    const user: {
-      userId: string;
-      login: string;
-    } = await this.validateAndGetUser(userId);
+    await this.validateAndGetUser(userId);
 
     // Check if like already exists
     const existingLike: {
       likeId: string;
       status: LikeStatus;
     } | null = await this.pgLikesRepository.findLikeByAuthorIdAndParentId(
-      user.userId,
+      userId,
       parentId,
       entityType,
     );
@@ -67,9 +63,9 @@ export class UpdateLikeStatusUseCase
       );
     } else {
       await this.handleNewLike(
-        user.userId,
+        userId,
         parentId,
-        updateLikeStatusDto,
+        updateLikeStatusDto.likeStatus,
         entityType,
       );
     }
@@ -101,11 +97,9 @@ export class UpdateLikeStatusUseCase
 
   private async validateAndGetUser(userId: string): Promise<{
     userId: string;
-    login: string;
   }> {
     const user: {
       userId: string;
-      login: string;
     } | null = await this.pgUsersRepository.findUserById(userId);
     if (!user) {
       throw new Error('User not found');
@@ -125,33 +119,23 @@ export class UpdateLikeStatusUseCase
 
     await this.pgLikesRepository.updateLikeStatus(like.likeId, newStatus);
     await this.updateLikesAmount({ parentId, entityType });
-
-    // TODO: post update
-    // if (post) {
-    //   await this.updateNewestLikes({ parentId, post });
-    // }
   }
 
   private async handleNewLike(
     userId: string,
     parentId: string,
-    updateLikeStatusDto: UpdateLikeStatusInputDto,
+    likeStatus: LikeStatus,
     entityType: EntityType,
   ): Promise<void> {
     await this.pgLikesRepository.createLike({
       userId,
       parentId,
-      status: updateLikeStatusDto.likeStatus,
+      status: likeStatus,
       parentType: entityType,
     });
 
     // Updating amount of likes/dislikes in parent entity
     await this.updateLikesAmount({ parentId, entityType });
-
-    if (entityType === EntityType.Post) {
-      // TODO: implement newest likes update for Post
-      // await this.updateNewestLikes({ parentId, post });
-    }
   }
 
   private async updateLikesAmount({
@@ -171,35 +155,13 @@ export class UpdateLikeStatusUseCase
         dislikesCount,
       });
     }
-    // TODO: post update
-    // if (entityType === EntityType.Post) {
-    //   post.updateLikesCount(likesCount);
-    //   post.updateDislikesCount(dislikesCount);
-    //   await this.postsRepository.save(post);
-    // }
+
+    if (entityType === EntityType.Post) {
+      await this.pgPostsRepository.updateLikesCount(
+        parentId,
+        likesCount,
+        dislikesCount,
+      );
+    }
   }
-
-  // private async updateNewestLikes({
-  //   parentId,
-  //   post,
-  // }: {
-  //   parentId: string;
-  //   post: PostDocument;
-  // }) {
-  //   const likes = await this.mgLikesRepository.getLikesByParentIdWithDateSort({
-  //     parentId,
-  //   });
-
-  //   if (!likes.length) {
-  //     post.updateNewestLikes([]);
-
-  //     await this.postsRepository.save(post);
-  //     return;
-  //   }
-
-  //   // Finding 3 latest likes
-  //   post.updateNewestLikes(likes.slice(0, 3));
-
-  //   await this.postsRepository.save(post);
-  // }
 }

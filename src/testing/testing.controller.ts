@@ -22,6 +22,7 @@ export class TestingController {
       public.sessions,
       public.blogs,
       public.posts,
+      public.posts_likes_information,
       public.comments,
       public.comments_likes_information,
       public.likes

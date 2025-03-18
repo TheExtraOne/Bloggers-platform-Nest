@@ -114,7 +114,7 @@ export class PgLikesRepository extends PgBaseRepository {
     }
     const query = `
       UPDATE public.likes
-      SET like_status = $1
+      SET like_status = $1, updated_at = NOW()
       WHERE id = $2
     `;
     const params = [newStatus, likeId];

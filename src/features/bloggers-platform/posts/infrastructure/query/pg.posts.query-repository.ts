@@ -18,6 +18,8 @@ export type TPgPost = {
   created_at: Date;
   deleted_at: Date | null;
   updated_at: Date;
+  likes_count: number;
+  dislikes_count: number;
 };
 
 @Injectable()
@@ -41,10 +43,12 @@ export class PgPostsQueryRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
     const query = `
-    SELECT posts.*, blogs.name as blog_name
+    SELECT posts.*, blogs.name as blog_name, likes.likes_count, likes.dislikes_count
     FROM public.posts as posts
     JOIN public.blogs as blogs 
     ON posts.blog_id = blogs.id
+    JOIN public.posts_likes_information as likes
+    ON posts.id = likes.post_id
     WHERE posts.id = $1
     AND posts.deleted_at IS NULL
     `;

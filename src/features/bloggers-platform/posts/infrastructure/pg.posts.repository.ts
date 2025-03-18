@@ -19,9 +19,17 @@ export class PgPostsRepository extends PgBaseRepository {
   }): Promise<{ postId: string }> {
     const { title, content, shortDescription, blogId } = dto;
     const query = `
+    WITH inserted_post AS (
       INSERT INTO public.posts (title, content, short_description, blog_id)
       VALUES ($1, $2, $3, $4)
-      RETURNING id;
+      RETURNING id
+    ),
+      posts_likes_information AS (
+        INSERT INTO public.posts_likes_information (post_id)
+        SELECT id
+        FROM inserted_post
+      )
+    SELECT id FROM inserted_post;
     `;
     const params = [title, content, shortDescription, blogId];
     const result = await this.dataSource.query(query, params);
@@ -100,5 +108,19 @@ export class PgPostsRepository extends PgBaseRepository {
     }
 
     return post;
+  }
+
+  async updateLikesCount(
+    postId: string,
+    likesCount: number,
+    dislikesCount: number,
+  ): Promise<void> {
+    const query = `
+      UPDATE public.posts_likes_information
+      SET likes_count = $1, dislikes_count = $2, updated_at = NOW()
+      WHERE post_id = $3;
+    `;
+    const params = [likesCount, dislikesCount, postId];
+    await this.dataSource.query(query, params);
   }
 }

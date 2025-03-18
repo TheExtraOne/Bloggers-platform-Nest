@@ -1598,6 +1598,64 @@ window.onload = function() {
           ]
         }
       },
+      "/posts/{id}/like-status": {
+        "put": {
+          "description": "Updates like status for a post. Requires JWT authentication.",
+          "operationId": "PostsController_updateLikeStatus",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Post ID",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "description": "Like status data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateLikeStatusInputModel"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "Like status successfully updated."
+            },
+            "400": {
+              "description": "Invalid input data.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/APIErrorResultResponse"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized."
+            },
+            "404": {
+              "description": "Post not found."
+            }
+          },
+          "security": [
+            {
+              "bearer": []
+            }
+          ],
+          "summary": "Update post like status",
+          "tags": [
+            "Posts"
+          ]
+        }
+      },
       "/comments/{id}": {
         "get": {
           "description": "Returns a comment by ID. Like status will be included if user is authenticated.",

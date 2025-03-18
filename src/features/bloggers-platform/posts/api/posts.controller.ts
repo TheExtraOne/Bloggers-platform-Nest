@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -18,6 +19,7 @@ import {
   GetAllPostsSwagger,
   GetPostByIdSwagger,
   GetPostCommentsSwagger,
+  UpdatePostLikeStatusSwagger,
 } from './swagger';
 import { PgPostsQueryRepository } from '../infrastructure/query/pg.posts.query-repository';
 import { JwtAuthGuard } from '../../../user-accounts/guards/jwt/jwt-auth.guard';
@@ -31,7 +33,11 @@ import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-opti
 import { CurrentOptionalUserId } from 'src/features/user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments.query-params.input-dto';
 import { EnrichEntitiesWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
-import { EntityType } from '../../likes/app/likes.use-cases/update-like-status.use-case';
+import {
+  EntityType,
+  UpdateLikeStatusCommand,
+} from '../../likes/app/likes.use-cases/update-like-status.use-case';
+import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
 
 @Controller(PATHS.POSTS)
 export class PostsController {
@@ -100,22 +106,22 @@ export class PostsController {
     return await this.pgCommentsQueryRepository.findCommentById(commentId);
   }
 
-  // @Put(':id/like-status')
-  // @UseGuards(JwtAuthGuard)
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // @UpdatePostLikeStatusSwagger()
-  // async updateLikeStatus(
-  //   @Param('id') id: string,
-  //   @CurrentUserId() userId: string,
-  //   @Body() updateLikeStatusDto: UpdateLikeStatusInputDto,
-  // ): Promise<void> {
-  //   return await this.commandBus.execute(
-  //     new UpdateLikeStatusCommand(
-  //       id,
-  //       userId,
-  //       updateLikeStatusDto,
-  //       EntityType.Post,
-  //     ),
-  //   );
-  // }
+  @Put(':id/like-status')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UpdatePostLikeStatusSwagger()
+  async updateLikeStatus(
+    @Param('id') id: string,
+    @CurrentUserId() userId: string,
+    @Body() updateLikeStatusDto: UpdateLikeStatusInputDto,
+  ): Promise<void> {
+    return await this.commandBus.execute(
+      new UpdateLikeStatusCommand(
+        id,
+        userId,
+        updateLikeStatusDto,
+        EntityType.Post,
+      ),
+    );
+  }
 }

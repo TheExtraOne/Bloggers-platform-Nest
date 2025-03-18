@@ -8,6 +8,8 @@ type TExtendedLikesInfo = {
   myStatus: LikeStatus;
   newestLikes: { addedAt: Date; userId: string; login: string }[];
 };
+
+// TODO: clean mongo data
 export class MgPostsViewDto {
   id: string;
   title: string;
@@ -38,7 +40,7 @@ export class MgPostsViewDto {
     return dto;
   }
 }
-
+// TODO: check relations between tables, maybe we need to add/remove primary key
 export class PgPostsViewDto {
   id: string;
   title: string;
@@ -60,8 +62,8 @@ export class PgPostsViewDto {
     dto.blogId = post.blog_id.toString();
     dto.blogName = post.blog_name;
     dto.extendedLikesInfo = {
-      likesCount: 0,
-      dislikesCount: 0,
+      likesCount: post.likes_count,
+      dislikesCount: post.dislikes_count,
       myStatus: LikeStatus.None,
       newestLikes: [],
     };
