@@ -1,7 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersService } from '../users.service';
-import { EmailConfirmationStatus } from '../../infrastructure/pg.users.repository';
+import {
+  CreateUserDomainDto,
+  EmailConfirmationStatus,
+  PgUsersRepository,
+} from '../../infrastructure/pg.users.repository';
+import { BcryptService } from '../../../utils/bcrypt.service';
 
 export class AdminCreateUserCommand {
   constructor(
@@ -13,7 +18,11 @@ export class AdminCreateUserCommand {
 export class AdminCreateUserUseCase
   implements ICommandHandler<AdminCreateUserCommand>
 {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly pgUsersRepository: PgUsersRepository,
+    private readonly bcryptService: BcryptService,
+  ) {}
 
   async execute(command: AdminCreateUserCommand) {
     const { login, email, password } = command.dto;
@@ -26,13 +35,17 @@ export class AdminCreateUserUseCase
       throw new BadRequestException([validationError]);
     }
 
-    return await this.usersService.createUser({
-      login,
+    const passwordHash = await this.bcryptService.hashPassword(password);
+
+    const createUserDto: CreateUserDomainDto = {
       email,
-      password,
+      login,
+      passwordHash,
       confirmationCode: null,
       expirationDate: null,
       confirmationStatus: EmailConfirmationStatus.Confirmed,
-    });
+    };
+
+    return await this.pgUsersRepository.createUser(createUserDto);
   }
 }

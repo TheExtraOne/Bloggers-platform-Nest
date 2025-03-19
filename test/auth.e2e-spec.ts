@@ -9,6 +9,7 @@ import { deleteAllData } from './helpers/delete-all-data';
 import { CreateUserInputDto } from '../src/features/user-accounts/users/api/input-dto/users.input-dto';
 import { EmailService } from '../src/features/user-accounts/utils/email.service';
 
+// TODO: update tests
 describe('Auth Controller (e2e)', () => {
   let app: INestApplication;
   let authTestManager: AuthTestManager;

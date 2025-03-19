@@ -76,7 +76,7 @@ export class PgUsersRepository extends PgBaseRepository {
 
     const query = `
     UPDATE public.users
-    SET deleted_at = NOW()
+    SET deleted_at = NOW(), updated_at = NOW()
     WHERE id = $1 AND deleted_at IS NULL
     RETURNING id;
     `;

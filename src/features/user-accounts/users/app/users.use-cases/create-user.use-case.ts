@@ -4,7 +4,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
 import { EmailService } from '../../../utils/email.service';
 import { UsersService } from '../users.service';
-import { EmailConfirmationStatus } from '../../infrastructure/pg.users.repository';
+import {
+  CreateUserDomainDto,
+  EmailConfirmationStatus,
+  PgUsersRepository,
+} from '../../infrastructure/pg.users.repository';
+import { BcryptService } from 'src/features/user-accounts/utils/bcrypt.service';
 
 export class CreateUserCommand {
   constructor(
@@ -17,6 +22,8 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
   constructor(
     private readonly usersService: UsersService,
     private readonly emailService: EmailService,
+    private readonly pgUsersRepository: PgUsersRepository,
+    private readonly bcryptService: BcryptService,
   ) {}
 
   async execute(command: CreateUserCommand) {
@@ -32,14 +39,18 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
     const confirmationCode = uuidv4();
     const expirationDate = add(new Date(), { hours: 1, minutes: 30 });
 
-    const result = await this.usersService.createUser({
-      login,
+    const passwordHash = await this.bcryptService.hashPassword(password);
+
+    const createUserDto: CreateUserDomainDto = {
       email,
-      password,
+      login,
+      passwordHash,
       confirmationCode,
       expirationDate,
       confirmationStatus: EmailConfirmationStatus.Pending,
-    });
+    };
+
+    const result = await this.pgUsersRepository.createUser(createUserDto);
 
     // Send confirmation email
     this.emailService.sendRegistrationMail({
