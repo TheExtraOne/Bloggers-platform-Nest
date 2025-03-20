@@ -42,7 +42,6 @@ export class EnrichEntityWithLikeUseCase<T extends LikeableEntity>
     const like = await this.pgLikesRepository.findLikeByAuthorIdAndParentId(
       userId,
       entity.id,
-      entityType,
     );
 
     const myStatus = like ? (like.status as LikeStatus) : LikeStatus.None;

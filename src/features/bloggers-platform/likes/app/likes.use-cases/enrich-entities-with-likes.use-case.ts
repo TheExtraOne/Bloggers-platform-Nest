@@ -42,7 +42,6 @@ export class EnrichEntitiesWithLikesUseCase<T extends LikeableEntity>
       await this.pgLikesRepository.findLikesByAuthorIdAndParentIdArray(
         userId,
         parentIds,
-        entityType,
       );
 
     let userLikesObject = {};

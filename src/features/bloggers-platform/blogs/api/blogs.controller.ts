@@ -14,7 +14,6 @@ import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-opti
 import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { EntityType } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 
-// TODO: update swagger
 @Controller(PATHS.BLOGS)
 export class BlogsController {
   constructor(

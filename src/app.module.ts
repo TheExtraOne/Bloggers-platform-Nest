@@ -18,15 +18,26 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 @Module({
   imports: [
     configModule,
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'nodejs',
-      password: 'nodejs',
-      database: 'postgres',
-      autoLoadEntities: false,
-      synchronize: false,
+    // TypeOrmModule.forRoot({
+    // type: 'postgres',
+    // host: 'localhost',
+    // port: 5432,
+    // username: 'nodejs',
+    // password: 'nodejs',
+    // database: 'postgres',
+    //   autoLoadEntities: false,
+    //   synchronize: false,
+    // }),
+    TypeOrmModule.forRootAsync({
+      useFactory: (coreConfig: CoreConfig) => {
+        return {
+          type: 'postgres',
+          url: coreConfig.postgresUri,
+          autoLoadEntities: false,
+          synchronize: false,
+        };
+      },
+      inject: [CoreConfig],
     }),
     ThrottlerModule.forRootAsync({
       useFactory: (coreConfig: CoreConfig) => {

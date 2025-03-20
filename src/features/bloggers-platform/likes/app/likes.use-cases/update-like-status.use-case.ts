@@ -51,7 +51,6 @@ export class UpdateLikeStatusUseCase
     } | null = await this.pgLikesRepository.findLikeByAuthorIdAndParentId(
       userId,
       parentId,
-      entityType,
     );
 
     if (existingLike) {
@@ -131,7 +130,6 @@ export class UpdateLikeStatusUseCase
       userId,
       parentId,
       status: likeStatus,
-      parentType: entityType,
     });
 
     // Updating amount of likes/dislikes in parent entity
