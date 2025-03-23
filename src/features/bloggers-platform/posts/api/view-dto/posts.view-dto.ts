@@ -8,7 +8,8 @@ type TExtendedLikesInfo = {
   newestLikes: { addedAt: Date; userId: string; login: string }[];
 };
 
-// TODO: check relations between tables, maybe we need to add/remove primary key
+// TODO: check all sql
+// TODO: map (from snake to camel in the query)
 export class PgPostsViewDto {
   id: string;
   title: string;
@@ -30,8 +31,8 @@ export class PgPostsViewDto {
     dto.blogId = post.blog_id.toString();
     dto.blogName = post.blog_name;
     dto.extendedLikesInfo = {
-      likesCount: post.likes_count ?? 0,
-      dislikesCount: post.dislikes_count ?? 0,
+      likesCount: +post.likes_count,
+      dislikesCount: +post.dislikes_count,
       myStatus: LikeStatus.None,
       newestLikes: post.recent_likes.length
         ? post.recent_likes.map((like) => ({

@@ -29,8 +29,8 @@ export class PgCommentsViewDto {
     };
     dto.createdAt = comment.created_at;
     dto.likesInfo = {
-      likesCount: comment.likes_count ?? 0,
-      dislikesCount: comment.dislikes_count ?? 0,
+      likesCount: +comment.likes_count,
+      dislikesCount: +comment.dislikes_count,
       myStatus: LikeStatus.None,
     };
 

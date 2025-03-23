@@ -37,14 +37,18 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
     }
 
     const query = `
-      SELECT comments.*, users.login as commentator_login, likes.likes_count, likes.dislikes_count
+      SELECT comments.*, 
+             users.login as commentator_login,
+             COUNT(CASE WHEN l.like_status = 'Like' THEN 1 END) as likes_count,
+             COUNT(CASE WHEN l.like_status = 'Dislike' THEN 1 END) as dislikes_count
       FROM public.comments as comments
       LEFT JOIN public.users as users
       ON comments.commentator_id = users.id
-      LEFT JOIN public.comments_likes_information as likes
-      ON comments.id = likes.comment_id
+      LEFT JOIN public.likes as l
+      ON comments.id = l.parent_id
       WHERE comments.id = $1
       AND comments.deleted_at IS NULL
+      GROUP BY comments.id, users.login
     `;
     const params = [commentId];
     const result = await this.dataSource.query(query, params);
@@ -108,14 +112,18 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
     offset: number,
   ): Promise<PgCommentsViewDto[]> {
     const query = `
-      SELECT comments.*, users.login as commentator_login, likes.likes_count, likes.dislikes_count
+      SELECT comments.*, 
+             users.login as commentator_login,
+             COUNT(CASE WHEN l.like_status = 'Like' THEN 1 END) as likes_count,
+             COUNT(CASE WHEN l.like_status = 'Dislike' THEN 1 END) as dislikes_count
       FROM public.comments as comments
       LEFT JOIN public.users as users
       ON comments.commentator_id = users.id
-      LEFT JOIN public.comments_likes_information as likes
-      ON comments.id = likes.comment_id
+      LEFT JOIN public.likes as l
+      ON comments.id = l.parent_id
       WHERE comments.post_id = $1
       AND comments.deleted_at IS NULL
+      GROUP BY comments.id, users.login
       ORDER BY ${sortColumn} ${sortDirection}
       LIMIT $2
       OFFSET $3

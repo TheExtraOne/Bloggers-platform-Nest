@@ -13,7 +13,7 @@ export enum EntityType {
   Comment = 'comment',
   Post = 'post',
 }
-// TODO: delete tables for posts and comments likes. Use join instead
+
 export class UpdateLikeStatusCommand extends Command<void> {
   constructor(
     public readonly parentId: string,
@@ -54,19 +54,20 @@ export class UpdateLikeStatusUseCase
     );
 
     if (existingLike) {
-      await this.handleExistingLike(
-        existingLike,
+      if (existingLike.status === updateLikeStatusDto.likeStatus) {
+        return;
+      }
+
+      await this.pgLikesRepository.updateLikeStatus(
+        existingLike.likeId,
         updateLikeStatusDto.likeStatus,
-        parentId,
-        entityType,
       );
     } else {
-      await this.handleNewLike(
+      await this.pgLikesRepository.createLike({
         userId,
         parentId,
-        updateLikeStatusDto.likeStatus,
-        entityType,
-      );
+        status: updateLikeStatusDto.likeStatus,
+      });
     }
   }
 
@@ -104,62 +105,5 @@ export class UpdateLikeStatusUseCase
       throw new Error('User not found');
     }
     return user;
-  }
-
-  private async handleExistingLike(
-    like: { likeId: string; status: LikeStatus },
-    newStatus: LikeStatus,
-    parentId: string,
-    entityType: EntityType,
-  ): Promise<void> {
-    if (like.status === newStatus) {
-      return;
-    }
-
-    await this.pgLikesRepository.updateLikeStatus(like.likeId, newStatus);
-    await this.updateLikesAmount({ parentId, entityType });
-  }
-
-  private async handleNewLike(
-    userId: string,
-    parentId: string,
-    likeStatus: LikeStatus,
-    entityType: EntityType,
-  ): Promise<void> {
-    await this.pgLikesRepository.createLike({
-      userId,
-      parentId,
-      status: likeStatus,
-    });
-
-    // Updating amount of likes/dislikes in parent entity
-    await this.updateLikesAmount({ parentId, entityType });
-  }
-
-  private async updateLikesAmount({
-    parentId,
-    entityType,
-  }: {
-    parentId: string;
-    entityType: EntityType;
-  }): Promise<void> {
-    const { likesCount, dislikesCount } =
-      await this.pgLikesRepository.getLikesAndDislikesCount(parentId);
-
-    if (entityType === EntityType.Comment) {
-      await this.pgCommentsRepository.updateLikesCount({
-        commentId: parentId,
-        likesCount,
-        dislikesCount,
-      });
-    }
-
-    if (entityType === EntityType.Post) {
-      await this.pgPostsRepository.updateLikesCount(
-        parentId,
-        likesCount,
-        dislikesCount,
-      );
-    }
   }
 }

@@ -16,17 +16,9 @@ export class PgCommentsRepository extends PgBaseRepository {
     content: string,
   ): Promise<{ commentId: string }> {
     const query = `
-    WITH inserted_comment AS (
       INSERT INTO public.comments (post_id, content, commentator_id)
       VALUES ($1, $2, $3)
       RETURNING id
-    ),
-      comments_likes_information AS(
-        INSERT INTO public.comments_likes_information (comment_id)
-        SELECT id
-        FROM inserted_comment
-      )
-    SELECT id FROM inserted_comment;
   `;
     const params = [postId, content, userId];
     const result = await this.dataSource.query(query, params);
@@ -88,24 +80,6 @@ export class PgCommentsRepository extends PgBaseRepository {
       AND comments.commentator_id = $2
     `;
     const params = [commentId, userId];
-    await this.dataSource.query(query, params);
-  }
-
-  async updateLikesCount({
-    commentId,
-    likesCount,
-    dislikesCount,
-  }: {
-    commentId: string;
-    likesCount: number;
-    dislikesCount: number;
-  }): Promise<void> {
-    const query = `
-      UPDATE public.comments_likes_information
-      SET likes_count = $1, dislikes_count = $2, updated_at = NOW()
-      WHERE comment_id = $3;
-    `;
-    const params = [likesCount, dislikesCount, commentId];
     await this.dataSource.query(query, params);
   }
 }
