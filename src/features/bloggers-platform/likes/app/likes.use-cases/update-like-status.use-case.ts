@@ -3,7 +3,7 @@ import { UpdateLikeStatusInputDto } from '../../api/input-dto/update-like-input.
 import { PgCommentsRepository } from '../../../comments/infrastructure/pg.comments.repository';
 import { PgPostsRepository } from '../../../posts/infrastructure/pg.posts.repository';
 import { TPgPost } from '../../../posts/infrastructure/query/pg.posts.query-repository';
-import { PgUsersRepository } from '../../../../user-accounts/users/infrastructure/pg.users.repository';
+import { PgExternalUsersRepository } from '../../../../user-accounts/users/infrastructure/pg.external.users.repository';
 import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
 import { NotFoundException } from '@nestjs/common';
 import { ERRORS } from '../../../../../constants';
@@ -33,7 +33,7 @@ export class UpdateLikeStatusUseCase
     private readonly pgLikesRepository: PgLikesRepository,
     private readonly pgCommentsRepository: PgCommentsRepository,
     private readonly pgPostsRepository: PgPostsRepository,
-    private readonly pgUsersRepository: PgUsersRepository,
+    private readonly pgUsersRepository: PgExternalUsersRepository,
   ) {}
 
   async execute(command: UpdateLikeStatusCommand): Promise<void> {

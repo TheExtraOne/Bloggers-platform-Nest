@@ -32,6 +32,7 @@ import { PgUsersQueryRepository } from './users/infrastructure/query/pg.users.qu
 import { PgUsersRepository } from './users/infrastructure/pg.users.repository';
 import { PgSessionsRepository } from './sessions/infrastructure/pg.sessions.repository';
 import { PgSessionsQueryRepository } from './sessions/infrastructure/query/pg.sessions.query-repository';
+import { PgExternalUsersRepository } from './users/infrastructure/pg.external.users.repository';
 // import { TypeOrmModule } from '@nestjs/typeorm';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
@@ -74,6 +75,7 @@ const sessionsUseCases = [
   providers: [
     PgUsersQueryRepository,
     PgUsersRepository,
+    PgExternalUsersRepository,
     PgSessionsRepository,
     PgSessionsQueryRepository,
     UserAccountsConfig,
@@ -84,6 +86,6 @@ const sessionsUseCases = [
     ...authUseCases,
     ...sessionsUseCases,
   ],
-  exports: [PgUsersRepository],
+  exports: [PgExternalUsersRepository],
 })
 export class UserAccountsModule {}

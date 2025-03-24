@@ -3,7 +3,7 @@ import { CreateCommentInputDto } from '../../api/input-dto/comment.input.dto';
 import { NotFoundException } from '@nestjs/common';
 import { ERRORS } from '../../../../../constants';
 import { PgPostsRepository } from '../../../posts/infrastructure/pg.posts.repository';
-import { PgUsersRepository } from '../../../../user-accounts/users/infrastructure/pg.users.repository';
+import { PgExternalUsersRepository } from '../../../../user-accounts/users/infrastructure/pg.external.users.repository';
 import { PgCommentsRepository } from '../../infrastructure/pg.comments.repository';
 
 export class CreateCommentCommand extends Command<string> {
@@ -22,7 +22,7 @@ export class CreateCommentUseCase
 {
   constructor(
     private readonly pgPostsRepository: PgPostsRepository,
-    private readonly pgUsersRepository: PgUsersRepository,
+    private readonly pgUsersRepository: PgExternalUsersRepository,
     private readonly pgCommentsRepository: PgCommentsRepository,
   ) {}
 
