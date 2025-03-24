@@ -6,16 +6,14 @@ import { IsStringWithTrim } from '../decorators/is-not-empty-string';
 
 class PaginationParams {
   @ValidateIf(
-    (o: Record<string, string>) => typeof o.sortDirection !== 'undefined',
+    (o: Record<string, string>) => typeof o.pageNumber !== 'undefined',
   )
   @IsInt()
   @Min(1)
   @Type(() => Number)
   pageNumber: number = 1;
 
-  @ValidateIf(
-    (o: Record<string, string>) => typeof o.sortDirection !== 'undefined',
-  )
+  @ValidateIf((o: Record<string, string>) => typeof o.pageSize !== 'undefined')
   @Min(1)
   @IsInt()
   @Type(() => Number)
