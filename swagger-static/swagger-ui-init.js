@@ -72,19 +72,6 @@ window.onload = function() {
               }
             },
             {
-              "name": "sortDirection",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "default": "desc",
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              }
-            },
-            {
               "name": "pageNumber",
               "required": true,
               "in": "query",
@@ -102,6 +89,19 @@ window.onload = function() {
                 "minimum": 1,
                 "default": 10,
                 "type": "number"
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
               }
             }
           ],
@@ -701,19 +701,6 @@ window.onload = function() {
               }
             },
             {
-              "name": "sortDirection",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "default": "desc",
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              }
-            },
-            {
               "name": "pageNumber",
               "required": true,
               "in": "query",
@@ -731,6 +718,19 @@ window.onload = function() {
                 "minimum": 1,
                 "default": 10,
                 "type": "number"
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
               }
             }
           ],
@@ -833,19 +833,6 @@ window.onload = function() {
               }
             },
             {
-              "name": "sortDirection",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "default": "desc",
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              }
-            },
-            {
               "name": "pageNumber",
               "required": true,
               "in": "query",
@@ -863,6 +850,19 @@ window.onload = function() {
                 "minimum": 1,
                 "default": 10,
                 "type": "number"
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
               }
             }
           ],
@@ -1183,19 +1183,6 @@ window.onload = function() {
               }
             },
             {
-              "name": "sortDirection",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "default": "desc",
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              }
-            },
-            {
               "name": "pageNumber",
               "required": true,
               "in": "query",
@@ -1213,6 +1200,19 @@ window.onload = function() {
                 "minimum": 1,
                 "default": 10,
                 "type": "number"
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
               }
             }
           ],
@@ -1300,19 +1300,6 @@ window.onload = function() {
               }
             },
             {
-              "name": "sortDirection",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "default": "desc",
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              }
-            },
-            {
               "name": "pageNumber",
               "required": true,
               "in": "query",
@@ -1330,6 +1317,19 @@ window.onload = function() {
                 "minimum": 1,
                 "default": 10,
                 "type": "number"
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
               }
             }
           ],
@@ -1366,19 +1366,6 @@ window.onload = function() {
               }
             },
             {
-              "name": "sortDirection",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "default": "desc",
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              }
-            },
-            {
               "name": "pageNumber",
               "required": true,
               "in": "query",
@@ -1396,6 +1383,19 @@ window.onload = function() {
                 "minimum": 1,
                 "default": 10,
                 "type": "number"
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
               }
             }
           ],
@@ -1481,19 +1481,6 @@ window.onload = function() {
               }
             },
             {
-              "name": "sortDirection",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "default": "desc",
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              }
-            },
-            {
               "name": "pageNumber",
               "required": true,
               "in": "query",
@@ -1511,6 +1498,19 @@ window.onload = function() {
                 "minimum": 1,
                 "default": 10,
                 "type": "number"
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": true,
+              "in": "query",
+              "schema": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
               }
             }
           ],
