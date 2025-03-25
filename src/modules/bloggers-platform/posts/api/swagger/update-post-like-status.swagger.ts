@@ -6,7 +6,7 @@ import {
   ApiBearerAuth,
   ApiBody,
 } from '@nestjs/swagger';
-import { APIErrorResultResponse } from '../../../../../features/user-accounts/users/api/swagger';
+import { APIErrorResultResponse } from '../../../../user-accounts/users/api/swagger';
 import { UpdateLikeStatusInputModel } from '../../../likes/api/swagger/like-status-input.schema';
 
 export const UpdatePostLikeStatusSwagger = () => {

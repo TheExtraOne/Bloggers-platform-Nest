@@ -1,8 +1,8 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { PATHS } from '../../../src/constants';
-import { CreateUserInputDto } from '../../../src/features/user-accounts/users/api/input-dto/users.input-dto';
-import { PGUserViewDto } from '../../../src/features/user-accounts/users/api/view-dto/users.view-dto';
+import { CreateUserInputDto } from '../../../src/modules/user-accounts/users/api/input-dto/users.input-dto';
+import { PGUserViewDto } from '../../../src/modules/user-accounts/users/api/view-dto/users.view-dto';
 
 export class UsersTestManager {
   constructor(private app: INestApplication) {}

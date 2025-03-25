@@ -1,7 +1,7 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EntityType } from './update-like-status.use-case';
 import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
-import { LikeStatus } from '../../../likes/infrastructure/pg.likes.repository';
+import { LikeStatus } from '../../infrastructure/pg.likes.repository';
 
 export interface LikeableEntity {
   id: string;

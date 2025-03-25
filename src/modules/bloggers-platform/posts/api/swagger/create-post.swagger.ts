@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBasicAuth } from '@nestjs/swagger';
 import { PostViewModel } from './posts.schema';
-import { APIErrorResultResponse } from '../../../../../features/user-accounts/users/api/swagger';
+import { APIErrorResultResponse } from '../../../../user-accounts/users/api/swagger';
 
 export const CreatePostSwagger = () => {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {

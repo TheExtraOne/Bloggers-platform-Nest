@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { LikeStatus } from '../../../likes/infrastructure/pg.likes.repository';
+import { LikeStatus } from '../../infrastructure/pg.likes.repository';
 
 export class UpdateLikeStatusInputModel {
   @ApiProperty({

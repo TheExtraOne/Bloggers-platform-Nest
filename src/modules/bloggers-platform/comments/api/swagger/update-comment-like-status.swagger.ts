@@ -6,31 +6,29 @@ import {
   ApiBearerAuth,
   ApiBody,
 } from '@nestjs/swagger';
-import { CommentViewModel } from '../../../comments/api/swagger/comments.schema';
-import { CreateCommentInputModel } from '../../../comments/api/swagger/comment-input.schema';
-import { APIErrorResultResponse } from '../../../../../features/user-accounts/users/api/swagger';
+import { APIErrorResultResponse } from '../../../../user-accounts/users/api/swagger';
+import { UpdateLikeStatusInputModel } from '../../../likes/api/swagger/like-status-input.schema';
 
-export const CreatePostCommentSwagger = () => {
+export const UpdateCommentLikeStatusSwagger = () => {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     ApiOperation({
-      summary: 'Create new comment for post',
+      summary: 'Update comment like status',
       description:
-        'Creates a new comment for a specific post. Requires JWT authentication.',
+        'Updates like status for a comment. Requires JWT authentication.',
     })(target, propertyKey, descriptor);
-    ApiBearerAuth('JWT')(target, propertyKey, descriptor);
+    ApiBearerAuth()(target, propertyKey, descriptor);
     ApiParam({
       name: 'id',
-      description: 'Post ID',
+      description: 'Comment ID',
       type: String,
     })(target, propertyKey, descriptor);
     ApiBody({
-      description: 'Comment data',
-      type: CreateCommentInputModel,
+      description: 'Like status data',
+      type: UpdateLikeStatusInputModel,
     })(target, propertyKey, descriptor);
     ApiResponse({
-      status: HttpStatus.CREATED,
-      description: 'Comment successfully created.',
-      type: CommentViewModel,
+      status: HttpStatus.NO_CONTENT,
+      description: 'Like status successfully updated.',
     })(target, propertyKey, descriptor);
     ApiResponse({
       status: HttpStatus.BAD_REQUEST,
@@ -43,7 +41,7 @@ export const CreatePostCommentSwagger = () => {
     })(target, propertyKey, descriptor);
     ApiResponse({
       status: HttpStatus.NOT_FOUND,
-      description: 'Post not found.',
+      description: 'Comment not found.',
     })(target, propertyKey, descriptor);
     return descriptor;
   };

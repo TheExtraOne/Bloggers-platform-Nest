@@ -6,8 +6,8 @@ import { AuthTestManager } from './helpers/managers/auth-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
 import { SessionsTestManager } from './helpers/managers/sessions-test-manager';
 import { deleteAllData } from './helpers/delete-all-data';
-import { CreateUserInputDto } from '../src/features/user-accounts/users/api/input-dto/users.input-dto';
-import { EmailService } from '../src/features/user-accounts/utils/email.service';
+import { CreateUserInputDto } from '../src/modules/user-accounts/users/api/input-dto/users.input-dto';
+import { EmailService } from '../src/modules/user-accounts/utils/email.service';
 
 // TODO: update tests
 describe('Auth Controller (e2e)', () => {

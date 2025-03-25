@@ -4,10 +4,10 @@ import { PATHS } from '../../../src/constants';
 import {
   CreateBlogInputDto,
   UpdateBlogInputDto,
-} from '../../../src/features/bloggers-platform/blogs/api/input-dto/blogs.input-dto';
-import { PgBlogsViewDto } from '../../../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
-import { CreatePostInputDto } from '../../../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
-import { PgPostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+} from '../../../src/modules/bloggers-platform/blogs/api/input-dto/blogs.input-dto';
+import { PgBlogsViewDto } from '../../../src/modules/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
+import { CreatePostInputDto } from '../../../src/modules/bloggers-platform/posts/api/input-dto/posts.input-dto';
+import { PgPostsViewDto } from '../../../src/modules/bloggers-platform/posts/api/view-dto/posts.view-dto';
 
 export class BlogsTestManager {
   constructor(private app: INestApplication) {}

@@ -2,7 +2,7 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
 import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
 import { EntityType } from './update-like-status.use-case';
-import { LikeStatus } from '../../../likes/infrastructure/pg.likes.repository';
+import { LikeStatus } from '../../infrastructure/pg.likes.repository';
 
 import { LikeableEntity } from './enrich-entity-with-like.use-case';
 

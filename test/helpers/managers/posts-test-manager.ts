@@ -4,11 +4,11 @@ import { PATHS } from '../../../src/constants';
 import {
   CreatePostInputDto,
   UpdatePostInputDto,
-} from '../../../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
-import { PgPostsViewDto } from '../../../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
-import { CreateCommentInputDto } from '../../../src/features/bloggers-platform/comments/api/input-dto/comment.input.dto';
-import { PgCommentsViewDto } from '../../../src/features/bloggers-platform/comments/api/view-dto/comment.view-dto';
-import { UpdateLikeStatusInputDto } from '../../../src/features/bloggers-platform/likes/api/input-dto/update-like-input.dto';
+} from '../../../src/modules/bloggers-platform/posts/api/input-dto/posts.input-dto';
+import { PgPostsViewDto } from '../../../src/modules/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { CreateCommentInputDto } from '../../../src/modules/bloggers-platform/comments/api/input-dto/comment.input.dto';
+import { PgCommentsViewDto } from '../../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
+import { UpdateLikeStatusInputDto } from '../../../src/modules/bloggers-platform/likes/api/input-dto/update-like-input.dto';
 
 export class PostsTestManager {
   constructor(private app: INestApplication) {}

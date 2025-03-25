@@ -8,7 +8,7 @@ import {
   CreateUserDomainDto,
   PgUsersRepository,
 } from '../../infrastructure/pg.users.repository';
-import { BcryptService } from 'src/features/user-accounts/utils/bcrypt.service';
+import { BcryptService } from 'src/modules/user-accounts/utils/bcrypt.service';
 import { EmailConfirmationStatus } from '../../domain/enums/user.enums';
 
 export class CreateUserCommand {

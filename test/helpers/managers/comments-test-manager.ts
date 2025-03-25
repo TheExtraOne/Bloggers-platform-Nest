@@ -1,9 +1,9 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { PATHS } from '../../../src/constants';
-import { UpdateCommentInputDto } from '../../../src/features/bloggers-platform/comments/api/input-dto/comment.input.dto';
-import { PgCommentsViewDto } from '../../../src/features/bloggers-platform/comments/api/view-dto/comment.view-dto';
-import { UpdateLikeStatusInputDto } from '../../../src/features/bloggers-platform/likes/api/input-dto/update-like-input.dto';
+import { UpdateCommentInputDto } from '../../../src/modules/bloggers-platform/comments/api/input-dto/comment.input.dto';
+import { PgCommentsViewDto } from '../../../src/modules/bloggers-platform/comments/api/view-dto/comment.view-dto';
+import { UpdateLikeStatusInputDto } from '../../../src/modules/bloggers-platform/likes/api/input-dto/update-like-input.dto';
 
 export class CommentsTestManager {
   constructor(private readonly app: INestApplication) {}

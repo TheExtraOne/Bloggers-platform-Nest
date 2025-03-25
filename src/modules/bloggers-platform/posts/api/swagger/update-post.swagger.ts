@@ -5,7 +5,7 @@ import {
   ApiBasicAuth,
   ApiParam,
 } from '@nestjs/swagger';
-import { APIErrorResultResponse } from '../../../../../features/user-accounts/users/api/swagger';
+import { APIErrorResultResponse } from '../../../../user-accounts/users/api/swagger';
 
 export const UpdatePostSwagger = () => {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {

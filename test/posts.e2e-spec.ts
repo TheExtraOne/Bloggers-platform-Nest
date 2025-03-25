@@ -6,12 +6,12 @@ import { TestSettingsInitializer } from './helpers/init-settings';
 import { deleteAllData } from './helpers/delete-all-data';
 import { PostsTestManager } from './helpers/managers/posts-test-manager';
 import { BlogsTestManager } from './helpers/managers/blogs-test-manager';
-import { PgPostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { PgPostsViewDto } from '../src/modules/bloggers-platform/posts/api/view-dto/posts.view-dto';
 import { PaginatedViewDto } from '../src/core/dto/base.paginated-view.dto';
 import {
   CreatePostInputDto,
   UpdatePostInputDto,
-} from '../src/features/bloggers-platform/posts/api/input-dto/posts.input-dto';
+} from '../src/modules/bloggers-platform/posts/api/input-dto/posts.input-dto';
 
 describe('Posts Controller (e2e)', () => {
   let app: INestApplication;

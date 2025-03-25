@@ -6,9 +6,9 @@ import { CommentsTestManager } from './helpers/managers/comments-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
 import { BlogsTestManager } from './helpers/managers/blogs-test-manager';
 import { deleteAllData } from './helpers/delete-all-data';
-import { LikeStatus } from '../src/features/bloggers-platform/likes/infrastructure/pg.likes.repository';
-import { PgBlogsViewDto } from '../src/features/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
-import { PgPostsViewDto } from '../src/features/bloggers-platform/posts/api/view-dto/posts.view-dto';
+import { LikeStatus } from '../src/modules/bloggers-platform/likes/infrastructure/pg.likes.repository';
+import { PgBlogsViewDto } from '../src/modules/bloggers-platform/blogs/api/view-dto/blogs.view-dto';
+import { PgPostsViewDto } from '../src/modules/bloggers-platform/posts/api/view-dto/posts.view-dto';
 
 describe('Likes (e2e)', () => {
   let app: INestApplication;

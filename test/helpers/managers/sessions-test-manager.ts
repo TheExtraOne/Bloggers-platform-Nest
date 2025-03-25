@@ -1,7 +1,7 @@
 import { INestApplication, HttpStatus } from '@nestjs/common';
 import request from 'supertest';
 import { PATHS } from '../../../src/constants';
-import { PgSessionsViewDto } from '../../../src/features/user-accounts/sessions/api/view-dto/sessions.view-dto';
+import { PgSessionsViewDto } from '../../../src/modules/user-accounts/sessions/api/view-dto/sessions.view-dto';
 
 export class SessionsTestManager {
   constructor(private readonly app: INestApplication) {}
