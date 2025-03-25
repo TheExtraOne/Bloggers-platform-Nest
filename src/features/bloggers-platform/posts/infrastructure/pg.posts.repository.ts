@@ -38,7 +38,7 @@ export class PgPostsRepository extends PgBaseRepository {
       shortDescription: string;
     },
   ): Promise<void> {
-    if (!this.isCorrectNumber(postId) || !this.isCorrectNumber(blogId)) {
+    if (!this.isCorrectUuid(postId) || !this.isCorrectNumber(blogId)) {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
     const { title, content, shortDescription } = dto;
@@ -64,7 +64,7 @@ export class PgPostsRepository extends PgBaseRepository {
   }
 
   async deletePost(postId: string, blogId: string): Promise<void> {
-    if (!this.isCorrectNumber(postId) || !this.isCorrectNumber(blogId)) {
+    if (!this.isCorrectUuid(postId) || !this.isCorrectNumber(blogId)) {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
     const query = `
@@ -82,7 +82,7 @@ export class PgPostsRepository extends PgBaseRepository {
   }
 
   async findPostById(postId: string): Promise<TPgPost | null> {
-    if (!this.isCorrectNumber(postId)) {
+    if (!this.isCorrectUuid(postId)) {
       return null;
     }
     const query = `

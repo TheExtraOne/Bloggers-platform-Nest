@@ -2,7 +2,6 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { DataSource } from 'typeorm';
-import { validate as isUUID } from 'uuid';
 
 @Injectable()
 export class PgSessionsRepository extends PgBaseRepository {
@@ -18,7 +17,10 @@ export class PgSessionsRepository extends PgBaseRepository {
     expirationDate: Date;
     userId: string;
   }): Promise<void> {
-    if (!this.isCorrectNumber(dto.userId) || !isUUID(dto.deviceId)) {
+    if (
+      !this.isCorrectNumber(dto.userId) ||
+      !this.isCorrectUuid(dto.deviceId)
+    ) {
       throw new InternalServerErrorException();
     }
 
@@ -40,7 +42,7 @@ export class PgSessionsRepository extends PgBaseRepository {
   async findSessionByDeviceId(
     deviceId: string,
   ): Promise<{ userId: string } | null> {
-    if (!isUUID(deviceId)) {
+    if (!this.isCorrectUuid(deviceId)) {
       return null;
     }
 
@@ -61,7 +63,7 @@ export class PgSessionsRepository extends PgBaseRepository {
     deviceId: string,
     lastActiveDate: Date,
   ): Promise<{ id: string } | null> {
-    if (!this.isCorrectNumber(userId) || !isUUID(deviceId)) {
+    if (!this.isCorrectNumber(userId) || !this.isCorrectUuid(deviceId)) {
       return null;
     }
 
@@ -84,7 +86,7 @@ export class PgSessionsRepository extends PgBaseRepository {
     newExp: Date,
     newIat: Date,
   ): Promise<void> {
-    if (!isUUID(deviceId)) {
+    if (!this.isCorrectUuid(deviceId)) {
       throw new InternalServerErrorException();
     }
     const query = `
@@ -98,7 +100,7 @@ export class PgSessionsRepository extends PgBaseRepository {
   }
 
   async deleteSessionByDeviceId(deviceId: string): Promise<void> {
-    if (!isUUID(deviceId)) {
+    if (!this.isCorrectUuid(deviceId)) {
       throw new InternalServerErrorException();
     }
     const query = `
@@ -115,7 +117,7 @@ export class PgSessionsRepository extends PgBaseRepository {
     userId: string,
     deviceId: string,
   ): Promise<void> {
-    if (!this.isCorrectNumber(userId) || !isUUID(deviceId)) {
+    if (!this.isCorrectNumber(userId) || !this.isCorrectUuid(deviceId)) {
       return;
     }
     // <> is !=

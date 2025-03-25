@@ -8,6 +8,7 @@ import {
 } from '../../infrastructure/pg.users.repository';
 import { BcryptService } from '../../../utils/bcrypt.service';
 
+// TODO: mapped types
 export class AdminCreateUserCommand {
   constructor(
     public readonly dto: { login: string; password: string; email: string },

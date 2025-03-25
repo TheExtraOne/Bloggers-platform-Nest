@@ -1,3 +1,4 @@
+import { validate as isUUID } from 'uuid';
 export class PgBaseRepository {
   constructor() {}
   protected isCorrectNumber(id: string): boolean {
@@ -6,6 +7,10 @@ export class PgBaseRepository {
     }
 
     return true;
+  }
+
+  protected isCorrectUuid(id: string): boolean {
+    return isUUID(id);
   }
 
   protected adapterCamelToSnake(str: string): string {

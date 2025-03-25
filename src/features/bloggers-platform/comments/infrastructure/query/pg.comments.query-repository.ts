@@ -32,7 +32,7 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
   }
 
   async findCommentById(commentId: string): Promise<PgCommentsViewDto> {
-    if (!this.isCorrectNumber(commentId)) {
+    if (!this.isCorrectUuid(commentId)) {
       throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
     }
 

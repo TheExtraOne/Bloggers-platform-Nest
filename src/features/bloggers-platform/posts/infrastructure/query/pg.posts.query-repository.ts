@@ -40,7 +40,7 @@ export class PgPostsQueryRepository extends PgBaseRepository {
   }
 
   async findPostById(postId: string): Promise<PgPostsViewDto | null> {
-    if (!this.isCorrectNumber(postId)) {
+    if (!this.isCorrectUuid(postId)) {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
     const query = `
