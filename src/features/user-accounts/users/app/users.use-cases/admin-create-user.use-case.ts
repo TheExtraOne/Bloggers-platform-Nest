@@ -3,10 +3,10 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersService } from '../users.service';
 import {
   CreateUserDomainDto,
-  EmailConfirmationStatus,
   PgUsersRepository,
 } from '../../infrastructure/pg.users.repository';
 import { BcryptService } from '../../../utils/bcrypt.service';
+import { EmailConfirmationStatus } from '../../domain/enums/user.enums';
 
 // TODO: mapped types
 export class AdminCreateUserCommand {

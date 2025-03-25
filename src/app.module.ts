@@ -13,6 +13,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CoreConfig } from './core/config/core.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 // TODO: add dynamic inserting of testing module
 @Module({
@@ -33,8 +34,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         return {
           type: 'postgres',
           url: coreConfig.postgresUri,
-          autoLoadEntities: false,
-          synchronize: false,
+          namingStrategy: new SnakeNamingStrategy(),
+          autoLoadEntities: true,
+          synchronize: true,
         };
       },
       inject: [CoreConfig],

@@ -3,10 +3,8 @@ import { add } from 'date-fns';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EmailService } from '../../../utils/email.service';
 import { PasswordRecoveryInputDto } from '../../api/input-dto/password-recovery.input-dto';
-import {
-  EmailConfirmationStatus,
-  PgUsersRepository,
-} from '../../../users/infrastructure/pg.users.repository';
+import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
+import { EmailConfirmationStatus } from '../../../users/domain/enums/user.enums';
 
 export class SendRecoverPasswordEmailCommand extends Command<void> {
   constructor(public readonly dto: PasswordRecoveryInputDto) {

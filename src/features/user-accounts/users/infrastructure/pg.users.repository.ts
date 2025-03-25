@@ -3,6 +3,12 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { ERRORS } from '../../../../constants';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
+import {
+  EmailConfirmationStatus,
+  PasswordRecoveryStatus,
+} from '../domain/enums/user.enums';
+// import { Users } from '../domain/entities/user.entity';
+// import { UsersEmailConfirmation } from '../domain/entities/email.confirmation.entity';
 
 export class CreateUserDomainDto {
   login: string;
@@ -11,16 +17,6 @@ export class CreateUserDomainDto {
   confirmationCode: string | null;
   expirationDate: Date | null;
   confirmationStatus: EmailConfirmationStatus;
-}
-
-export enum EmailConfirmationStatus {
-  Pending = 'pending',
-  Confirmed = 'confirmed',
-}
-
-export enum PasswordRecoveryStatus {
-  Pending = 'pending',
-  Confirmed = 'confirmed',
 }
 
 export class SetNewConfirmationDataDto {
@@ -32,41 +28,64 @@ export class SetNewConfirmationDataDto {
 // TODO: refactor types
 @Injectable()
 export class PgUsersRepository extends PgBaseRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    // @InjectRepository(Users)
+    // private readonly users: Repository<Users>,
+    // @InjectRepository(UsersEmailConfirmation)
+    // private readonly usersEmailConfirmation: Repository<UsersEmailConfirmation>,
+  ) {
     super();
   }
 
-  async createUser(dto: CreateUserDomainDto): Promise<{ userId: string }> {
-    // 1. define temporary query results (Common Table Expressions - CTEs) inserted_user. The WITH statement allows us to define temporary query results (CTEs) that can be used within the main query.
-    // 2. insert new user into users table and get inserted id into inserted_user cte.
-    // 3. insert email confirmation details into the users_email_confirmation table. The user_id comes from the inserted_user CTE, ensuring that the confirmation is linked to the new user.
-    // 4. return the user id.
-    const query = `
-      WITH inserted_user AS (
-        INSERT INTO public.users (email, password_hash, login)
-        VALUES ($1, $2, $3)
-        RETURNING id
-      ),
-      email_confirmation AS (
-        INSERT INTO public.users_email_confirmation (user_id, confirmation_code, expiration_date, confirmation_status)
-        SELECT id, $4, $5, $6
-        FROM inserted_user
-      )
-      SELECT id FROM inserted_user;
-    `;
+  async createUser(dto: CreateUserDomainDto) {
+    // const queryRunner = this.dataSource.createQueryRunner();
+    // await queryRunner.connect();
+    // await queryRunner.startTransaction();
 
-    const params = [
-      dto.email,
-      dto.passwordHash,
-      dto.login,
-      dto.confirmationCode,
-      dto.expirationDate,
-      dto.confirmationStatus,
-    ];
+    // try {
+    //   // Create user
+    //   const user = new Users();
+    //   user.email = dto.email;
+    //   user.login = dto.login;
+    //   user.passwordHash = dto.passwordHash;
 
-    const result = await this.dataSource.query(query, params);
+    //   // Create email confirmation
+    //   const emailConfirmation = new UsersEmailConfirmation();
+    //   emailConfirmation.confirmationCode = dto.confirmationCode;
+    //   emailConfirmation.expirationDate = dto.expirationDate;
+    //   emailConfirmation.status = dto.confirmationStatus;
 
-    return { userId: result[0].id.toString() };
+    //   // Set up the relationship
+    //   user.emailConfirmation = emailConfirmation;
+
+    //   // Save user (will cascade save email confirmation due to cascade: true)
+    //   const savedUser = await queryRunner.manager.save(user);
+
+    //   await queryRunner.commitTransaction();
+    //   return { userId: savedUser.id.toString() };
+    // } catch (err) {
+    //   await queryRunner.rollbackTransaction();
+    //   throw err;
+    // } finally {
+    //   await queryRunner.release();
+    // }
+    console.log(dto);
+    // const user = this.users.create({
+    //   login: 'testuser',
+    //   email: 'test@example.com',
+    //   passwordHash: 'hashedpassword',
+    // });
+    // await this.users.save(user);
+
+    // // Now, create related records AFTER the user exists
+    // const emailConfirmation = this.usersEmailConfirmation.create({
+    //   userId: user.id, // ✅ Assign existing user ID
+    //   expirationDate: new Date(),
+    //   status: EmailConfirmationStatus.Pending,
+    // });
+    // await this.usersEmailConfirmation.save(emailConfirmation);
+    // return { userId: user.id.toString() };
   }
 
   async deleteUserById(userId: string): Promise<void> {

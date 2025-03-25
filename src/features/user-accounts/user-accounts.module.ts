@@ -25,7 +25,6 @@ import { SecurityController } from './sessions/api/security.controller';
 import { DeleteAllSessionsUseCase } from './sessions/app/sessions.use-cases/delete-all-sessions.use-case';
 import { DeleteSessionByIdUseCase } from './sessions/app/sessions.use-cases/delete-session-by-id.use-case';
 import { ValidateRefreshTokenUseCase } from './sessions/app/sessions.use-cases/validate-refresh-token.use-case';
-import { CoreModule } from '../../core/core-module';
 import { AdminCreateUserUseCase } from './users/app/users.use-cases/admin-create-user.use-case';
 import { UsersService } from './users/app/users.service';
 import { PgUsersQueryRepository } from './users/infrastructure/query/pg.users.query-repository';
@@ -33,7 +32,10 @@ import { PgUsersRepository } from './users/infrastructure/pg.users.repository';
 import { PgSessionsRepository } from './sessions/infrastructure/pg.sessions.repository';
 import { PgSessionsQueryRepository } from './sessions/infrastructure/query/pg.sessions.query-repository';
 import { PgExternalUsersRepository } from './users/infrastructure/pg.external.users.repository';
-// import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Users } from './users/domain/entities/user.entity';
+import { UsersEmailConfirmation } from './users/domain/entities/email.confirmation.entity';
+import { UsersPasswordRecovery } from './users/domain/entities/password.recovery.entity';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
 const strategies = [
@@ -67,9 +69,12 @@ const sessionsUseCases = [
 
 @Module({
   imports: [
-    // TypeOrmModule.forFeature([User, Session]),
+    TypeOrmModule.forFeature([
+      Users,
+      UsersEmailConfirmation,
+      UsersPasswordRecovery,
+    ]),
     JwtModule.register({}),
-    CoreModule,
   ],
   controllers: [UserController, AuthController, SecurityController],
   providers: [

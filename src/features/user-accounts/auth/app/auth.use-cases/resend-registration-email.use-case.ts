@@ -4,10 +4,8 @@ import { add } from 'date-fns';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EmailService } from '../../../utils/email.service';
 import { ResendRegistrationInputDto } from '../../api/input-dto/resend-registration.input-dto';
-import {
-  EmailConfirmationStatus,
-  PgUsersRepository,
-} from '../../../users/infrastructure/pg.users.repository';
+import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
+import { EmailConfirmationStatus } from '../../../users/domain/enums/user.enums';
 
 export class ResendRegistrationEmailCommand extends Command<void> {
   constructor(public readonly dto: ResendRegistrationInputDto) {

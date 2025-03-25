@@ -6,10 +6,10 @@ import { EmailService } from '../../../utils/email.service';
 import { UsersService } from '../users.service';
 import {
   CreateUserDomainDto,
-  EmailConfirmationStatus,
   PgUsersRepository,
 } from '../../infrastructure/pg.users.repository';
 import { BcryptService } from 'src/features/user-accounts/utils/bcrypt.service';
+import { EmailConfirmationStatus } from '../../domain/enums/user.enums';
 
 export class CreateUserCommand {
   constructor(

@@ -1,10 +1,8 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BcryptService } from '../../../utils/bcrypt.service';
-import {
-  EmailConfirmationStatus,
-  PgUsersRepository,
-} from '../../infrastructure/pg.users.repository';
+import { PgUsersRepository } from '../../infrastructure/pg.users.repository';
+import { EmailConfirmationStatus } from '../../domain/enums/user.enums';
 
 export class CheckIfUserIsAbleToLoginCommand extends Command<string> {
   constructor(
