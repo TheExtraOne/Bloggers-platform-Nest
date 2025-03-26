@@ -109,8 +109,8 @@ export class PgBlogsQueryRepository extends PgBaseRepository {
       FROM public.blogs
       WHERE ${whereClause}${searchClause}
       ORDER BY blogs.${sortColumn} ${sortDirection}
-      LIMIT $${params.indexOf(limit) + 1}
-      OFFSET $${params.indexOf(offset) + 1}
+      LIMIT $${params.length - 1}
+      OFFSET $${params.length}
     `;
 
     return this.dataSource.query(sql, params);

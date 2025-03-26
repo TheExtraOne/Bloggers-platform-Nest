@@ -115,8 +115,8 @@ export class PgUsersQueryRepository extends PgBaseRepository {
       FROM public.users
       WHERE ${whereClause}${searchClause}
       ORDER BY users.${sortColumn} ${sortDirection}
-      LIMIT $${params.indexOf(limit) + 1}
-      OFFSET $${params.indexOf(offset) + 1}
+      LIMIT $${params.length - 1}
+      OFFSET $${params.length}
     `;
 
     return this.dataSource.query(sql, params);
