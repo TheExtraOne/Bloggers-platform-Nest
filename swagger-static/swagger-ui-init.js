@@ -1882,7 +1882,7 @@ window.onload = function() {
               "type": "string"
             },
             "createdAt": {
-              "type": "string"
+              "type": "object"
             }
           },
           "required": [

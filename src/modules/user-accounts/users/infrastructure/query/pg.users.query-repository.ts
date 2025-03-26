@@ -2,154 +2,67 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PGUserViewDto } from '../../api/view-dto/users.view-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ERRORS } from '../../../../../constants';
 import { PgBaseRepository } from '../../../../../core/base-classes/pg.base.repository';
-
-export type TPgUser = {
-  id: string;
-  login: string;
-  email: string;
-  password_hash: string;
-  created_at: string;
-  deleted_at: string | null;
-  updated_at: string;
-};
+import { Users } from '../../domain/entities/user.entity';
 
 @Injectable()
 export class PgUsersQueryRepository extends PgBaseRepository {
   private readonly allowedColumns = ['created_at', 'login', 'email'] as const;
 
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+  constructor(
+    @InjectRepository(Users)
+    private readonly usersRepository: Repository<Users>,
+  ) {
     super();
   }
-  // TODO
+
   async findAll(
     query: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<PGUserViewDto[]>> {
-    const { sortBy, sortDirection, pageNumber, pageSize } = query;
+    const {
+      sortBy,
+      sortDirection,
+      pageNumber,
+      pageSize,
+      searchLoginTerm,
+      searchEmailTerm,
+    } = query;
 
+    const upperCaseSortDirection = sortDirection.toUpperCase() as unknown as
+      | 'ASC'
+      | 'DESC';
     const sortColumn = this.getSortColumn(sortBy, this.allowedColumns);
     const { offset, limit } = this.getPaginationParams(pageNumber, pageSize);
 
-    const [users, totalCount] = await Promise.all([
-      this.findUsers(query, sortColumn, sortDirection, limit, offset),
-      this.getTotalCount(query),
-    ]);
+    const builder = this.usersRepository
+      .createQueryBuilder('user')
+      .orderBy(`user.${sortColumn}`, upperCaseSortDirection)
+      .offset(offset)
+      .limit(limit);
 
-    return this.mapToPaginatedView(
-      users,
-      +totalCount[0].count,
-      pageNumber,
-      pageSize,
-    );
-  }
-  // TODO
-  async findUserById(id: string): Promise<PGUserViewDto> {
-    if (!this.isCorrectNumber(id)) {
-      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
-    }
+    // Apply filters only if searchLoginTerm or searchEmailTerm exist
+    const whereConditions: string[] = [];
+    const parameters: Record<string, string> = {};
 
-    const result = await this.dataSource.query(
-      `
-        SELECT *
-        FROM public.users
-        WHERE id = $1 AND deleted_at IS NULL
-    `,
-      [id],
-    );
-    const user = result[0];
-
-    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
-
-    return PGUserViewDto.mapToView(user);
-  }
-
-  private buildWhereClause(query: GetUsersQueryParams): {
-    baseConditions: string[];
-    searchConditions: string[];
-    params: (string | number)[];
-  } {
-    const { searchLoginTerm, searchEmailTerm } = query;
-    const baseConditions = ['deleted_at IS NULL'];
-    const searchConditions: string[] = [];
-    const params: (string | number)[] = [];
-
-    // ILIKE is case-insensitive
     if (searchLoginTerm) {
-      const value = `%${searchLoginTerm}%`;
-      params.push(value);
-      searchConditions.push(`login ILIKE $${params.indexOf(value) + 1}`);
+      whereConditions.push('user.login ILIKE :login');
+      parameters.login = `%${searchLoginTerm}%`;
     }
 
     if (searchEmailTerm) {
-      const value = `%${searchEmailTerm}%`;
-      params.push(value);
-      searchConditions.push(`email ILIKE $${params.indexOf(value) + 1}`);
+      whereConditions.push('user.email ILIKE :email');
+      parameters.email = `%${query.searchEmailTerm}%`;
     }
 
-    return { baseConditions, searchConditions, params };
-  }
+    if (whereConditions.length > 0) {
+      builder.where(whereConditions.join(' OR '), parameters);
+    }
 
-  private async findUsers(
-    query: GetUsersQueryParams,
-    sortColumn: string,
-    sortDirection: string,
-    limit: number,
-    offset: number,
-  ): Promise<TPgUser[]> {
-    const { baseConditions, searchConditions, params } =
-      this.buildWhereClause(query);
+    const [users, totalCount] = await builder.getManyAndCount();
 
-    params.push(limit, offset);
-
-    const whereClause = baseConditions.join(' AND ');
-    const searchClause =
-      searchConditions.length > 0
-        ? ` AND (${searchConditions.join(' OR ')})`
-        : '';
-
-    const sql = `
-      SELECT *
-      FROM public.users
-      WHERE ${whereClause}${searchClause}
-      ORDER BY users.${sortColumn} ${sortDirection}
-      LIMIT $${params.length - 1}
-      OFFSET $${params.length}
-    `;
-
-    return this.dataSource.query(sql, params);
-  }
-
-  private async getTotalCount(
-    query: GetUsersQueryParams,
-  ): Promise<[{ count: string }]> {
-    const { baseConditions, searchConditions, params } =
-      this.buildWhereClause(query);
-
-    const whereClause = baseConditions.join(' AND ');
-    const searchClause =
-      searchConditions.length > 0
-        ? ` AND (${searchConditions.join(' OR ')})`
-        : '';
-
-    return this.dataSource.query(
-      `
-      SELECT COUNT(*)
-      FROM public.users
-      WHERE ${whereClause}${searchClause}
-    `,
-      params,
-    );
-  }
-
-  private mapToPaginatedView(
-    users: TPgUser[],
-    totalCount: number,
-    pageNumber: number,
-    pageSize: number,
-  ): PaginatedViewDto<PGUserViewDto[]> {
     const items = users.map((user) => PGUserViewDto.mapToView(user));
 
     return PaginatedViewDto.mapToView({
@@ -158,5 +71,19 @@ export class PgUsersQueryRepository extends PgBaseRepository {
       page: pageNumber,
       size: pageSize,
     });
+  }
+
+  async findUserById(id: string): Promise<PGUserViewDto> {
+    if (!this.isCorrectNumber(id)) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
+
+    const user: Users | null = await this.usersRepository.findOne({
+      where: { id: +id },
+    });
+
+    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+
+    return PGUserViewDto.mapToView(user);
   }
 }

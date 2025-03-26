@@ -129,13 +129,19 @@ export class PgUsersRepository extends PgBaseRepository {
   }
 
   async findUserByLoginOrEmail(loginOrEmail: string): Promise<Users | null> {
-    const user = await this.usersRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.emailConfirmation', 'emailConfirmation')
-      .where('user.login = :loginOrEmail OR user.email = :loginOrEmail', {
-        loginOrEmail,
-      })
-      .getOne();
+    // const user = await this.usersRepository
+    //   .createQueryBuilder('user')
+    //   .leftJoinAndSelect('user.emailConfirmation', 'emailConfirmation')
+    //   .where('user.login = :loginOrEmail OR user.email = :loginOrEmail', {
+    //     loginOrEmail,
+    //   })
+    //   .getOne();
+
+    const user = await this.usersRepository.findOne({
+      select: ['id'],
+      where: [{ login: loginOrEmail }, { email: loginOrEmail }],
+      relations: ['emailConfirmation'],
+    });
 
     return user;
   }

@@ -1,18 +1,18 @@
-import { TPgUser } from '../../infrastructure/query/pg.users.query-repository';
+import { Users } from '../../domain/entities/user.entity';
 
 export class PGUserViewDto {
   id: string;
   login: string;
   email: string;
-  createdAt: string;
+  createdAt: Date | string;
 
-  static mapToView(user: TPgUser): PGUserViewDto {
+  static mapToView(user: Users): PGUserViewDto {
     const dto = new PGUserViewDto();
 
     dto.id = user.id.toString();
     dto.login = user.login;
     dto.email = user.email;
-    dto.createdAt = user.created_at;
+    dto.createdAt = user.createdAt;
 
     return dto;
   }
