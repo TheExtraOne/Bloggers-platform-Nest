@@ -3,6 +3,7 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BcryptService } from '../../../utils/bcrypt.service';
 import { PgUsersRepository } from '../../infrastructure/pg.users.repository';
 import { EmailConfirmationStatus } from '../../domain/enums/user.enums';
+import { Users } from '../../domain/entities/user.entity';
 
 export class CheckIfUserIsAbleToLoginCommand extends Command<string> {
   constructor(
@@ -25,11 +26,7 @@ export class CheckIfUserIsAbleToLoginUseCase
   async execute(command: CheckIfUserIsAbleToLoginCommand): Promise<string> {
     const { loginOrEmail, password } = command;
 
-    const user: {
-      id: string;
-      confirmationStatus: EmailConfirmationStatus;
-      passwordHash: string;
-    } | null =
+    const user: Users | null =
       await this.pgUsersRepository.findUserByLoginOrEmail(loginOrEmail);
 
     // Check that such user exists
@@ -38,7 +35,7 @@ export class CheckIfUserIsAbleToLoginUseCase
     }
 
     // Check that user confirmed his email
-    if (user.confirmationStatus === EmailConfirmationStatus.Pending) {
+    if (user.emailConfirmation.status === EmailConfirmationStatus.Pending) {
       throw new UnauthorizedException();
     }
     // Check that user password is correct
@@ -48,6 +45,6 @@ export class CheckIfUserIsAbleToLoginUseCase
     );
     if (!isPasswordCorrect) throw new UnauthorizedException();
 
-    return user.id;
+    return user.id.toString();
   }
 }

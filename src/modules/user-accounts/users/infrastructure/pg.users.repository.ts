@@ -1,91 +1,62 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { ERRORS } from '../../../../constants';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import {
   EmailConfirmationStatus,
   PasswordRecoveryStatus,
 } from '../domain/enums/user.enums';
-// import { Users } from '../domain/entities/user.entity';
-// import { UsersEmailConfirmation } from '../domain/entities/email.confirmation.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { Users } from '../domain/entities/user.entity';
+import { UsersEmailConfirmation } from '../domain/entities/email.confirmation.entity';
 
-export class CreateUserDomainDto {
-  login: string;
-  email: string;
-  passwordHash: string;
-  confirmationCode: string | null;
-  expirationDate: Date | null;
-  confirmationStatus: EmailConfirmationStatus;
-}
-
+// TODO: refactor types
 export class SetNewConfirmationDataDto {
   confirmationCode: string | null;
   expirationDate: Date | null;
   confirmationStatus: EmailConfirmationStatus;
 }
 
-// TODO: refactor types
 @Injectable()
 export class PgUsersRepository extends PgBaseRepository {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
-    // @InjectRepository(Users)
-    // private readonly users: Repository<Users>,
-    // @InjectRepository(UsersEmailConfirmation)
-    // private readonly usersEmailConfirmation: Repository<UsersEmailConfirmation>,
+    @InjectRepository(Users)
+    private readonly usersRepository: Repository<Users>,
   ) {
     super();
   }
 
-  async createUser(dto: CreateUserDomainDto) {
-    // const queryRunner = this.dataSource.createQueryRunner();
-    // await queryRunner.connect();
-    // await queryRunner.startTransaction();
+  async createUser(dto: CreateUserDto): Promise<{ userId: string }> {
+    // TODO: should it be part of service?
+    const {
+      email,
+      login,
+      passwordHash,
+      confirmationCode,
+      expirationDate,
+      confirmationStatus,
+    } = dto;
+    // Create user
+    const user = new Users();
+    user.email = email;
+    user.login = login;
+    user.passwordHash = passwordHash;
 
-    // try {
-    //   // Create user
-    //   const user = new Users();
-    //   user.email = dto.email;
-    //   user.login = dto.login;
-    //   user.passwordHash = dto.passwordHash;
+    // Create email confirmation
+    const emailConfirmation = new UsersEmailConfirmation();
+    emailConfirmation.confirmationCode = confirmationCode;
+    emailConfirmation.expirationDate = expirationDate;
+    emailConfirmation.status = confirmationStatus;
 
-    //   // Create email confirmation
-    //   const emailConfirmation = new UsersEmailConfirmation();
-    //   emailConfirmation.confirmationCode = dto.confirmationCode;
-    //   emailConfirmation.expirationDate = dto.expirationDate;
-    //   emailConfirmation.status = dto.confirmationStatus;
+    // Set up the relationship
+    user.emailConfirmation = emailConfirmation;
 
-    //   // Set up the relationship
-    //   user.emailConfirmation = emailConfirmation;
+    // Save user (will cascade save email confirmation due to cascade: true)
+    const savedUser: Users = await this.usersRepository.save(user);
 
-    //   // Save user (will cascade save email confirmation due to cascade: true)
-    //   const savedUser = await queryRunner.manager.save(user);
-
-    //   await queryRunner.commitTransaction();
-    //   return { userId: savedUser.id.toString() };
-    // } catch (err) {
-    //   await queryRunner.rollbackTransaction();
-    //   throw err;
-    // } finally {
-    //   await queryRunner.release();
-    // }
-    console.log(dto);
-    // const user = this.users.create({
-    //   login: 'testuser',
-    //   email: 'test@example.com',
-    //   passwordHash: 'hashedpassword',
-    // });
-    // await this.users.save(user);
-
-    // // Now, create related records AFTER the user exists
-    // const emailConfirmation = this.usersEmailConfirmation.create({
-    //   userId: user.id, // ✅ Assign existing user ID
-    //   expirationDate: new Date(),
-    //   status: EmailConfirmationStatus.Pending,
-    // });
-    // await this.usersEmailConfirmation.save(emailConfirmation);
-    // return { userId: user.id.toString() };
+    return { userId: savedUser.id.toString() };
   }
 
   async deleteUserById(userId: string): Promise<void> {
@@ -93,22 +64,16 @@ export class PgUsersRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
 
-    const query = `
-    UPDATE public.users
-    SET deleted_at = NOW(), updated_at = NOW()
-    WHERE id = $1 AND deleted_at IS NULL
-    RETURNING id;
-    `;
-    const params = [userId];
+    // softDelete
+    const result = await this.usersRepository.softDelete(userId);
 
-    const result = await this.dataSource.query(query, params);
-
-    // `result[1]` contains the number of affected rows.
-    if (result[1] === 0) {
+    // `result[affected]` contains the number of affected rows.
+    if (result.affected === 0) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
   }
 
+  // TODO
   async findUserByEmail(email: string): Promise<{
     id: string;
     confirmationStatus: EmailConfirmationStatus;
@@ -133,6 +98,7 @@ export class PgUsersRepository extends PgBaseRepository {
       : null;
   }
 
+  // TODO
   async findUserById(userId: string): Promise<{
     userId: string;
   } | null> {
@@ -162,39 +128,36 @@ export class PgUsersRepository extends PgBaseRepository {
       : null;
   }
 
-  async findUserByLoginOrEmail(loginOrEmail: string): Promise<{
-    id: string;
-    confirmationStatus: EmailConfirmationStatus;
-    passwordHash: string;
-  } | null> {
-    const result:
-      | [
-          {
-            id: string;
-            confirmation_status: EmailConfirmationStatus;
-            password_hash: string;
-          },
-        ]
-      | [] = await this.dataSource.query(
-      `
-        SELECT u.id, u.password_hash, uem.confirmation_status
-        FROM public.users as u
-		    LEFT JOIN public.users_email_confirmation as uem
-		    ON u.id = uem.user_id
-        WHERE u.login = $1 OR u.email = $1 AND u.deleted_at IS NULL;
-      `,
-      [loginOrEmail],
-    );
-    const user = result[0];
-    return user
-      ? {
-          id: user.id,
-          confirmationStatus: user.confirmation_status,
-          passwordHash: user.password_hash,
-        }
-      : null;
+  async findUserByLoginOrEmail(loginOrEmail: string): Promise<Users | null> {
+    const user = await this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.emailConfirmation', 'emailConfirmation')
+      .where('user.login = :loginOrEmail OR user.email = :loginOrEmail', {
+        loginOrEmail,
+      })
+      .getOne();
+
+    return user;
   }
 
+  async isLoginOrEmailInUse(loginOrEmail: string): Promise<boolean> {
+    // We should also check among the users who are soft-deleted
+    const exists: number = await this.usersRepository.count({
+      where: [
+        {
+          login: loginOrEmail,
+        },
+        {
+          email: loginOrEmail,
+        },
+      ],
+      withDeleted: true, // Include soft-deleted records in the check
+    });
+
+    return !!exists;
+  }
+
+  // TODO
   async findUserByConfirmationCode(confirmationCode: string): Promise<{
     id: string;
     confirmationStatus: EmailConfirmationStatus;
@@ -231,6 +194,7 @@ export class PgUsersRepository extends PgBaseRepository {
       : null;
   }
 
+  // TODO
   async findUserByPasswordRecoveryCode(recoveryCode: string): Promise<{
     id: string;
     recoveryStatus: PasswordRecoveryStatus;
@@ -267,6 +231,7 @@ export class PgUsersRepository extends PgBaseRepository {
       : null;
   }
 
+  // TODO
   async setNewEmailConfirmationData(
     userId: string,
     newConfirmationCode: string,
@@ -294,6 +259,7 @@ export class PgUsersRepository extends PgBaseRepository {
     }
   }
 
+  // TODO
   async createNewPasswordRecoveryData(
     userId: string,
     newRecoveryCode: string,
@@ -318,6 +284,7 @@ export class PgUsersRepository extends PgBaseRepository {
     await this.dataSource.query(query, params);
   }
 
+  // TODO
   async confirmUserEmail(userId: string): Promise<void> {
     if (!this.isCorrectNumber(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
@@ -336,6 +303,7 @@ export class PgUsersRepository extends PgBaseRepository {
     }
   }
 
+  // TODO
   async confirmPasswordRecovery(
     userId: string,
     newPassword: string,

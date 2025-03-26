@@ -42,7 +42,7 @@ export class Users extends BaseWithId {
     (emailConfirmation) => emailConfirmation.user,
     {
       onDelete: 'CASCADE',
-      cascade: ['update', 'remove'],
+      cascade: true,
     },
   )
   emailConfirmation: UsersEmailConfirmation;
@@ -57,7 +57,7 @@ export class Users extends BaseWithId {
     (passwordRecovery) => passwordRecovery.user,
     {
       onDelete: 'CASCADE',
-      cascade: ['update', 'remove'],
+      cascade: true,
     },
   )
   passwordRecovery: UsersPasswordRecovery;

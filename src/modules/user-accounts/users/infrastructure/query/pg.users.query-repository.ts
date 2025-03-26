@@ -24,7 +24,7 @@ export class PgUsersQueryRepository extends PgBaseRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {
     super();
   }
-
+  // TODO
   async findAll(
     query: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<PGUserViewDto[]>> {
@@ -45,7 +45,7 @@ export class PgUsersQueryRepository extends PgBaseRepository {
       pageSize,
     );
   }
-
+  // TODO
   async findUserById(id: string): Promise<PGUserViewDto> {
     if (!this.isCorrectNumber(id)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);

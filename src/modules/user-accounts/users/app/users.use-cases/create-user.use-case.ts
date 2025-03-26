@@ -4,12 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
 import { EmailService } from '../../../utils/email.service';
 import { UsersService } from '../users.service';
-import {
-  CreateUserDomainDto,
-  PgUsersRepository,
-} from '../../infrastructure/pg.users.repository';
+import { PgUsersRepository } from '../../infrastructure/pg.users.repository';
 import { BcryptService } from 'src/modules/user-accounts/utils/bcrypt.service';
 import { EmailConfirmationStatus } from '../../domain/enums/user.enums';
+import { CreateUserDto } from '../../infrastructure/dto/create-user.dto';
 
 export class CreateUserCommand {
   constructor(
@@ -41,7 +39,7 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
 
     const passwordHash = await this.bcryptService.hashPassword(password);
 
-    const createUserDto: CreateUserDomainDto = {
+    const createUserDto: CreateUserDto = {
       email,
       login,
       passwordHash,

@@ -1,12 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersService } from '../users.service';
-import {
-  CreateUserDomainDto,
-  PgUsersRepository,
-} from '../../infrastructure/pg.users.repository';
+import { PgUsersRepository } from '../../infrastructure/pg.users.repository';
 import { BcryptService } from '../../../utils/bcrypt.service';
 import { EmailConfirmationStatus } from '../../domain/enums/user.enums';
+import { CreateUserDto } from '../../infrastructure/dto/create-user.dto';
 
 // TODO: mapped types
 export class AdminCreateUserCommand {
@@ -38,7 +36,7 @@ export class AdminCreateUserUseCase
 
     const passwordHash = await this.bcryptService.hashPassword(password);
 
-    const createUserDto: CreateUserDomainDto = {
+    const createUserDto: CreateUserDto = {
       email,
       login,
       passwordHash,

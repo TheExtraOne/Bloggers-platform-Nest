@@ -6,8 +6,7 @@ export class UsersService {
   constructor(private readonly pgUsersRepository: PgUsersRepository) {}
 
   async validateUserCredentials(login: string, email: string) {
-    const userByLogin =
-      await this.pgUsersRepository.findUserByLoginOrEmail(login);
+    const userByLogin = await this.pgUsersRepository.isLoginOrEmailInUse(login);
 
     if (userByLogin) {
       return {
@@ -16,8 +15,7 @@ export class UsersService {
       };
     }
 
-    const userByEmail =
-      await this.pgUsersRepository.findUserByLoginOrEmail(email);
+    const userByEmail = await this.pgUsersRepository.isLoginOrEmailInUse(email);
 
     if (userByEmail) {
       return {

@@ -16,7 +16,9 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { CommentsTestManager } from './managers/comments-test-manager';
 import { EmailService } from '../../src/modules/user-accounts/utils/email.service';
 import { SessionsTestManager } from './managers/sessions-test-manager';
-// import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { CoreConfig } from 'src/core/config/core.config';
 
 export class TestSettingsInitializer {
   private readonly defaultTtl = 1000;
@@ -37,7 +39,18 @@ export class TestSettingsInitializer {
           },
         ]),
         CqrsModule.forRoot(),
-        // TypeOrmModule.forRoot(),
+        TypeOrmModule.forRootAsync({
+          useFactory: (coreConfig: CoreConfig) => {
+            return {
+              type: 'postgres',
+              url: coreConfig.postgresUri,
+              namingStrategy: new SnakeNamingStrategy(),
+              autoLoadEntities: true,
+              synchronize: true,
+            };
+          },
+          inject: [CoreConfig],
+        }),
         UserAccountsModule,
         BloggersPlatformModule,
         TestingModule,
