@@ -6,6 +6,7 @@ import { EmailService } from '../../../utils/email.service';
 import { ResendRegistrationInputDto } from '../../api/input-dto/resend-registration.input-dto';
 import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
 import { EmailConfirmationStatus } from '../../../users/domain/enums/user.enums';
+import { Users } from '../../../users/domain/entities/user.entity';
 
 export class ResendRegistrationEmailCommand extends Command<void> {
   constructor(public readonly dto: ResendRegistrationInputDto) {
@@ -23,11 +24,9 @@ export class ResendRegistrationEmailUseCase
   ) {}
 
   async execute(command: ResendRegistrationEmailCommand): Promise<void> {
-    // TODO: refactor types
-    const user: {
-      id: string;
-      confirmationStatus: EmailConfirmationStatus;
-    } | null = await this.pgUsersRepository.findUserByEmail(command.dto.email);
+    const user: Users | null = await this.pgUsersRepository.findUserByEmail(
+      command.dto.email,
+    );
 
     // Check if user with such email exists
     if (!user) {
@@ -36,7 +35,7 @@ export class ResendRegistrationEmailUseCase
       ]);
     }
     // Check if confirmationCode has already been applied
-    if (user.confirmationStatus === EmailConfirmationStatus.Confirmed) {
+    if (user.emailConfirmation.status === EmailConfirmationStatus.Confirmed) {
       throw new BadRequestException([
         { field: 'email', message: 'already confirmed' },
       ]);
@@ -50,7 +49,7 @@ export class ResendRegistrationEmailUseCase
     });
 
     await this.pgUsersRepository.setNewEmailConfirmationData(
-      user.id,
+      user.id.toString(),
       newConfirmationCode,
       newExpirationDate,
     );

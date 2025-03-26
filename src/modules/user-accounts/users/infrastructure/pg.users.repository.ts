@@ -10,6 +10,7 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from '../domain/entities/user.entity';
 import { UsersEmailConfirmation } from '../domain/entities/email.confirmation.entity';
+import { UsersPasswordRecovery } from '../domain/entities/password.recovery.entity';
 
 // TODO: refactor types
 export class SetNewConfirmationDataDto {
@@ -24,6 +25,8 @@ export class PgUsersRepository extends PgBaseRepository {
     @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
+    @InjectRepository(UsersEmailConfirmation)
+    private readonly emailConfirmationRepository: Repository<UsersEmailConfirmation>,
   ) {
     super();
   }
@@ -73,29 +76,13 @@ export class PgUsersRepository extends PgBaseRepository {
     }
   }
 
-  // TODO
-  async findUserByEmail(email: string): Promise<{
-    id: string;
-    confirmationStatus: EmailConfirmationStatus;
-  } | null> {
-    const result:
-      | [{ id: string; confirmation_status: EmailConfirmationStatus }]
-      | [] = await this.dataSource.query(
-      `
-        SELECT u.id, uec.confirmation_status
-        FROM public.users as u
-        LEFT JOIN public.users_email_confirmation as uec
-	      ON u.id = uec.user_id
-        WHERE u.email = $1 AND u.deleted_at IS NULL;
-      `,
-      [email],
-    );
+  async findUserByEmail(email: string): Promise<Users | null> {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+      relations: ['emailConfirmation'],
+    });
 
-    const user = result[0];
-
-    return user
-      ? { id: user.id, confirmationStatus: user.confirmation_status }
-      : null;
+    return user;
   }
 
   // TODO
@@ -129,16 +116,8 @@ export class PgUsersRepository extends PgBaseRepository {
   }
 
   async findUserByLoginOrEmail(loginOrEmail: string): Promise<Users | null> {
-    // const user = await this.usersRepository
-    //   .createQueryBuilder('user')
-    //   .leftJoinAndSelect('user.emailConfirmation', 'emailConfirmation')
-    //   .where('user.login = :loginOrEmail OR user.email = :loginOrEmail', {
-    //     loginOrEmail,
-    //   })
-    //   .getOne();
-
     const user = await this.usersRepository.findOne({
-      select: ['id'],
+      select: [],
       where: [{ login: loginOrEmail }, { email: loginOrEmail }],
       relations: ['emailConfirmation'],
     });
@@ -163,41 +142,16 @@ export class PgUsersRepository extends PgBaseRepository {
     return !!exists;
   }
 
-  // TODO
-  async findUserByConfirmationCode(confirmationCode: string): Promise<{
-    id: string;
-    confirmationStatus: EmailConfirmationStatus;
-    confirmationCode: string;
-    expirationDate: Date;
-  } | null> {
-    const result:
-      | [
-          {
-            id: string;
-            confirmation_status: EmailConfirmationStatus;
-            confirmation_code: string;
-            expiration_date: Date;
-          },
-        ]
-      | [] = await this.dataSource.query(
-      `
-      SELECT uec.confirmation_status, uec.confirmation_code,uec.expiration_date, u.id
-      FROM public.users_email_confirmation as uec
-      LEFT JOIN public.users as u
-      ON u.id = uec.user_id
-      WHERE uec.confirmation_code = $1 AND u.deleted_at IS NULL;
-    `,
-      [confirmationCode],
-    );
-    const user = result[0];
-    return user
-      ? {
-          id: user.id,
-          confirmationStatus: user.confirmation_status,
-          confirmationCode: user.confirmation_code,
-          expirationDate: user.expiration_date,
-        }
-      : null;
+  async findUserByConfirmationCode(
+    confirmationCode: string,
+  ): Promise<Users | null> {
+    const user: Users | null = await this.usersRepository.findOne({
+      select: [],
+      where: [{ emailConfirmation: { confirmationCode } }],
+      relations: ['emailConfirmation'],
+    });
+
+    return user;
   }
 
   // TODO
@@ -237,7 +191,6 @@ export class PgUsersRepository extends PgBaseRepository {
       : null;
   }
 
-  // TODO
   async setNewEmailConfirmationData(
     userId: string,
     newConfirmationCode: string,
@@ -246,26 +199,21 @@ export class PgUsersRepository extends PgBaseRepository {
     if (!this.isCorrectNumber(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
-    const query = `
-      UPDATE public.users_email_confirmation
-      SET confirmation_code = $2, expiration_date = $3, confirmation_status = $4, updated_at = NOW()
-      WHERE user_id = $1;
-    `;
-    const params = [
-      userId,
-      newConfirmationCode,
-      newExpirationDate,
-      EmailConfirmationStatus.Pending,
-    ];
 
-    const result = await this.dataSource.query(query, params);
-    // `result[1]` contains the number of affected rows.
-    if (result[1] === 0) {
-      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
-    }
+    const user = await this.usersRepository.findOne({
+      where: { id: +userId },
+      relations: ['emailConfirmation'],
+    });
+
+    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+
+    user.emailConfirmation.confirmationCode = newConfirmationCode;
+    user.emailConfirmation.expirationDate = newExpirationDate;
+    user.emailConfirmation.status = EmailConfirmationStatus.Pending;
+
+    await this.usersRepository.save(user);
   }
 
-  // TODO
   async createNewPasswordRecoveryData(
     userId: string,
     newRecoveryCode: string,
@@ -274,39 +222,37 @@ export class PgUsersRepository extends PgBaseRepository {
     if (!this.isCorrectNumber(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
+    const user = await this.usersRepository.findOne({
+      where: { id: +userId },
+    });
+    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
 
-    const query = `
-      INSERT INTO public.users_password_recovery
-      (user_id, recovery_code, expiration_date, recovery_status)
-      VALUES ($1, $2, $3, $4);
-    `;
-    const params = [
-      userId,
-      newRecoveryCode,
-      newExpirationDate,
-      PasswordRecoveryStatus.Pending,
-    ];
+    const passwordRecovery = new UsersPasswordRecovery();
+    passwordRecovery.recoveryCode = newRecoveryCode;
+    passwordRecovery.expirationDate = newExpirationDate;
+    passwordRecovery.status = PasswordRecoveryStatus.Pending;
 
-    await this.dataSource.query(query, params);
+    user.passwordRecovery = passwordRecovery;
+
+    await this.usersRepository.save(user);
   }
 
-  // TODO
   async confirmUserEmail(userId: string): Promise<void> {
     if (!this.isCorrectNumber(userId)) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
-    const query = `
-      UPDATE public.users_email_confirmation
-      SET confirmation_status = $2, updated_at = NOW()
-      WHERE user_id = $1;
-    `;
-    const params = [userId, EmailConfirmationStatus.Confirmed];
 
-    const result = await this.dataSource.query(query, params);
-    // `result[1]` contains the number of affected rows.
-    if (result[1] === 0) {
+    const emailConfirmation = await this.emailConfirmationRepository.findOne({
+      where: [{ userId: +userId }],
+    });
+
+    if (!emailConfirmation) {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
+
+    emailConfirmation.status = EmailConfirmationStatus.Confirmed;
+
+    await this.emailConfirmationRepository.save(emailConfirmation);
   }
 
   // TODO

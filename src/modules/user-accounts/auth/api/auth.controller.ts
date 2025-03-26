@@ -53,6 +53,7 @@ export class AuthController {
     private readonly pgUsersQueryRepository: PgUsersQueryRepository,
   ) {}
 
+  // TODO
   @SkipThrottle()
   @Get('me')
   @UseGuards(JwtAuthGuard)
@@ -72,7 +73,7 @@ export class AuthController {
 
     return mappedUser;
   }
-
+  // TODO
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -96,7 +97,7 @@ export class AuthController {
 
     return { accessToken };
   }
-
+  // TODO
   @SkipThrottle()
   @Post('refresh-token')
   @UseGuards(JwtRefreshGuard)
@@ -118,7 +119,7 @@ export class AuthController {
 
     return { accessToken };
   }
-
+  // TODO
   @SkipThrottle()
   @Post('logout')
   @UseGuards(JwtRefreshGuard)
@@ -164,7 +165,7 @@ export class AuthController {
   async passwordRecovery(@Body() dto: PasswordRecoveryInputDto): Promise<void> {
     await this.commandBus.execute(new SendRecoverPasswordEmailCommand(dto));
   }
-
+  // TODO
   @Post('new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   @NewPasswordSwagger()

@@ -32,7 +32,7 @@ export class UsersPasswordRecovery extends BaseTimestampedEntity {
    * After this date, the code becomes invalid and a new one must be generated.
    */
   @Column({ type: 'timestamptz', nullable: true })
-  expiration_date: Date;
+  expirationDate: Date;
 
   /**
    * Current status of password recovery process.
@@ -50,5 +50,5 @@ export class UsersPasswordRecovery extends BaseTimestampedEntity {
    * Used to verify the recovery request and allow password reset.
    */
   @Column({ type: 'uuid', nullable: true })
-  recovery_code: string;
+  recoveryCode: string;
 }
