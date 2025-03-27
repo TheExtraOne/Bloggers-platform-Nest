@@ -42,9 +42,48 @@ export class UsersTestManager {
   async getUserByEmail(email: string) {
     const dataSource = this.app.get(DataSource);
     const result = await dataSource.query(
-      `SELECT * FROM public.users WHERE email = $1 AND deleted_at IS NULL`,
-      [email]
+      `
+      SELECT 
+        u.*,
+        uec.confirmation_code,
+        uec.expiration_date,
+        uec.status,
+        upr.recovery_code,
+        upr.expiration_date
+      FROM public.users u
+      LEFT JOIN public.users_email_confirmation uec ON u.id = uec.user_id
+      LEFT JOIN public.users_password_recovery upr ON u.id = upr.user_id
+      WHERE u.email = $1 AND u.deleted_at IS NULL`,
+      [email],
     );
-    return result[0] || null;
+
+    if (!result[0]) return null;
+
+    const {
+      id,
+      login,
+      email: userEmail,
+      created_at,
+      confirmation_code,
+      expiration_date,
+      status,
+      recovery_code,
+      recovery_expiration_date,
+    } = result[0];
+    return {
+      id,
+      login,
+      email: userEmail,
+      createdAt: created_at,
+      emailConfirmation: {
+        confirmationCode: confirmation_code,
+        expirationDate: expiration_date,
+        status: status,
+      },
+      passwordRecovery: {
+        recoveryCode: recovery_code,
+        expirationDate: recovery_expiration_date,
+      },
+    };
   }
 }

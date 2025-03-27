@@ -1,4 +1,4 @@
-import { TPgSession } from '../../infrastructure/query/pg.sessions.query-repository';
+import { Sessions } from '../../domain/entities/session.entity';
 
 export class PgSessionsViewDto {
   ip: string;
@@ -6,12 +6,12 @@ export class PgSessionsViewDto {
   lastActiveDate: Date;
   deviceId: string;
 
-  static mapToView(session: TPgSession): PgSessionsViewDto {
+  static mapToView(session: Sessions): PgSessionsViewDto {
     const dto = new PgSessionsViewDto();
 
     dto.ip = session.ip;
     dto.title = session.title;
-    dto.lastActiveDate = session.last_activate_date;
+    dto.lastActiveDate = session.lastActiveDate;
     dto.deviceId = session.id.toString();
 
     return dto;

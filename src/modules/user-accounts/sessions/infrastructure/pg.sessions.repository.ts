@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
-import { DataSource, Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Sessions } from '../domain/entities/session.entity';
 import { PgExternalUsersRepository } from '../../users/infrastructure/pg.external.users.repository';
 import { Users } from '../../users/domain/entities/user.entity';
@@ -9,7 +9,6 @@ import { Users } from '../../users/domain/entities/user.entity';
 @Injectable()
 export class PgSessionsRepository extends PgBaseRepository {
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(Sessions)
     private readonly sessionsRepository: Repository<Sessions>,
     private readonly pgExternalUsersRepository: PgExternalUsersRepository,
@@ -44,24 +43,15 @@ export class PgSessionsRepository extends PgBaseRepository {
 
     await this.sessionsRepository.save(session);
   }
-  // TODO
-  async findSessionByDeviceId(
-    deviceId: string,
-  ): Promise<{ userId: string } | null> {
+  async findSessionByDeviceId(deviceId: string): Promise<Sessions | null> {
     if (!this.isCorrectUuid(deviceId)) {
       return null;
     }
 
-    const query = `
-      SELECT user_id
-      FROM public.sessions
-      WHERE id = $1
-      AND deleted_at IS NULL
-    `;
-    const params = [deviceId];
-    const result = await this.dataSource.query(query, params);
-
-    return result[0] ? { userId: result[0].user_id } : null;
+    return this.sessionsRepository.findOne({
+      where: { id: deviceId },
+      relations: ['user'],
+    });
   }
 
   async findSessionByMultipleFilters(
@@ -108,7 +98,7 @@ export class PgSessionsRepository extends PgBaseRepository {
 
     await this.sessionsRepository.softDelete({ id: deviceId });
   }
-  // TODO
+
   async deleteManySessionsByUserAndDeviceId(
     userId: string,
     deviceId: string,
@@ -116,16 +106,10 @@ export class PgSessionsRepository extends PgBaseRepository {
     if (!this.isCorrectNumber(userId) || !this.isCorrectUuid(deviceId)) {
       return;
     }
-    // <> is !=
-    const query = `
-      UPDATE public.sessions
-      SET deleted_at = NOW()
-      WHERE user_id = $1
-      AND id <> $2
-      AND deleted_at IS NULL
-    `;
-    const params = [userId, deviceId];
 
-    await this.dataSource.query(query, params);
+    await this.sessionsRepository.softDelete({
+      user: { id: +userId },
+      id: Not(deviceId),
+    });
   }
 }

@@ -2,6 +2,7 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ERRORS } from '../../../../../constants';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
+import { Sessions } from '../../domain/entities/session.entity';
 
 export class DeleteSessionByIdCommand extends Command<void> {
   constructor(
@@ -21,15 +22,14 @@ export class DeleteSessionByIdUseCase
   async execute(command: DeleteSessionByIdCommand): Promise<void> {
     const { deviceId, userId } = command;
 
-    const session: {
-      userId: string;
-    } | null = await this.pgSessionsRepository.findSessionByDeviceId(deviceId);
+    const session: Sessions | null =
+      await this.pgSessionsRepository.findSessionByDeviceId(deviceId);
 
     if (!session) {
       throw new NotFoundException(ERRORS.SESSION_NOT_FOUND);
     }
     // If try to delete the deviceId of other user
-    if (session.userId !== userId) {
+    if (session.user.id.toString() !== userId) {
       throw new ForbiddenException();
     }
 

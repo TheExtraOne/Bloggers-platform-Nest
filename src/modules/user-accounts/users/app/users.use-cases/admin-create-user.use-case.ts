@@ -6,7 +6,6 @@ import { BcryptService } from '../../../utils/bcrypt.service';
 import { EmailConfirmationStatus } from '../../domain/enums/user.enums';
 import { CreateUserDto } from '../../infrastructure/dto/create-user.dto';
 
-// TODO: mapped types
 export class AdminCreateUserCommand {
   constructor(
     public readonly dto: { login: string; password: string; email: string },
