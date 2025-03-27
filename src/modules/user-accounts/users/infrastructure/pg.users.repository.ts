@@ -12,13 +12,6 @@ import { Users } from '../domain/entities/user.entity';
 import { UsersEmailConfirmation } from '../domain/entities/email.confirmation.entity';
 import { UsersPasswordRecovery } from '../domain/entities/password.recovery.entity';
 
-// TODO: refactor types
-export class SetNewConfirmationDataDto {
-  confirmationCode: string | null;
-  expirationDate: Date | null;
-  confirmationStatus: EmailConfirmationStatus;
-}
-
 @Injectable()
 export class PgUsersRepository extends PgBaseRepository {
   constructor(
@@ -32,7 +25,6 @@ export class PgUsersRepository extends PgBaseRepository {
   }
 
   async createUser(dto: CreateUserDto): Promise<{ userId: string }> {
-    // TODO: should it be part of service?
     const {
       email,
       login,
@@ -145,6 +137,9 @@ export class PgUsersRepository extends PgBaseRepository {
   async findUserByConfirmationCode(
     confirmationCode: string,
   ): Promise<Users | null> {
+    if (!this.isCorrectUuid(confirmationCode)) {
+      return null;
+    }
     const user: Users | null = await this.usersRepository.findOne({
       select: [],
       where: [{ emailConfirmation: { confirmationCode } }],
@@ -154,41 +149,20 @@ export class PgUsersRepository extends PgBaseRepository {
     return user;
   }
 
-  // TODO
-  async findUserByPasswordRecoveryCode(recoveryCode: string): Promise<{
-    id: string;
-    recoveryStatus: PasswordRecoveryStatus;
-    recoveryCode: string;
-    expirationDate: Date;
-  } | null> {
-    const result:
-      | [
-          {
-            id: string;
-            recovery_status: PasswordRecoveryStatus;
-            recovery_code: string;
-            expiration_date: Date;
-          },
-        ]
-      | [] = await this.dataSource.query(
-      `
-      SELECT upr.recovery_status, upr.recovery_code, upr.expiration_date, u.id
-      FROM public.users_password_recovery as upr
-      LEFT JOIN public.users as u
-      ON u.id = upr.user_id
-      WHERE upr.recovery_code = $1 AND u.deleted_at IS NULL;
-    `,
-      [recoveryCode],
-    );
-    const user = result[0];
-    return user
-      ? {
-          id: user.id,
-          recoveryStatus: user.recovery_status,
-          recoveryCode: user.recovery_code,
-          expirationDate: user.expiration_date,
-        }
-      : null;
+  async findUserByPasswordRecoveryCode(
+    recoveryCode: string,
+  ): Promise<Users | null> {
+    if (!this.isCorrectUuid(recoveryCode)) {
+      return null;
+    }
+
+    const user = await this.usersRepository.findOne({
+      select: [],
+      where: [{ passwordRecovery: { recoveryCode } }],
+      relations: ['passwordRecovery'],
+    });
+
+    return user;
   }
 
   async setNewEmailConfirmationData(
@@ -255,33 +229,18 @@ export class PgUsersRepository extends PgBaseRepository {
     await this.emailConfirmationRepository.save(emailConfirmation);
   }
 
-  // TODO
   async confirmPasswordRecovery(
     userId: string,
     newPassword: string,
   ): Promise<void> {
-    if (!this.isCorrectNumber(userId)) {
-      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
-    }
+    const user = await this.usersRepository.findOne({
+      where: { id: +userId },
+    });
 
-    const query = `
-      WITH update_password_recovery AS 
-      (UPDATE public.users_password_recovery
-      SET recovery_code = null, expiration_date = null, recovery_status = $3, updated_at = NOW()
-      WHERE user_id = $1),
+    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
 
-      update_user AS (UPDATE public.users
-      SET updated_at = NOW(), password_hash = $2
-      WHERE id = $1)
+    user.passwordHash = newPassword;
 
-      SELECT 1; -- Dummy select to complete the query.
-    `;
-    const params = [userId, newPassword, PasswordRecoveryStatus.Confirmed];
-
-    const result = await this.dataSource.query(query, params);
-    // `result[1]` contains the number of affected rows.
-    if (result[1] === 0) {
-      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
-    }
+    await this.usersRepository.save(user);
   }
 }

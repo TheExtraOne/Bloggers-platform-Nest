@@ -165,7 +165,7 @@ export class AuthController {
   async passwordRecovery(@Body() dto: PasswordRecoveryInputDto): Promise<void> {
     await this.commandBus.execute(new SendRecoverPasswordEmailCommand(dto));
   }
-  // TODO
+
   @Post('new-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   @NewPasswordSwagger()
