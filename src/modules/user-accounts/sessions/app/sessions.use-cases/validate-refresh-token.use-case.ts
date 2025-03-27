@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { convertUnixToDate } from '../../../../../core/utils/time.utils';
 import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
+import { Sessions } from '../../domain/entities/session.entity';
 
 export class ValidateRefreshTokenCommand {
   constructor(
@@ -18,7 +19,7 @@ export class ValidateRefreshTokenUseCase
 
   async execute(
     command: ValidateRefreshTokenCommand,
-  ): Promise<{ id: string } | null> {
+  ): Promise<Sessions | null> {
     const { userId, deviceId, iat } = command;
     return this.pgSessionsRepository.findSessionByMultipleFilters(
       userId,

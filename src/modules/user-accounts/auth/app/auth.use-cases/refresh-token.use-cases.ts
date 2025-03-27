@@ -45,13 +45,6 @@ export class RefreshTokenUseCases
       await this.customJwtService.extractTimeFromRefreshToken(refreshToken);
 
     // Updating session: sliding expiration time
-    const session: { userId: string } | null =
-      await this.pgSessionsRepository.findSessionByDeviceId(deviceId);
-
-    if (!session) {
-      throw new Error('Session not found');
-    }
-
     await this.pgSessionsRepository.updateSessionTime(
       deviceId,
       convertUnixToDate(newExp),

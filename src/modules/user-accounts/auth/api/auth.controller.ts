@@ -43,6 +43,7 @@ import {
   NewPasswordSwagger,
 } from './swagger';
 import { PgUsersQueryRepository } from '../../users/infrastructure/query/pg.users.query-repository';
+import { PGMeViewDto } from '../../users/api/view-dto/users.view-dto';
 
 // TODO: add cron job for cleaning sessions
 @UseGuards(ThrottlerGuard)
@@ -53,27 +54,16 @@ export class AuthController {
     private readonly pgUsersQueryRepository: PgUsersQueryRepository,
   ) {}
 
-  // TODO
   @SkipThrottle()
   @Get('me')
   @UseGuards(JwtAuthGuard)
   @GetMeSwagger()
-  async getUserInformation(@CurrentUserId() userId: string): Promise<{
-    email: string;
-    login: string;
-    userId: string;
-  }> {
-    const result = await this.pgUsersQueryRepository.findUserById(userId);
-
-    const mappedUser = {
-      email: result.email,
-      login: result.login,
-      userId: result.id,
-    };
-
-    return mappedUser;
+  async getUserInformation(
+    @CurrentUserId() userId: string,
+  ): Promise<PGMeViewDto> {
+    return this.pgUsersQueryRepository.findMe(userId);
   }
-  // TODO
+
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -83,7 +73,6 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ accessToken: string }> {
-    // Data for creating new session
     const title = req.headers['user-agent'] || 'Unknown device';
     const ip = req.socket.remoteAddress || req.ip || '::1';
 
@@ -97,7 +86,7 @@ export class AuthController {
 
     return { accessToken };
   }
-  // TODO
+
   @SkipThrottle()
   @Post('refresh-token')
   @UseGuards(JwtRefreshGuard)
@@ -119,7 +108,7 @@ export class AuthController {
 
     return { accessToken };
   }
-  // TODO
+
   @SkipThrottle()
   @Post('logout')
   @UseGuards(JwtRefreshGuard)
@@ -127,10 +116,10 @@ export class AuthController {
   @LogoutSwagger()
   async logout(
     @CurrentUserData()
-    { deviceId, userId }: { deviceId: string; userId: string },
+    { deviceId }: { deviceId: string },
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    await this.commandBus.execute(new DeleteSessionCommand(deviceId, userId));
+    await this.commandBus.execute(new DeleteSessionCommand(deviceId));
     response.clearCookie('refreshToken');
   }
 

@@ -1,11 +1,19 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Sessions } from '../domain/entities/session.entity';
+import { PgExternalUsersRepository } from '../../users/infrastructure/pg.external.users.repository';
+import { Users } from '../../users/domain/entities/user.entity';
 
 @Injectable()
 export class PgSessionsRepository extends PgBaseRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(Sessions)
+    private readonly sessionsRepository: Repository<Sessions>,
+    private readonly pgExternalUsersRepository: PgExternalUsersRepository,
+  ) {
     super();
   }
 
@@ -17,28 +25,26 @@ export class PgSessionsRepository extends PgBaseRepository {
     expirationDate: Date;
     userId: string;
   }): Promise<void> {
-    if (
-      !this.isCorrectNumber(dto.userId) ||
-      !this.isCorrectUuid(dto.deviceId)
-    ) {
+    const { userId, deviceId, ip, title, lastActiveDate, expirationDate } = dto;
+
+    if (!this.isCorrectNumber(userId) || !this.isCorrectUuid(deviceId)) {
       throw new InternalServerErrorException();
     }
 
-    const query = `
-    INSERT INTO public.sessions (id, ip, title, last_activate_date, expiration_date, user_id)
-    VALUES ($1, $2, $3, $4, $5, $6)
-  `;
-    const params = [
-      dto.deviceId,
-      dto.ip,
-      dto.title,
-      dto.lastActiveDate,
-      dto.expirationDate,
-      dto.userId,
-    ];
-    await this.dataSource.query(query, params);
-  }
+    const user: Users | null =
+      await this.pgExternalUsersRepository.findUserById(userId);
 
+    const session = new Sessions();
+    session.id = deviceId;
+    session.ip = ip;
+    session.title = title;
+    session.lastActiveDate = lastActiveDate;
+    session.expirationDate = expirationDate;
+    session.user = user as Users;
+
+    await this.sessionsRepository.save(session);
+  }
+  // TODO
   async findSessionByDeviceId(
     deviceId: string,
   ): Promise<{ userId: string } | null> {
@@ -62,23 +68,14 @@ export class PgSessionsRepository extends PgBaseRepository {
     userId: string,
     deviceId: string,
     lastActiveDate: Date,
-  ): Promise<{ id: string } | null> {
+  ): Promise<Sessions | null> {
     if (!this.isCorrectNumber(userId) || !this.isCorrectUuid(deviceId)) {
       return null;
     }
 
-    const query = `
-      SELECT sessions.id
-      FROM public.sessions
-      WHERE user_id = $1
-      AND id = $2
-      AND deleted_at IS NULL
-      AND last_activate_date = $3
-    `;
-    const params = [userId, deviceId, lastActiveDate];
-    const result = await this.dataSource.query(query, params);
-
-    return result[0] ?? null;
+    return await this.sessionsRepository.findOne({
+      where: { id: deviceId, user: { id: +userId }, lastActiveDate },
+    });
   }
 
   async updateSessionTime(
@@ -89,30 +86,29 @@ export class PgSessionsRepository extends PgBaseRepository {
     if (!this.isCorrectUuid(deviceId)) {
       throw new InternalServerErrorException();
     }
-    const query = `
-      UPDATE public.sessions
-      SET expiration_date = $1, last_activate_date = $2, updated_at = $3
-      WHERE id = $4
-      AND deleted_at IS NULL
-    `;
-    const params = [newExp, newIat, new Date(), deviceId];
-    await this.dataSource.query(query, params);
+
+    const session = await this.sessionsRepository.findOne({
+      where: { id: deviceId },
+    });
+
+    if (!session) {
+      throw new InternalServerErrorException();
+    }
+
+    session.expirationDate = newExp;
+    session.lastActiveDate = newIat;
+
+    await this.sessionsRepository.save(session);
   }
 
   async deleteSessionByDeviceId(deviceId: string): Promise<void> {
     if (!this.isCorrectUuid(deviceId)) {
       throw new InternalServerErrorException();
     }
-    const query = `
-      UPDATE public.sessions
-      SET deleted_at = NOW()
-      WHERE id = $1
-      AND deleted_at IS NULL
-    `;
-    const params = [deviceId];
-    await this.dataSource.query(query, params);
-  }
 
+    await this.sessionsRepository.softDelete({ id: deviceId });
+  }
+  // TODO
   async deleteManySessionsByUserAndDeviceId(
     userId: string,
     deviceId: string,

@@ -1,7 +1,8 @@
 import { BaseWithId } from '../../../../../core/base-entities/base.entity';
-import { Column, Entity, OneToOne } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { UsersEmailConfirmation } from './email.confirmation.entity';
 import { UsersPasswordRecovery } from './password.recovery.entity';
+import { Sessions } from '../../../sessions/domain/entities/session.entity';
 
 /**
  * Entity representing a user in the system.
@@ -61,4 +62,7 @@ export class Users extends BaseWithId {
     },
   )
   passwordRecovery: UsersPasswordRecovery;
+
+  @OneToMany(() => Sessions, (sessions) => sessions.user)
+  sessions: Sessions[];
 }

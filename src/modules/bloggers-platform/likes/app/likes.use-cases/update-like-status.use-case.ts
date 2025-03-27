@@ -8,6 +8,7 @@ import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
 import { NotFoundException } from '@nestjs/common';
 import { ERRORS } from '../../../../../constants';
 import { LikeStatus } from '../../infrastructure/pg.likes.repository';
+import { Users } from '../../../../user-accounts/users/domain/entities/user.entity';
 
 export enum EntityType {
   Comment = 'comment',
@@ -98,12 +99,11 @@ export class UpdateLikeStatusUseCase
   private async validateAndGetUser(userId: string): Promise<{
     userId: string;
   }> {
-    const user: {
-      userId: string;
-    } | null = await this.pgUsersRepository.findUserById(userId);
+    const user: Users | null =
+      await this.pgUsersRepository.findUserById(userId);
     if (!user) {
       throw new Error('User not found');
     }
-    return user;
+    return { userId: user.id.toString() };
   }
 }

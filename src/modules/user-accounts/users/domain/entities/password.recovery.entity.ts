@@ -15,7 +15,7 @@ export class UsersPasswordRecovery extends BaseTimestampedEntity {
    * Links this recovery record to a specific user.
    */
   @PrimaryColumn() // Primary Key + Foreign Key
-  userId: number;
+  public userId: number;
 
   /**
    * One-to-one relationship with the Users entity.
@@ -25,14 +25,14 @@ export class UsersPasswordRecovery extends BaseTimestampedEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' }) // Ensures correct FK column name
-  user: Users;
+  public user: Users;
 
   /**
    * Date when the recovery code expires.
    * After this date, the code becomes invalid and a new one must be generated.
    */
   @Column({ type: 'timestamptz', nullable: true })
-  expirationDate: Date;
+  public expirationDate: Date;
 
   /**
    * Current status of password recovery process.
@@ -43,12 +43,12 @@ export class UsersPasswordRecovery extends BaseTimestampedEntity {
     enum: PasswordRecoveryStatus,
     nullable: true,
   })
-  status: PasswordRecoveryStatus;
+  public status: PasswordRecoveryStatus;
 
   /**
    * Unique UUID code sent to user's email for password recovery.
    * Used to verify the recovery request and allow password reset.
    */
   @Column({ type: 'uuid', nullable: true })
-  recoveryCode: string;
+  public recoveryCode: string;
 }

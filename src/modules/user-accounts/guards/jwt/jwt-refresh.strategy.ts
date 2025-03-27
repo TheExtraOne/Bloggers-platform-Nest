@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ValidateRefreshTokenCommand } from '../../sessions/app/sessions.use-cases/validate-refresh-token.use-case';
+import { Sessions } from '../../sessions/domain/entities/session.entity';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
@@ -34,7 +35,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
 
     // Check, if there is such active session  by userId, deviceId and iat
     // Checking iat is important
-    const session = await this.commandBus.execute(
+    const session: Sessions | null = await this.commandBus.execute(
       new ValidateRefreshTokenCommand(userId, deviceId, iat),
     );
 

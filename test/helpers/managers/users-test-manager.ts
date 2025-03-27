@@ -3,6 +3,7 @@ import request from 'supertest';
 import { PATHS } from '../../../src/constants';
 import { CreateUserInputDto } from '../../../src/modules/user-accounts/users/api/input-dto/users.input-dto';
 import { PGUserViewDto } from '../../../src/modules/user-accounts/users/api/view-dto/users.view-dto';
+import { DataSource } from 'typeorm';
 
 export class UsersTestManager {
   constructor(private app: INestApplication) {}
@@ -39,9 +40,11 @@ export class UsersTestManager {
   }
 
   async getUserByEmail(email: string) {
-    const dbConnection = this.app.get('DatabaseConnection');
-    const usersCollection = dbConnection.collection('users');
-    const user = await usersCollection.findOne({ email });
-    return user;
+    const dataSource = this.app.get(DataSource);
+    const result = await dataSource.query(
+      `SELECT * FROM public.users WHERE email = $1 AND deleted_at IS NULL`,
+      [email]
+    );
+    return result[0] || null;
   }
 }

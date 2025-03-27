@@ -21,7 +21,7 @@ export class PgSessionsQueryRepository extends PgBaseRepository {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {
     super();
   }
-
+  // TODO
   async findAllSessionsByUserId(userId: string): Promise<PgSessionsViewDto[]> {
     if (!this.isCorrectNumber(userId)) {
       throw new NotFoundException(ERRORS.SESSION_NOT_FOUND);

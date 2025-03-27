@@ -7,7 +7,6 @@ import { JwtStrategy } from './guards/jwt/jwt-auth.strategy';
 import { BasicStrategy } from './guards/basic/basic.strategy';
 import { JwtRefreshStrategy } from './guards/jwt/jwt-refresh.strategy';
 import { UserAccountsConfig } from './user-account.config';
-import { CreateSessionUseCase } from './sessions/app/sessions.use-cases/create-session.use-case';
 import { DeleteSessionUseCase } from './sessions/app/sessions.use-cases/delete-session.use-case';
 import { ConfirmEmailRegistrationUseCase } from './auth/app/auth.use-cases/confirm-email-registration.use-case';
 import { LoginUseCases } from './auth/app/auth.use-cases/login.use-cases';
@@ -36,6 +35,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Users } from './users/domain/entities/user.entity';
 import { UsersEmailConfirmation } from './users/domain/entities/email.confirmation.entity';
 import { UsersPasswordRecovery } from './users/domain/entities/password.recovery.entity';
+import { Sessions } from './sessions/domain/entities/session.entity';
 
 const adapters = [BcryptService, EmailService, CustomJwtService];
 const strategies = [
@@ -60,7 +60,6 @@ const authUseCases = [
 ];
 
 const sessionsUseCases = [
-  CreateSessionUseCase,
   DeleteSessionUseCase,
   DeleteAllSessionsUseCase,
   DeleteSessionByIdUseCase,
@@ -73,6 +72,7 @@ const sessionsUseCases = [
       Users,
       UsersEmailConfirmation,
       UsersPasswordRecovery,
+      Sessions,
     ]),
     JwtModule.register({}),
   ],

@@ -17,3 +17,19 @@ export class PGUserViewDto {
     return dto;
   }
 }
+
+export class PGMeViewDto {
+  userId: string;
+  login: string;
+  email: string;
+
+  static mapToView(user: Users): PGMeViewDto {
+    const dto = new PGMeViewDto();
+
+    dto.userId = user.id.toString();
+    dto.login = user.login;
+    dto.email = user.email;
+
+    return dto;
+  }
+}

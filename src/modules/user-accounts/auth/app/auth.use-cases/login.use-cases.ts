@@ -1,12 +1,8 @@
-import {
-  Command,
-  CommandBus,
-  CommandHandler,
-  ICommandHandler,
-} from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CustomJwtService } from '../../../utils/custom-jwt.service';
-import { CreateSessionCommand } from '../../../sessions/app/sessions.use-cases/create-session.use-case';
 import { v4 as uuidv4 } from 'uuid';
+import { convertUnixToDate } from '../../../../../core/utils/time.utils';
+import { PgSessionsRepository } from '../../../sessions/infrastructure/pg.sessions.repository';
 
 export class LoginCommand extends Command<{
   accessToken: string;
@@ -25,13 +21,13 @@ export class LoginCommand extends Command<{
 export class LoginUseCases implements ICommandHandler<LoginCommand> {
   constructor(
     private readonly customJwtService: CustomJwtService,
-    private readonly commandBus: CommandBus,
+    private readonly pgSessionsRepository: PgSessionsRepository,
   ) {}
 
   async execute(
     command: LoginCommand,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const { userId, title, ip } = command;
+    const { userId, title = 'Unknown device', ip = '::1' } = command;
     const deviceId = uuidv4();
 
     const accessToken: string = await this.customJwtService.createAccessToken({
@@ -44,17 +40,17 @@ export class LoginUseCases implements ICommandHandler<LoginCommand> {
     // Extracting exp and iat from refresh token
     const { exp, iat } =
       await this.customJwtService.extractTimeFromRefreshToken(refreshToken);
+
     // Creating new session
-    await this.commandBus.execute(
-      new CreateSessionCommand({
-        exp,
-        iat,
-        title,
-        ip,
-        deviceId,
-        userId,
-      }),
-    );
+    const newRefreshTokenMeta = {
+      deviceId,
+      ip,
+      title,
+      lastActiveDate: convertUnixToDate(iat),
+      expirationDate: convertUnixToDate(exp),
+      userId,
+    };
+    await this.pgSessionsRepository.createSession(newRefreshTokenMeta);
 
     return { accessToken, refreshToken };
   }

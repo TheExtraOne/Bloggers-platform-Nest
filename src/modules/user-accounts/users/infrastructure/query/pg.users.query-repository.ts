@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PGUserViewDto } from '../../api/view-dto/users.view-dto';
+import { PGMeViewDto, PGUserViewDto } from '../../api/view-dto/users.view-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -85,5 +85,15 @@ export class PgUsersQueryRepository extends PgBaseRepository {
     if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
 
     return PGUserViewDto.mapToView(user);
+  }
+
+  async findMe(id: string): Promise<PGMeViewDto> {
+    const user: Users | null = await this.usersRepository.findOne({
+      where: { id: +id },
+    });
+
+    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+
+    return PGMeViewDto.mapToView(user);
   }
 }

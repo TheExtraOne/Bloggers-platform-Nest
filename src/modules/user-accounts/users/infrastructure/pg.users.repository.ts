@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ERRORS } from '../../../../constants';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import {
@@ -15,7 +15,6 @@ import { UsersPasswordRecovery } from '../domain/entities/password.recovery.enti
 @Injectable()
 export class PgUsersRepository extends PgBaseRepository {
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
     @InjectRepository(UsersEmailConfirmation)
@@ -77,34 +76,14 @@ export class PgUsersRepository extends PgBaseRepository {
     return user;
   }
 
-  // TODO
-  async findUserById(userId: string): Promise<{
-    userId: string;
-  } | null> {
+  async findUserById(userId: string): Promise<Users | null> {
     if (!this.isCorrectNumber(userId)) {
       return null;
     }
 
-    const result:
-      | [
-          {
-            user_id: string;
-          },
-        ]
-      | [] = await this.dataSource.query(
-      `
-        SELECT u.id as user_id
-        FROM public.users as u
-        WHERE u.id = $1 AND u.deleted_at IS NULL;
-      `,
-      [userId],
-    );
-    const user = result[0];
-    return user
-      ? {
-          userId: user.user_id,
-        }
-      : null;
+    return this.usersRepository.findOne({
+      where: { id: +userId },
+    });
   }
 
   async findUserByLoginOrEmail(loginOrEmail: string): Promise<Users | null> {

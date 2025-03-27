@@ -4,7 +4,6 @@ import { JwtService } from '@nestjs/jwt';
 import { TestSettingsInitializer } from './helpers/init-settings';
 import { AuthTestManager } from './helpers/managers/auth-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
-import { SessionsTestManager } from './helpers/managers/sessions-test-manager';
 import { deleteAllData } from './helpers/delete-all-data';
 import { CreateUserInputDto } from '../src/modules/user-accounts/users/api/input-dto/users.input-dto';
 import { EmailService } from '../src/modules/user-accounts/utils/email.service';
@@ -14,7 +13,6 @@ describe('Auth Controller (e2e)', () => {
   let app: INestApplication;
   let authTestManager: AuthTestManager;
   let usersTestManager: UsersTestManager;
-  let sessionsTestManager: SessionsTestManager;
   let jwtService: JwtService;
 
   beforeAll(async () => {
@@ -22,7 +20,6 @@ describe('Auth Controller (e2e)', () => {
     app = result.app;
     authTestManager = result.authTestManager;
     usersTestManager = result.usersTestManager;
-    sessionsTestManager = result.sessionsTestManager;
     jwtService = app.get(JwtService);
   });
 
@@ -513,14 +510,12 @@ describe('Rate Limiting', () => {
   let app: INestApplication;
   let authTestManager: AuthTestManager;
   let usersTestManager: UsersTestManager;
-  let sessionsTestManager: SessionsTestManager;
 
   beforeAll(async () => {
     const result = await new TestSettingsInitializer().init(10000, 5);
     app = result.app;
     authTestManager = result.authTestManager;
     usersTestManager = result.usersTestManager;
-    sessionsTestManager = result.sessionsTestManager;
   });
 
   beforeEach(async () => {
