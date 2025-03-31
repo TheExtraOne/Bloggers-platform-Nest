@@ -35,7 +35,7 @@ export class BlogsController {
   async getBlogById(@Param('id') id: string): Promise<PgBlogsViewDto> {
     return await this.pgBlogsQueryRepository.getBlogById(id);
   }
-
+  // TODO
   @Get(':id/posts')
   @UseGuards(JwtOptionalAuthGuard)
   async getAllPostsByBlogId(

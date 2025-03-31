@@ -25,7 +25,7 @@ export class PgSessionsRepository extends PgBaseRepository {
     userId: string;
   }): Promise<void> {
     const { userId, deviceId, ip, title, lastActiveDate, expirationDate } = dto;
-
+    // TODO: refactor
     if (!this.isCorrectNumber(userId) || !this.isCorrectUuid(deviceId)) {
       throw new InternalServerErrorException();
     }

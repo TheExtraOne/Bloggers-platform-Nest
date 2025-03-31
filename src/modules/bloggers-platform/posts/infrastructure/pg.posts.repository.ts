@@ -1,13 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { ERRORS } from '../../../../constants';
 import { TPgPost } from './query/pg.posts.query-repository';
+import { Posts } from '../domain/entities/post.entity';
+import { Blogs } from '../../blogs/domain/entities/blog.entity';
 
 @Injectable()
 export class PgPostsRepository extends PgBaseRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(Posts)
+    private readonly postsRepository: Repository<Posts>,
+  ) {
     super();
   }
 
@@ -15,20 +21,22 @@ export class PgPostsRepository extends PgBaseRepository {
     title: string;
     content: string;
     shortDescription: string;
-    blogId: string;
+    blog: Blogs;
   }): Promise<{ postId: string }> {
-    const { title, content, shortDescription, blogId } = dto;
-    const query = `
-      INSERT INTO public.posts (title, content, short_description, blog_id)
-      VALUES ($1, $2, $3, $4)
-      RETURNING id
-    `;
-    const params = [title, content, shortDescription, blogId];
-    const result = await this.dataSource.query(query, params);
+    const { title, content, shortDescription, blog } = dto;
 
-    return { postId: result[0].id };
+    const newPost = new Posts();
+
+    newPost.title = title;
+    newPost.content = content;
+    newPost.shortDescription = shortDescription;
+    newPost.blog = blog;
+
+    await this.postsRepository.save(newPost);
+
+    return { postId: newPost.id.toString() };
   }
-
+  // TODO
   async updatePost(
     postId: string,
     blogId: string,
@@ -62,7 +70,7 @@ export class PgPostsRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
   }
-
+  // TODO
   async deletePost(postId: string, blogId: string): Promise<void> {
     if (!this.isCorrectUuid(postId) || !this.isCorrectNumber(blogId)) {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
@@ -80,7 +88,7 @@ export class PgPostsRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
   }
-
+  // TODO
   async findPostById(postId: string): Promise<TPgPost | null> {
     if (!this.isCorrectUuid(postId)) {
       return null;

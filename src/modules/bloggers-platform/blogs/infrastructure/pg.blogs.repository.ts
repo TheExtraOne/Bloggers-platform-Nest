@@ -47,7 +47,7 @@ export class PgBlogsRepository extends PgBaseRepository {
     if (!this.isCorrectNumber(id)) {
       return false;
     }
-    const exists = await this.blogsRepository.exist({
+    const exists = await this.blogsRepository.exists({
       where: {
         id: +id,
       },

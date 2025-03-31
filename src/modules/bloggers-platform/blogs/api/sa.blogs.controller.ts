@@ -45,9 +45,9 @@ import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts.query-p
 import { DeletePostSwagger, UpdatePostSwagger } from '../../posts/api/swagger';
 import { UpdatePostCommand } from '../../posts/app/posts.use-cases/update-post.use-case';
 import { DeletePostCommand } from '../../posts/app/posts.use-cases/delete-post.use-case';
-import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
-import { EnrichEntitiesWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
-import { EntityType } from '../../likes/app/likes.use-cases/update-like-status.use-case';
+// import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
+// import { EnrichEntitiesWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
+// import { EntityType } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 
 @UseGuards(BasicAuthGuard)
 @Controller(PATHS.SA_BLOGS)
@@ -65,14 +65,14 @@ export class SaBlogsController {
   ): Promise<PaginatedViewDto<PgBlogsViewDto[]>> {
     return await this.pgBlogsQueryRepository.findAll(query);
   }
-  // TODO
+
   @Get(':id/posts')
   @UseGuards(JwtOptionalAuthGuard)
   @GetBlogPostsSwagger()
   async getPostsByBlogId(
     @Param('id') id: string,
     @Query() query: GetPostsQueryParams,
-    @CurrentOptionalUserId() userId: string | null,
+    // @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
     const posts = await this.pgPostsQueryRepository.findAllPostsForBlogId(
       id,
@@ -80,9 +80,10 @@ export class SaBlogsController {
     );
 
     // Enrich posts with user's like status
-    return this.commandBus.execute(
-      new EnrichEntitiesWithLikesCommand(posts, userId, EntityType.Post),
-    );
+    // return this.commandBus.execute(
+    //   new EnrichEntitiesWithLikesCommand(posts, userId, EntityType.Post),
+    // );
+    return posts;
   }
 
   @Post()
@@ -96,7 +97,7 @@ export class SaBlogsController {
     );
     return this.pgBlogsQueryRepository.getBlogById(blogId);
   }
-  // TODO
+
   @Post(':id/posts')
   @CreateBlogPostSwagger()
   async createPostByBlogId(
@@ -135,7 +136,7 @@ export class SaBlogsController {
       new UpdatePostCommand(blogId, postId, updatePostDto),
     );
   }
-  // TODO
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteBlogSwagger()

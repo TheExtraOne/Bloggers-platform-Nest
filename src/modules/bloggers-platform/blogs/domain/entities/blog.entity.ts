@@ -1,5 +1,6 @@
+import { Posts } from '../../../posts/domain/entities/post.entity';
 import { BaseWithId } from '../../../../../core/base-entities/base.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 
 /**
  * Entity representing a blog in the bloggers platform
@@ -36,6 +37,10 @@ export class Blogs extends BaseWithId {
   @Column({ type: 'boolean', default: false, nullable: false })
   public isMembership: boolean;
 
-  // @OneToMany(() => Posts, (posts) => posts.blog)
-  // sessions: Posts[];
+  /**
+   * Collection of posts associated with this blog
+   * @type {Posts[]}
+   */
+  @OneToMany(() => Posts, (posts) => posts.blog)
+  posts: Posts[];
 }
