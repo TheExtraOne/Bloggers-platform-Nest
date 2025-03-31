@@ -123,7 +123,7 @@ export class SaBlogsController {
   ): Promise<void> {
     return this.commandBus.execute(new UpdateBlogCommand(id, updateBlogDto));
   }
-  // TODO
+
   @Put(':blogId/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UpdatePostSwagger()
@@ -143,7 +143,7 @@ export class SaBlogsController {
   async deleteBlogById(@Param('id') id: string): Promise<void> {
     return this.commandBus.execute(new DeleteBlogCommand(id));
   }
-  // TODO
+
   @Delete(':blogId/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeletePostSwagger()

@@ -78,6 +78,6 @@ export class PgBlogsRepository extends PgBaseRepository {
   async deleteBlog(id: string): Promise<void> {
     const blog = await this.findBlogByIdOrThrow(id);
 
-    await this.blogsRepository.softDelete(blog);
+    await this.blogsRepository.softDelete(blog.id);
   }
 }

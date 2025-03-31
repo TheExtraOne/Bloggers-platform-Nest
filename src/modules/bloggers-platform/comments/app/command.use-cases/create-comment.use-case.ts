@@ -30,8 +30,8 @@ export class CreateCommentUseCase
     const { postId, userId, dto } = command;
 
     // Check if post exists
-    const post = await this.pgPostsRepository.findPostById(postId);
-    if (!post) throw new NotFoundException(ERRORS.POST_NOT_FOUND);
+    const postExists = await this.pgPostsRepository.checkPostExists(postId);
+    if (!postExists) throw new NotFoundException(ERRORS.POST_NOT_FOUND);
 
     // Check if user exists
     const user = await this.pgUsersRepository.findUserById(userId);

@@ -38,8 +38,9 @@ import {
   UpdateLikeStatusCommand,
 } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
-import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
+// import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
 
+// TODO: tests for blogs and posts
 @Controller(PATHS.POSTS)
 export class PostsController {
   constructor(
@@ -53,31 +54,33 @@ export class PostsController {
   @GetAllPostsSwagger()
   async getAllPosts(
     @Query() query: GetPostsQueryParams,
-    @CurrentOptionalUserId() userId: string | null,
+    // @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
     const posts = await this.pgPostsQueryRepository.findAllPosts(query);
 
     // Enrich post with user's like status
-    return this.commandBus.execute(
-      new EnrichEntitiesWithLikesCommand(posts, userId, EntityType.Post),
-    );
+    // return this.commandBus.execute(
+    //   new EnrichEntitiesWithLikesCommand(posts, userId, EntityType.Post),
+    // );
+    return posts;
   }
-
+  // TODO
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   @GetPostByIdSwagger()
   async getPostById(
     @Param('id') id: string,
-    @CurrentOptionalUserId() userId: string | null,
+    // @CurrentOptionalUserId() userId: string | null,
   ): Promise<PgPostsViewDto | null> {
     const post = await this.pgPostsQueryRepository.findPostById(id);
 
     // Enrich post with user's like status
-    return this.commandBus.execute(
-      new EnrichEntityWithLikeCommand(post, userId, EntityType.Post),
-    );
+    // return this.commandBus.execute(
+    //   new EnrichEntityWithLikeCommand(post, userId, EntityType.Post),
+    // );
+    return post;
   }
-
+  // TODO
   @Get(':id/comments')
   @UseGuards(JwtOptionalAuthGuard)
   @GetPostCommentsSwagger()
@@ -94,7 +97,7 @@ export class PostsController {
       new EnrichEntitiesWithLikesCommand(comments, userId, EntityType.Comment),
     );
   }
-
+  // TODO
   @Post(':id/comments')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
@@ -109,7 +112,7 @@ export class PostsController {
     );
     return await this.pgCommentsQueryRepository.findCommentById(commentId);
   }
-
+  // TODO
   @Put(':id/like-status')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)

@@ -2,7 +2,6 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateLikeStatusInputDto } from '../../api/input-dto/update-like-input.dto';
 import { PgCommentsRepository } from '../../../comments/infrastructure/pg.comments.repository';
 import { PgPostsRepository } from '../../../posts/infrastructure/pg.posts.repository';
-import { TPgPost } from '../../../posts/infrastructure/query/pg.posts.query-repository';
 import { PgExternalUsersRepository } from '../../../../user-accounts/users/infrastructure/pg.external.users.repository';
 import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
 import { NotFoundException } from '@nestjs/common';
@@ -80,17 +79,14 @@ export class UpdateLikeStatusUseCase
       throw new Error('Entity type must be either "comment" or "post"');
     }
 
-    let comment: { commentId: string; commentatorId: string } | null = null;
-    let post: TPgPost | null = null;
-
     if (entityType === EntityType.Comment) {
-      comment = await this.pgCommentsRepository.findCommentById(parentId);
+      const comment = await this.pgCommentsRepository.findCommentById(parentId);
       if (!comment) {
         throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
       }
     } else {
-      post = await this.pgPostsRepository.findPostById(parentId);
-      if (!post) {
+      const postExists = await this.pgPostsRepository.checkPostExists(parentId);
+      if (!postExists) {
         throw new NotFoundException(ERRORS.POST_NOT_FOUND);
       }
     }
