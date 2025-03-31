@@ -1,13 +1,30 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { ERRORS } from '../../../../constants';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
-import { DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
+import { Blogs } from '../domain/entities/blog.entity';
 
 @Injectable()
 export class PgBlogsRepository extends PgBaseRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+  constructor(
+    @InjectRepository(Blogs)
+    private readonly blogsRepository: Repository<Blogs>,
+  ) {
     super();
+  }
+
+  async findBlogByIdOrThrow(id: string): Promise<Blogs> {
+    if (!this.isCorrectNumber(id)) {
+      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+    }
+
+    const blog = await this.blogsRepository.findOneBy({
+      id: +id,
+    });
+    if (!blog) throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+
+    return blog;
   }
 
   async createBlog(dto: {
@@ -16,31 +33,27 @@ export class PgBlogsRepository extends PgBaseRepository {
     websiteUrl: string;
   }): Promise<{ blogId: string }> {
     const { name, description, websiteUrl } = dto;
-    const query = `
-      INSERT INTO public.blogs (name, description, website_url)
-      VALUES ($1, $2, $3)
-      RETURNING id;
-    `;
-    const params = [name, description, websiteUrl];
-    const result = await this.dataSource.query(query, params);
 
-    return { blogId: result[0].id };
+    const newBlog = new Blogs();
+    newBlog.name = name;
+    newBlog.description = description;
+    newBlog.websiteUrl = websiteUrl;
+    await this.blogsRepository.save(newBlog);
+
+    return { blogId: newBlog.id.toString() };
   }
 
-  async getBlogById(
-    id: string,
-  ): Promise<{ blogId: string; blogName: string } | null> {
+  async checkBlogExists(id: string): Promise<boolean> {
     if (!this.isCorrectNumber(id)) {
-      return null;
+      return false;
     }
-    const query = `
-      SELECT * FROM blogs WHERE id = $1 AND deleted_at IS NULL;
-    `;
-    const params = [id];
-    const result = await this.dataSource.query(query, params);
-    const blog = result[0];
+    const exists = await this.blogsRepository.exist({
+      where: {
+        id: +id,
+      },
+    });
 
-    return blog ? { blogId: blog.id, blogName: blog.name } : null;
+    return exists;
   }
 
   async updateBlog(
@@ -51,42 +64,20 @@ export class PgBlogsRepository extends PgBaseRepository {
       websiteUrl: string;
     },
   ): Promise<void> {
-    if (!this.isCorrectNumber(id)) {
-      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
-    }
-
     const { name, description, websiteUrl } = dto;
-    const query = `
-      UPDATE blogs
-      SET name = $1, description = $2, website_url = $3, updated_at = NOW()
-      WHERE id = $4 AND deleted_at IS NULL;
-    `;
-    const params = [name, description, websiteUrl, id];
 
-    const result = await this.dataSource.query(query, params);
+    const blog = await this.findBlogByIdOrThrow(id);
 
-    // `result[1]` contains the number of affected rows.
-    if (result[1] === 0) {
-      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
-    }
+    blog.name = name;
+    blog.description = description;
+    blog.websiteUrl = websiteUrl;
+
+    await this.blogsRepository.save(blog);
   }
 
   async deleteBlog(id: string): Promise<void> {
-    if (!this.isCorrectNumber(id)) {
-      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
-    }
-    const query = `
-      UPDATE blogs
-      SET deleted_at = $1
-      WHERE id = $2 AND deleted_at IS NULL
-    `;
-    const params = [new Date(), id];
+    const blog = await this.findBlogByIdOrThrow(id);
 
-    const result = await this.dataSource.query(query, params);
-
-    // `result[1]` contains the number of affected rows.
-    if (result[1] === 0) {
-      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
-    }
+    await this.blogsRepository.softDelete(blog);
   }
 }

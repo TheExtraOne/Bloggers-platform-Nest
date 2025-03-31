@@ -8,23 +8,21 @@ import {
 import { Injectable } from '@nestjs/common';
 import { PgBlogsRepository } from '../blogs/infrastructure/pg.blogs.repository';
 
+// This custom decorator is currently unused.
 @ValidatorConstraint({ name: 'BlogIdExists', async: true })
 @Injectable()
 export class BlogIdExistsRule implements ValidatorConstraintInterface {
   constructor(private readonly pgBlogsRepository: PgBlogsRepository) {}
 
   async validate(blogId: string) {
-    let blog: {
-      blogId: string;
-      blogName: string;
-    } | null;
+    let blogExists: boolean;
     try {
-      blog = await this.pgBlogsRepository.getBlogById(blogId);
+      blogExists = await this.pgBlogsRepository.checkBlogExists(blogId);
     } catch (e) {
       return false;
     }
 
-    return !!blog;
+    return blogExists;
   }
 
   defaultMessage(args: ValidationArguments) {

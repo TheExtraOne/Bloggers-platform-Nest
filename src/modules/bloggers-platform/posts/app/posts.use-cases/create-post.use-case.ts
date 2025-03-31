@@ -24,11 +24,8 @@ export class CreatePostUseCase
     const { blogId, title, content, shortDescription } = command.dto;
 
     // Check that blog exists
-    const blog: {
-      blogId: string;
-      blogName: string;
-    } | null = await this.pgBlogsRepository.getBlogById(blogId);
-    if (!blog) {
+    const blogExists = await this.pgBlogsRepository.checkBlogExists(blogId);
+    if (!blogExists) {
       throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
     }
 

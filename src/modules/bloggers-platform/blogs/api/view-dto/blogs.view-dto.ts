@@ -1,4 +1,4 @@
-import { TPgBlog } from '../../infrastructure/query/pg.blogs.query-repository';
+import { Blogs } from '../../domain/entities/blog.entity';
 
 export class PgBlogsViewDto {
   id: string;
@@ -8,15 +8,16 @@ export class PgBlogsViewDto {
   createdAt: Date;
   isMembership: boolean;
 
-  static mapToView(blog: TPgBlog): PgBlogsViewDto {
+  static mapToView(blog: Blogs): PgBlogsViewDto {
+    const { id, name, description, websiteUrl, createdAt, isMembership } = blog;
     const dto = new PgBlogsViewDto();
 
-    dto.id = blog.id.toString();
-    dto.name = blog.name;
-    dto.description = blog.description;
-    dto.websiteUrl = blog.website_url;
-    dto.createdAt = blog.created_at;
-    dto.isMembership = blog.is_membership;
+    dto.id = id.toString();
+    dto.name = name;
+    dto.description = description;
+    dto.websiteUrl = websiteUrl;
+    dto.createdAt = createdAt;
+    dto.isMembership = isMembership;
 
     return dto;
   }

@@ -65,7 +65,7 @@ export class SaBlogsController {
   ): Promise<PaginatedViewDto<PgBlogsViewDto[]>> {
     return await this.pgBlogsQueryRepository.findAll(query);
   }
-
+  // TODO
   @Get(':id/posts')
   @UseGuards(JwtOptionalAuthGuard)
   @GetBlogPostsSwagger()
@@ -96,7 +96,7 @@ export class SaBlogsController {
     );
     return this.pgBlogsQueryRepository.getBlogById(blogId);
   }
-
+  // TODO
   @Post(':id/posts')
   @CreateBlogPostSwagger()
   async createPostByBlogId(
@@ -122,7 +122,7 @@ export class SaBlogsController {
   ): Promise<void> {
     return this.commandBus.execute(new UpdateBlogCommand(id, updateBlogDto));
   }
-
+  // TODO
   @Put(':blogId/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UpdatePostSwagger()
@@ -135,14 +135,14 @@ export class SaBlogsController {
       new UpdatePostCommand(blogId, postId, updatePostDto),
     );
   }
-
+  // TODO
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteBlogSwagger()
   async deleteBlogById(@Param('id') id: string): Promise<void> {
     return this.commandBus.execute(new DeleteBlogCommand(id));
   }
-
+  // TODO
   @Delete(':blogId/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeletePostSwagger()

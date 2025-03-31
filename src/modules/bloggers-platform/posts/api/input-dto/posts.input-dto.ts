@@ -1,6 +1,6 @@
 import { MaxLength } from 'class-validator';
 import { IsStringWithTrim } from '../../../../../core/decorators/is-not-empty-string';
-import { BlogIdExists } from '../../../decorators/blog-id-exists.decorator';
+// import { BlogIdExists } from '../../../decorators/blog-id-exists.decorator';
 
 export class CreatePostInputDto {
   @IsStringWithTrim()
@@ -16,7 +16,7 @@ export class CreatePostInputDto {
   content: string;
 
   @IsStringWithTrim()
-  @BlogIdExists()
+  // @BlogIdExists()
   blogId: string;
 }
 

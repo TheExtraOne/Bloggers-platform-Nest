@@ -12,6 +12,7 @@ import { Users } from '../domain/entities/user.entity';
 import { UsersEmailConfirmation } from '../domain/entities/email.confirmation.entity';
 import { UsersPasswordRecovery } from '../domain/entities/password.recovery.entity';
 
+// TODO: refactor. Move repeatable parts of user check into a separate method
 @Injectable()
 export class PgUsersRepository extends PgBaseRepository {
   constructor(
@@ -98,7 +99,7 @@ export class PgUsersRepository extends PgBaseRepository {
 
   async isLoginOrEmailInUse(loginOrEmail: string): Promise<boolean> {
     // We should also check among the users who are soft-deleted
-    const exists: number = await this.usersRepository.count({
+    return await this.usersRepository.exists({
       where: [
         {
           login: loginOrEmail,
@@ -109,8 +110,6 @@ export class PgUsersRepository extends PgBaseRepository {
       ],
       withDeleted: true, // Include soft-deleted records in the check
     });
-
-    return !!exists;
   }
 
   async findUserByConfirmationCode(

@@ -24,6 +24,8 @@ import { PgCommentsRepository } from './comments/infrastructure/pg.comments.repo
 import { PgCommentsQueryRepository } from './comments/infrastructure/query/pg.comments.query-repository';
 import { PgLikesRepository } from './likes/infrastructure/pg.likes.repository';
 import { EnrichEntitiesWithLikesUseCase } from './likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Blogs } from './blogs/domain/entities/blog.entity';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -39,7 +41,7 @@ const likesUseCases = [
 ];
 
 @Module({
-  imports: [UserAccountsModule],
+  imports: [UserAccountsModule, TypeOrmModule.forFeature([Blogs])],
   controllers: [
     SaBlogsController,
     BlogsController,

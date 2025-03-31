@@ -99,9 +99,8 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     query: GetPostsQueryParams,
   ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
     // Check that blog exists
-    const blog = await this.pgBlogsRepository.getBlogById(blogId);
-
-    if (!blog) {
+    const blogExists = await this.pgBlogsRepository.checkBlogExists(blogId);
+    if (!blogExists) {
       throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
     }
 
