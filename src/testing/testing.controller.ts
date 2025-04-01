@@ -14,18 +14,6 @@ export class TestingController {
     // TRUNCATE TABLE - removes all data but keeps the table structure
     // RESTART IDENTITY - resets auto-incremented IDs (SERIAL primary keys)
     // CASCADE - removes dependent records in related tables to avoid foreign key constraints
-    await this.dataSource.query(`
-      TRUNCATE TABLE
-      public.users_password_recovery,
-      public.users_email_confirmation,
-      public.users,
-      public.sessions,
-      public.blogs,
-      public.posts,
-      public.comments,
-      public.likes
-      RESTART IDENTITY CASCADE;
-    `);
     // await this.dataSource.query(`
     //   TRUNCATE TABLE
     //   public.users_password_recovery,
@@ -34,8 +22,22 @@ export class TestingController {
     //   public.sessions,
     //   public.blogs,
     //   public.posts,
-    //   public.comments
+    //   public.comments,
+    //   public.likes
     //   RESTART IDENTITY CASCADE;
     // `);
+
+    // TODO: delete old
+    await this.dataSource.query(`
+      TRUNCATE TABLE
+      public.users_password_recovery,
+      public.users_email_confirmation,
+      public.users,
+      public.sessions,
+      public.blogs,
+      public.posts,
+      public.comments
+      RESTART IDENTITY CASCADE;
+    `);
   }
 }
