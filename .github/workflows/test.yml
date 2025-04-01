@@ -18,4 +18,6 @@ jobs:
         run: yarn
 
       - name: Run end-to-end tests
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
         run: yarn test:e2e
