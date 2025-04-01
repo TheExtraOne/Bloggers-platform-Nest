@@ -1,5 +1,5 @@
 import { IsStringWithTrim } from 'src/core/decorators/is-not-empty-string';
-import { LikeStatus } from '../../infrastructure/pg.likes.repository';
+import { LikeStatus } from '../../domain/enums/like-status.enum';
 import { IsEnum } from 'class-validator';
 
 export class UpdateLikeStatusInputDto {

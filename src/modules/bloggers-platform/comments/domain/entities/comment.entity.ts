@@ -1,27 +1,15 @@
 import { Users } from '../../../../user-accounts/users/domain/entities/user.entity';
-import { BaseTimestampedEntity } from '../../../../../core/base-entities/base.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseWithId } from '../../../../../core/base-entities/base.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Posts } from '../../../posts/domain/entities/post.entity';
+import { CommentLikes } from 'src/modules/bloggers-platform/likes/domain/entities/comment-like.entity';
 
 /**
  * Entity representing comments in the blogging platform
- * @extends BaseTimestampedEntity
+ * @extends BaseWithId
  */
 @Entity()
-export class Comments extends BaseTimestampedEntity {
-  /**
-   * Unique identifier for the comment
-   * @type {string}
-   */
-  @PrimaryGeneratedColumn('uuid')
-  public id: string;
-
+export class Comments extends BaseWithId {
   /**
    * The content of the comment
    * @type {string}
@@ -44,4 +32,11 @@ export class Comments extends BaseTimestampedEntity {
   @ManyToOne(() => Posts, (posts) => posts.comments)
   @JoinColumn({ name: 'post_id' })
   post: Posts;
+
+  /**
+   * Collection of likes associated with this comment
+   * @type {CommentLikes[]}
+   */
+  @OneToMany(() => CommentLikes, (commentLikes) => commentLikes.comment)
+  commentLikes: CommentLikes[];
 }

@@ -28,6 +28,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Blogs } from './blogs/domain/entities/blog.entity';
 import { Posts } from './posts/domain/entities/post.entity';
 import { Comments } from './comments/domain/entities/comment.entity';
+import { PostLikes } from './likes/domain/entities/post-like.entity';
+import { CommentLikes } from './likes/domain/entities/comment-like.entity';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -45,7 +47,7 @@ const likesUseCases = [
 @Module({
   imports: [
     UserAccountsModule,
-    TypeOrmModule.forFeature([Blogs, Posts, Comments]),
+    TypeOrmModule.forFeature([Blogs, Posts, Comments, PostLikes, CommentLikes]),
   ],
   controllers: [
     SaBlogsController,

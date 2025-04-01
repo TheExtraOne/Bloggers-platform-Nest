@@ -19,11 +19,11 @@ export class PgPostsRepository extends PgBaseRepository {
     blogId: string,
     postId: string,
   ): Promise<Posts> {
-    if (!this.isCorrectUuid(postId) || !this.isCorrectNumber(blogId)) {
+    if (!this.isCorrectNumber(postId) || !this.isCorrectNumber(blogId)) {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
     const post = await this.postsRepository.findOne({
-      where: { id: postId, blog: { id: +blogId } },
+      where: { id: +postId, blog: { id: +blogId } },
       relations: { blog: true },
     });
     if (!post) {
@@ -33,11 +33,11 @@ export class PgPostsRepository extends PgBaseRepository {
   }
 
   async findPostByIdOrThrow(postId: string): Promise<Posts> {
-    if (!this.isCorrectUuid(postId)) {
+    if (!this.isCorrectNumber(postId)) {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
     const post = await this.postsRepository.findOne({
-      where: { id: postId },
+      where: { id: +postId },
       relations: { blog: true },
     });
     if (!post) {
@@ -91,7 +91,7 @@ export class PgPostsRepository extends PgBaseRepository {
   }
 
   async deletePost(postId: string, blogId: string): Promise<void> {
-    if (!this.isCorrectUuid(postId) || !this.isCorrectNumber(blogId)) {
+    if (!this.isCorrectNumber(postId) || !this.isCorrectNumber(blogId)) {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
 
@@ -104,12 +104,12 @@ export class PgPostsRepository extends PgBaseRepository {
   }
 
   async checkPostExists(postId: string): Promise<boolean> {
-    if (!this.isCorrectUuid(postId)) {
+    if (!this.isCorrectNumber(postId)) {
       return false;
     }
     return await this.postsRepository.exists({
       where: {
-        id: postId,
+        id: +postId,
       },
     });
   }

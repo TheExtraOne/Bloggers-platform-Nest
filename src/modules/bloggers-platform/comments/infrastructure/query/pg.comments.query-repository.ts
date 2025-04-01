@@ -22,13 +22,13 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
   }
 
   async findCommentById(commentId: string): Promise<PgCommentsViewDto> {
-    if (!this.isCorrectUuid(commentId)) {
+    if (!this.isCorrectNumber(commentId)) {
       throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
     }
 
     const comment = await this.commentsRepository.findOne({
       where: {
-        id: commentId,
+        id: +commentId,
       },
       relations: ['user'],
     });

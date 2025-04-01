@@ -32,13 +32,13 @@ export class PgCommentsRepository extends PgBaseRepository {
   }
 
   async findCommentByIdOrThrow(commentId: string): Promise<Comments> {
-    if (!this.isCorrectUuid(commentId)) {
+    if (!this.isCorrectNumber(commentId)) {
       throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
     }
 
     const comment = await this.commentsRepository.findOne({
       where: {
-        id: commentId,
+        id: +commentId,
       },
       relations: ['user'],
     });
@@ -51,12 +51,12 @@ export class PgCommentsRepository extends PgBaseRepository {
   }
 
   async checkCommentExists(commentId: string): Promise<boolean> {
-    if (!this.isCorrectUuid(commentId)) {
+    if (!this.isCorrectNumber(commentId)) {
       return false;
     }
     return this.commentsRepository.exists({
       where: {
-        id: commentId,
+        id: +commentId,
       },
     });
   }
@@ -68,7 +68,7 @@ export class PgCommentsRepository extends PgBaseRepository {
   }
 
   async deleteComment(commentId: string): Promise<void> {
-    if (!this.isCorrectUuid(commentId)) {
+    if (!this.isCorrectNumber(commentId)) {
       throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
     }
 

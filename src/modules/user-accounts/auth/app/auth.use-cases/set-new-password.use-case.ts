@@ -3,7 +3,7 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BcryptService } from '../../../utils/bcrypt.service';
 import { NewPasswordInputDto } from '../../api/input-dto/new-password.input-dto';
 import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
-import { PasswordRecoveryStatus } from '../../../users/domain/enums/user.enums';
+import { PasswordRecoveryStatus } from '../../../users/domain/enums/user.enum';
 import { Users } from '../../../users/domain/entities/user.entity';
 
 export class SetNewPasswordCommand extends Command<void> {

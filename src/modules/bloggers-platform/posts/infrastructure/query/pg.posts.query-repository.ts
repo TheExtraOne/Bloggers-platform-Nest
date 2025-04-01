@@ -27,13 +27,13 @@ export class PgPostsQueryRepository extends PgBaseRepository {
   }
 
   async findPostById(postId: string): Promise<PgPostsViewDto> {
-    if (!this.isCorrectUuid(postId)) {
+    if (!this.isCorrectNumber(postId)) {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
 
     const post: Posts | null = await this.postsRepository.findOne({
       where: {
-        id: postId,
+        id: +postId,
       },
       relations: ['blog'],
     });

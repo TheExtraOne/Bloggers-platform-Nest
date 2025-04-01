@@ -4,6 +4,8 @@ import { UsersEmailConfirmation } from './email.confirmation.entity';
 import { UsersPasswordRecovery } from './password.recovery.entity';
 import { Sessions } from '../../../sessions/domain/entities/session.entity';
 import { Comments } from '../../../../bloggers-platform/comments/domain/entities/comment.entity';
+import { PostLikes } from '../../../../bloggers-platform/likes/domain/entities/post-like.entity';
+import { CommentLikes } from '../../../../bloggers-platform/likes/domain/entities/comment-like.entity';
 
 /**
  * Entity representing a user in the system.
@@ -77,4 +79,18 @@ export class Users extends BaseWithId {
    */
   @OneToMany(() => Comments, (comments) => comments.user)
   comments: Comments[];
+
+  /**
+   * Collection of likes created by the user
+   * @type {PostLikes[]}
+   */
+  @OneToMany(() => PostLikes, (postLikes) => postLikes.user)
+  postLikes: PostLikes[];
+
+  /**
+   * Collection of likes created by the user
+   * @type {CommentLikes[]}
+   */
+  @OneToMany(() => CommentLikes, (commentLikes) => commentLikes.user)
+  commentLikes: CommentLikes[];
 }

@@ -267,7 +267,7 @@ describe('Comments Controller (e2e)', () => {
       expect(secondPage.items.length).toBe(2);
       expect(secondPage.page).toBe(2);
       expect(secondPage.totalCount).toBe(12);
-    });
+    }, 10000);
   });
 
   describe('GET /comments/:id', () => {

@@ -6,7 +6,7 @@ import { PgBaseRepository } from '../../../../core/base-classes/pg.base.reposito
 import {
   EmailConfirmationStatus,
   PasswordRecoveryStatus,
-} from '../domain/enums/user.enums';
+} from '../domain/enums/user.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from '../domain/entities/user.entity';
 import { UsersEmailConfirmation } from '../domain/entities/email.confirmation.entity';

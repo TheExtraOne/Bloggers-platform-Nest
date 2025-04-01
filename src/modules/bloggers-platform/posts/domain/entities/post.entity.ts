@@ -1,28 +1,15 @@
 import { Blogs } from '../../../blogs/domain/entities/blog.entity';
-import { BaseTimestampedEntity } from '../../../../../core/base-entities/base.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseWithId } from '../../../../../core/base-entities/base.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Comments } from '../../../comments/domain/entities/comment.entity';
+import { PostLikes } from 'src/modules/bloggers-platform/likes/domain/entities/post-like.entity';
 
 /**
  * Entity representing a blog post in the system.
  * @extends BaseTimestampedEntity
  */
 @Entity()
-export class Posts extends BaseTimestampedEntity {
-  /**
-   * Unique identifier for the post
-   * @type {string}
-   */
-  @PrimaryGeneratedColumn('uuid')
-  public id: string;
-
+export class Posts extends BaseWithId {
   /**
    * Title of the post
    * @type {string}
@@ -61,4 +48,11 @@ export class Posts extends BaseTimestampedEntity {
    */
   @OneToMany(() => Comments, (comments) => comments.post)
   comments: Comments[];
+
+  /**
+   * Collection of likes associated with this post
+   * @type {PostLikes[]}
+   */
+  @OneToMany(() => PostLikes, (postLikes) => postLikes.post)
+  postLikes: PostLikes[];
 }

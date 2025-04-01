@@ -1,6 +1,6 @@
 import { BaseTimestampedEntity } from '../../../../../core/base-entities/base.entity';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { PasswordRecoveryStatus } from '../enums/user.enums';
+import { PasswordRecoveryStatus } from '../enums/user.enum';
 import { Users } from './user.entity';
 
 /**

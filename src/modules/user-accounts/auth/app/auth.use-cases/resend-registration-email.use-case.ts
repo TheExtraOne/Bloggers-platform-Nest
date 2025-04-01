@@ -5,7 +5,7 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EmailService } from '../../../utils/email.service';
 import { ResendRegistrationInputDto } from '../../api/input-dto/resend-registration.input-dto';
 import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
-import { EmailConfirmationStatus } from '../../../users/domain/enums/user.enums';
+import { EmailConfirmationStatus } from '../../../users/domain/enums/user.enum';
 import { Users } from '../../../users/domain/entities/user.entity';
 
 export class ResendRegistrationEmailCommand extends Command<void> {

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { LikeStatus } from '../../../likes/infrastructure/pg.likes.repository';
+import { LikeStatus } from '../../../likes/domain/enums/like-status.enum';
 
 export class CommentatorInfo {
   @ApiProperty({

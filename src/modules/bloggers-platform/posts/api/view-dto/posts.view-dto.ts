@@ -1,4 +1,4 @@
-import { LikeStatus } from '../../../likes/infrastructure/pg.likes.repository';
+import { LikeStatus } from '../../../likes/domain/enums/like-status.enum';
 import { Posts } from '../../domain/entities/post.entity';
 
 type TExtendedLikesInfo = {

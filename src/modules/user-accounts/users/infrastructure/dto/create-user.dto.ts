@@ -1,4 +1,4 @@
-import { EmailConfirmationStatus } from '../../domain/enums/user.enums';
+import { EmailConfirmationStatus } from '../../domain/enums/user.enum';
 
 export class CreateUserDto {
   login: string;
