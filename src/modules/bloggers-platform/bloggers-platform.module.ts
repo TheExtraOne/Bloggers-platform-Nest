@@ -27,6 +27,7 @@ import { EnrichEntitiesWithLikesUseCase } from './likes/app/likes.use-cases/enri
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Blogs } from './blogs/domain/entities/blog.entity';
 import { Posts } from './posts/domain/entities/post.entity';
+import { Comments } from './comments/domain/entities/comment.entity';
 
 const blogsUseCases = [CreateBlogUseCase, UpdateBlogUseCase, DeleteBlogUseCase];
 const postsUseCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
@@ -42,7 +43,10 @@ const likesUseCases = [
 ];
 
 @Module({
-  imports: [UserAccountsModule, TypeOrmModule.forFeature([Blogs, Posts])],
+  imports: [
+    UserAccountsModule,
+    TypeOrmModule.forFeature([Blogs, Posts, Comments]),
+  ],
   controllers: [
     SaBlogsController,
     BlogsController,

@@ -3,6 +3,7 @@ import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { UsersEmailConfirmation } from './email.confirmation.entity';
 import { UsersPasswordRecovery } from './password.recovery.entity';
 import { Sessions } from '../../../sessions/domain/entities/session.entity';
+import { Comments } from '../../../../bloggers-platform/comments/domain/entities/comment.entity';
 
 /**
  * Entity representing a user in the system.
@@ -63,6 +64,17 @@ export class Users extends BaseWithId {
   )
   passwordRecovery: UsersPasswordRecovery;
 
+  /**
+   * Collection of user's active sessions
+   * @type {Sessions[]}
+   */
   @OneToMany(() => Sessions, (sessions) => sessions.user)
   sessions: Sessions[];
+
+  /**
+   * Collection of comments created by the user
+   * @type {Comments[]}
+   */
+  @OneToMany(() => Comments, (comments) => comments.user)
+  comments: Comments[];
 }

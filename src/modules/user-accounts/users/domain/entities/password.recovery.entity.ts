@@ -43,12 +43,12 @@ export class UsersPasswordRecovery extends BaseTimestampedEntity {
     enum: PasswordRecoveryStatus,
     nullable: true,
   })
-  public status: PasswordRecoveryStatus;
+  public status: PasswordRecoveryStatus | null;
 
   /**
    * Unique UUID code sent to user's email for password recovery.
    * Used to verify the recovery request and allow password reset.
    */
   @Column({ type: 'uuid', nullable: true })
-  public recoveryCode: string;
+  public recoveryCode: string | null;
 }

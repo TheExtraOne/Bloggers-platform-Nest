@@ -63,7 +63,7 @@ export class PostsController {
     // );
     return posts;
   }
-  // TODO
+
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   @GetPostByIdSwagger()
@@ -96,7 +96,7 @@ export class PostsController {
       new EnrichEntitiesWithLikesCommand(comments, userId, EntityType.Comment),
     );
   }
-  // TODO
+
   @Post(':id/comments')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
@@ -105,7 +105,7 @@ export class PostsController {
     @CurrentUserId() userId: string,
     @Param('id') id: string,
     @Body() commentDto: CreateCommentInputDto,
-  ): Promise<PgCommentsViewDto | null> {
+  ): Promise<PgCommentsViewDto> {
     const commentId = await this.commandBus.execute(
       new CreateCommentCommand(id, userId, commentDto),
     );

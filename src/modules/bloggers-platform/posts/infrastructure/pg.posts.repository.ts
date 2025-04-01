@@ -32,6 +32,21 @@ export class PgPostsRepository extends PgBaseRepository {
     return post;
   }
 
+  async findPostByIdOrThrow(postId: string): Promise<Posts> {
+    if (!this.isCorrectUuid(postId)) {
+      throw new NotFoundException(ERRORS.POST_NOT_FOUND);
+    }
+    const post = await this.postsRepository.findOne({
+      where: { id: postId },
+      relations: { blog: true },
+    });
+    if (!post) {
+      throw new NotFoundException(ERRORS.POST_NOT_FOUND);
+    }
+
+    return post;
+  }
+
   async createPost(dto: {
     title: string;
     content: string;

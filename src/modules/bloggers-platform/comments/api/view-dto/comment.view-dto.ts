@@ -1,5 +1,5 @@
 import { LikeStatus } from '../../../likes/infrastructure/pg.likes.repository';
-import { TPgComment } from '../../infrastructure/query/pg.comments.query-repository';
+import { Comments } from '../../domain/entities/comment.entity';
 
 type TCommentatorInfo = {
   userId: string;
@@ -18,19 +18,19 @@ export class PgCommentsViewDto {
   createdAt: Date;
   likesInfo: TLikesInfo;
 
-  static mapToView(comment: TPgComment): PgCommentsViewDto {
+  static mapToView(comment: Comments): PgCommentsViewDto {
     const dto = new PgCommentsViewDto();
 
     dto.id = comment.id.toString();
     dto.content = comment.content;
     dto.commentatorInfo = {
-      userId: comment.commentator_id.toString(),
-      userLogin: comment.commentator_login,
+      userId: comment.user.id.toString(),
+      userLogin: comment.user.login,
     };
-    dto.createdAt = comment.created_at;
+    dto.createdAt = comment.createdAt;
     dto.likesInfo = {
-      likesCount: +comment.likes_count,
-      dislikesCount: +comment.dislikes_count,
+      likesCount: 0,
+      dislikesCount: 0,
       myStatus: LikeStatus.None,
     };
 

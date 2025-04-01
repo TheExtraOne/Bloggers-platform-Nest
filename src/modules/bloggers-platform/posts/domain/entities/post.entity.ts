@@ -5,8 +5,10 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Comments } from '../../../comments/domain/entities/comment.entity';
 
 /**
  * Entity representing a blog post in the system.
@@ -52,4 +54,11 @@ export class Posts extends BaseTimestampedEntity {
   @ManyToOne(() => Blogs, (blogs) => blogs.posts)
   @JoinColumn({ name: 'blog_id' })
   blog: Blogs;
+
+  /**
+   * Collection of comments associated with this post
+   * @type {Comments[]}
+   */
+  @OneToMany(() => Comments, (comments) => comments.post)
+  comments: Comments[];
 }

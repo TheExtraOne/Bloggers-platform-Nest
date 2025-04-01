@@ -1,13 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../../core/base-classes/pg.base.repository';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { PgCommentsViewDto } from '../../api/view-dto/comment.view-dto';
 import { GetCommentsQueryParams } from '../../api/input-dto/get-comments.query-params.input-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
 import { PgPostsQueryRepository } from '../../../posts/infrastructure/query/pg.posts.query-repository';
-import { ERRORS } from 'src/constants';
+import { ERRORS } from '../../../../../constants';
+import { Comments } from '../../domain/entities/comment.entity';
 
+// TODO: delete
 export type TPgComment = {
   id: string;
   content: string;
@@ -27,6 +29,8 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly pgPostsQueryRepository: PgPostsQueryRepository,
+    @InjectRepository(Comments)
+    private readonly commentsRepository: Repository<Comments>,
   ) {
     super();
   }
@@ -36,30 +40,18 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
     }
 
-    const query = `
-      SELECT comments.*, 
-             users.login as commentator_login,
-             COUNT(CASE WHEN l.like_status = 'Like' THEN 1 END) as likes_count,
-             COUNT(CASE WHEN l.like_status = 'Dislike' THEN 1 END) as dislikes_count
-      FROM public.comments as comments
-      LEFT JOIN public.users as users
-      ON comments.commentator_id = users.id
-      LEFT JOIN public.likes as l
-      ON comments.id = l.parent_id
-      WHERE comments.id = $1
-      AND comments.deleted_at IS NULL
-      GROUP BY comments.id, users.login
-    `;
-    const params = [commentId];
-    const result = await this.dataSource.query(query, params);
+    const comment = await this.commentsRepository.findOne({
+      where: {
+        id: commentId,
+      },
+      relations: ['user'],
+    });
 
-    if (!result[0]) {
-      throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
-    }
+    if (!comment) throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
 
-    return PgCommentsViewDto.mapToView(result[0]);
+    return PgCommentsViewDto.mapToView(comment);
   }
-
+  // TODO
   async findAllCommentsForPostId(
     postId: string,
     query: GetCommentsQueryParams,
@@ -91,7 +83,7 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
       size: pageSize,
     });
   }
-
+  // TODO
   private async getTotalCount(postId: string): Promise<[{ count: string }]> {
     return this.dataSource.query(
       `
@@ -103,7 +95,7 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
       [postId],
     );
   }
-
+  // TODO
   async findCommentsByPostId(
     postId: string,
     sortColumn: string,
@@ -131,6 +123,8 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
     const params = [postId, limit, offset];
     const result: TPgComment[] = await this.dataSource.query(query, params);
 
-    return result.map((comment) => PgCommentsViewDto.mapToView(comment));
+    return result.map((comment) =>
+      PgCommentsViewDto.mapToView(comment as unknown as Comments),
+    );
   }
 }

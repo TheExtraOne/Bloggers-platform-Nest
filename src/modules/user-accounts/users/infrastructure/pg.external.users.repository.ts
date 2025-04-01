@@ -9,7 +9,11 @@ export class PgExternalUsersRepository extends PgBaseRepository {
     super();
   }
 
-  async findUserById(userId: string): Promise<Users | null> {
-    return this.pgUsersRepository.findUserById(userId);
+  async checkUserExists(userId: string): Promise<boolean> {
+    return this.pgUsersRepository.checkUserExists(userId);
+  }
+
+  async findUserOrThrow(userId: string): Promise<Users> {
+    return this.pgUsersRepository.findUserOrThrow(userId);
   }
 }

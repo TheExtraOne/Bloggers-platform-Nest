@@ -75,12 +75,12 @@ export class PgUsersRepository extends PgBaseRepository {
     return user;
   }
 
-  async findUserById(userId: string): Promise<Users | null> {
+  async checkUserExists(userId: string): Promise<boolean> {
     if (!this.isCorrectNumber(userId)) {
-      return null;
+      return false;
     }
 
-    return this.usersRepository.findOne({
+    return await this.usersRepository.exists({
       where: { id: +userId },
     });
   }

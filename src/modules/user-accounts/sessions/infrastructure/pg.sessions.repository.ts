@@ -7,16 +7,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { Not, Repository } from 'typeorm';
 import { Sessions } from '../domain/entities/session.entity';
-import { PgExternalUsersRepository } from '../../users/infrastructure/pg.external.users.repository';
 import { Users } from '../../users/domain/entities/user.entity';
 import { ERRORS } from '../../../../constants';
+import { PgUsersRepository } from '../../users/infrastructure/pg.users.repository';
 
 @Injectable()
 export class PgSessionsRepository extends PgBaseRepository {
   constructor(
     @InjectRepository(Sessions)
     private readonly sessionsRepository: Repository<Sessions>,
-    private readonly pgExternalUsersRepository: PgExternalUsersRepository,
+    private readonly pgUsersRepository: PgUsersRepository,
   ) {
     super();
   }
@@ -34,8 +34,7 @@ export class PgSessionsRepository extends PgBaseRepository {
       throw new InternalServerErrorException();
     }
 
-    const user: Users | null =
-      await this.pgExternalUsersRepository.findUserById(userId);
+    const user: Users = await this.pgUsersRepository.findUserOrThrow(userId);
 
     const session = new Sessions();
     session.id = deviceId;
@@ -43,7 +42,7 @@ export class PgSessionsRepository extends PgBaseRepository {
     session.title = title;
     session.lastActiveDate = lastActiveDate;
     session.expirationDate = expirationDate;
-    session.user = user as Users;
+    session.user = user;
 
     await this.sessionsRepository.save(session);
   }

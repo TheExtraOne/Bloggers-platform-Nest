@@ -1,31 +1,37 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { ERRORS } from '../../../../constants';
+import { Comments } from '../domain/entities/comment.entity';
+import { Posts } from '../../posts/domain/entities/post.entity';
+import { Users } from '../../../user-accounts/users/domain/entities/user.entity';
 
 @Injectable()
 export class PgCommentsRepository extends PgBaseRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(Comments)
+    private readonly commentsRepository: Repository<Comments>,
+  ) {
     super();
   }
 
   async createComment(
-    postId: string,
-    userId: string,
+    post: Posts,
+    user: Users,
     content: string,
   ): Promise<{ commentId: string }> {
-    const query = `
-      INSERT INTO public.comments (post_id, content, commentator_id)
-      VALUES ($1, $2, $3)
-      RETURNING id
-  `;
-    const params = [postId, content, userId];
-    const result = await this.dataSource.query(query, params);
+    const newComment = new Comments();
+    newComment.post = post;
+    newComment.content = content;
+    newComment.user = user;
 
-    return { commentId: result[0].id };
+    await this.commentsRepository.save(newComment);
+
+    return { commentId: newComment.id.toString() };
   }
-
+  // TODO
   async findCommentById(
     commentId: string,
   ): Promise<{ commentId: string; commentatorId: string } | null> {
@@ -46,7 +52,7 @@ export class PgCommentsRepository extends PgBaseRepository {
       ? { commentId: result[0].id, commentatorId: result[0].commentator_id }
       : null;
   }
-
+  // TODO
   async updateComment(
     commentId: string,
     userId: string,
@@ -66,7 +72,7 @@ export class PgCommentsRepository extends PgBaseRepository {
     const params = [newContent, commentId, userId];
     await this.dataSource.query(query, params);
   }
-
+  // TODO
   async deleteComment(commentId: string, userId: string): Promise<void> {
     if (!this.isCorrectUuid(commentId)) {
       throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);

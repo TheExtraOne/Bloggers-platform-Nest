@@ -1,7 +1,5 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateCommentInputDto } from '../../api/input-dto/comment.input.dto';
-import { NotFoundException } from '@nestjs/common';
-import { ERRORS } from '../../../../../constants';
 import { PgPostsRepository } from '../../../posts/infrastructure/pg.posts.repository';
 import { PgExternalUsersRepository } from '../../../../user-accounts/users/infrastructure/pg.external.users.repository';
 import { PgCommentsRepository } from '../../infrastructure/pg.comments.repository';
@@ -29,19 +27,15 @@ export class CreateCommentUseCase
   async execute(command: CreateCommentCommand): Promise<string> {
     const { postId, userId, dto } = command;
 
-    // Check if post exists
-    const postExists = await this.pgPostsRepository.checkPostExists(postId);
-    if (!postExists) throw new NotFoundException(ERRORS.POST_NOT_FOUND);
-
-    // Check if user exists
-    const user = await this.pgUsersRepository.findUserById(userId);
-    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    const post = await this.pgPostsRepository.findPostByIdOrThrow(postId);
+    const user = await this.pgUsersRepository.findUserOrThrow(userId);
 
     const newComment = await this.pgCommentsRepository.createComment(
-      postId,
-      userId,
+      post,
+      user,
       dto.content,
     );
+
     return newComment.commentId;
   }
 }

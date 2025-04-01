@@ -39,7 +39,7 @@ export class CommentsController {
     private readonly pgCommentsQueryRepository: PgCommentsQueryRepository,
     private readonly commandBus: CommandBus,
   ) {}
-
+  // TODO
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   @GetCommentByIdSwagger()
@@ -55,7 +55,7 @@ export class CommentsController {
       new EnrichEntityWithLikeCommand(comment, userId, EntityType.Comment),
     );
   }
-
+  // TODO
   @Put(':id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -69,7 +69,7 @@ export class CommentsController {
       new UpdateCommentCommand(id, userId, updateCommentDto),
     );
   }
-
+  // TODO
   @Put(':id/like-status')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -88,7 +88,7 @@ export class CommentsController {
       ),
     );
   }
-
+  // TODO
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
