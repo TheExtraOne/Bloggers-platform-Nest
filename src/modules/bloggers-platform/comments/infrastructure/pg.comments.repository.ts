@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { ERRORS } from '../../../../constants';
 import { Comments } from '../domain/entities/comment.entity';
@@ -10,7 +10,6 @@ import { Users } from '../../../user-accounts/users/domain/entities/user.entity'
 @Injectable()
 export class PgCommentsRepository extends PgBaseRepository {
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(Comments)
     private readonly commentsRepository: Repository<Comments>,
   ) {
@@ -31,61 +30,53 @@ export class PgCommentsRepository extends PgBaseRepository {
 
     return { commentId: newComment.id.toString() };
   }
-  // TODO
-  async findCommentById(
-    commentId: string,
-  ): Promise<{ commentId: string; commentatorId: string } | null> {
-    if (!this.isCorrectUuid(commentId)) {
-      return null;
-    }
 
-    const query = `
-      SELECT *
-      FROM public.comments
-      WHERE comments.id = $1
-      AND comments.deleted_at IS NULL
-    `;
-    const params = [commentId];
-    const result = await this.dataSource.query(query, params);
-
-    return result[0]
-      ? { commentId: result[0].id, commentatorId: result[0].commentator_id }
-      : null;
-  }
-  // TODO
-  async updateComment(
-    commentId: string,
-    userId: string,
-    newContent: string,
-  ): Promise<void> {
+  async findCommentByIdOrThrow(commentId: string): Promise<Comments> {
     if (!this.isCorrectUuid(commentId)) {
       throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
     }
 
-    const query = `
-      UPDATE public.comments
-      SET content = $1, updated_at = NOW()
-      WHERE comments.id = $2
-      AND comments.deleted_at IS NULL
-      AND comments.commentator_id = $3
-    `;
-    const params = [newContent, commentId, userId];
-    await this.dataSource.query(query, params);
+    const comment = await this.commentsRepository.findOne({
+      where: {
+        id: commentId,
+      },
+      relations: ['user'],
+    });
+
+    if (!comment) {
+      throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
+    }
+
+    return comment;
   }
-  // TODO
-  async deleteComment(commentId: string, userId: string): Promise<void> {
+
+  async checkCommentExists(commentId: string): Promise<boolean> {
+    if (!this.isCorrectUuid(commentId)) {
+      return false;
+    }
+    return this.commentsRepository.exists({
+      where: {
+        id: commentId,
+      },
+    });
+  }
+
+  async updateComment(commentId: string, newContent: string): Promise<void> {
+    const comment = await this.findCommentByIdOrThrow(commentId);
+    comment.content = newContent;
+    await this.commentsRepository.save(comment);
+  }
+
+  async deleteComment(commentId: string): Promise<void> {
     if (!this.isCorrectUuid(commentId)) {
       throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
     }
 
-    const query = `
-      UPDATE public.comments
-      SET deleted_at = NOW(), updated_at = NOW()
-      WHERE comments.id = $1
-      AND comments.deleted_at IS NULL
-      AND comments.commentator_id = $2
-    `;
-    const params = [commentId, userId];
-    await this.dataSource.query(query, params);
+    const result = await this.commentsRepository.softDelete(commentId);
+
+    // `result[affected]` contains the number of affected rows.
+    if (result.affected === 0) {
+      throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
+    }
   }
 }

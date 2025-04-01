@@ -33,7 +33,8 @@ export class TestingController {
     //   public.users,
     //   public.sessions,
     //   public.blogs,
-    //   public.posts
+    //   public.posts,
+    //   public.comments
     //   RESTART IDENTITY CASCADE;
     // `);
   }

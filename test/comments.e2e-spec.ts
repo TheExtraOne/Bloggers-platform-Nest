@@ -80,7 +80,10 @@ describe('Comments Controller (e2e)', () => {
       content: 'Test Content',
       blogId: createdBlogId,
     };
-    const postResponse = await postsTestManager.createPost(validPost);
+    const postResponse = await postsTestManager.createPost(
+      createdBlogId,
+      validPost,
+    );
     createdPostId = postResponse.id;
 
     validComment = {
@@ -218,11 +221,10 @@ describe('Comments Controller (e2e)', () => {
 
     it('should return empty items array if post has no comments', async () => {
       // Create a new post without comments
-      const newPostResponse = await postsTestManager.createPost({
+      const newPostResponse = await postsTestManager.createPost(createdBlogId, {
         title: 'Post without comments',
         shortDescription: 'Test Description',
         content: 'Test Content',
-        blogId: createdBlogId,
       });
 
       const response = await postsTestManager.getPostComments(
@@ -239,8 +241,8 @@ describe('Comments Controller (e2e)', () => {
     });
 
     it('should paginate comments correctly', async () => {
-      // Create 15 comments
-      for (let i = 0; i < 15; i++) {
+      // Create 11 comments
+      for (let i = 0; i < 11; i++) {
         await postsTestManager.createComment(
           createdPostId,
           { content: `Comment ${i + 1} with some content` },
@@ -255,16 +257,16 @@ describe('Comments Controller (e2e)', () => {
       });
       expect(firstPage.items.length).toBe(10);
       expect(firstPage.page).toBe(1);
-      expect(firstPage.totalCount).toBe(16); // 15 new + 1 initial
+      expect(firstPage.totalCount).toBe(12); // 11 new + 1 initial
 
-      // Get second page (6 items)
+      // Get second page (2 items)
       const secondPage = await postsTestManager.getPostComments(createdPostId, {
         pageNumber: 2,
         pageSize: 10,
       });
-      expect(secondPage.items.length).toBe(6);
+      expect(secondPage.items.length).toBe(2);
       expect(secondPage.page).toBe(2);
-      expect(secondPage.totalCount).toBe(16);
+      expect(secondPage.totalCount).toBe(12);
     });
   });
 

@@ -79,8 +79,9 @@ export class UpdateLikeStatusUseCase
     }
 
     if (entityType === EntityType.Comment) {
-      const comment = await this.pgCommentsRepository.findCommentById(parentId);
-      if (!comment) {
+      const commentExists =
+        await this.pgCommentsRepository.checkCommentExists(parentId);
+      if (!commentExists) {
         throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
       }
     } else {

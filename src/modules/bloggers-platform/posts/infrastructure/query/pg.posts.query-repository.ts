@@ -26,50 +26,11 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     super();
   }
 
-  async findPostById(postId: string): Promise<PgPostsViewDto | null> {
+  async findPostById(postId: string): Promise<PgPostsViewDto> {
     if (!this.isCorrectUuid(postId)) {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
-    // const query = `
-    //   WITH post_counts AS (
-    //       SELECT
-    //           posts.*,
-    //           blogs.name AS blog_name,
-    //           COUNT(CASE WHEN l.like_status = 'Like' THEN 1 END) as likes_count,
-    //           COUNT(CASE WHEN l.like_status = 'Dislike' THEN 1 END) as dislikes_count
-    //       FROM public.posts AS posts
-    //       JOIN public.blogs AS blogs
-    //           ON posts.blog_id = blogs.id
-    //       LEFT JOIN public.likes as l
-    //           ON posts.id = l.parent_id
-    //       WHERE posts.id = $1
-    //       AND posts.deleted_at IS NULL
-    //       GROUP BY posts.id, blogs.name
-    //   )
-    //   SELECT
-    //       p.*,
-    //       COALESCE(likes_details.likes, '[]') AS recent_likes
-    //   FROM post_counts p
-    //   LEFT JOIN LATERAL (
-    //       SELECT json_agg(
-    //           json_build_object(
-    //               'userId', users.id,
-    //               'login', users.login,
-    //               'addedAt', post_likes.created_at
-    //           ) ORDER BY post_likes.created_at DESC
-    //       ) AS likes
-    //       FROM (
-    //           SELECT post_likes.user_id, post_likes.created_at
-    //           FROM public.likes AS post_likes
-    //           WHERE post_likes.parent_id = p.id
-    //           AND post_likes.like_status = 'Like'
-    //           ORDER BY post_likes.created_at DESC
-    //           LIMIT 3
-    //       ) AS post_likes
-    //       JOIN public.users AS users
-    //           ON post_likes.user_id = users.id
-    //   ) AS likes_details ON true;
-    // `;
+
     const post: Posts | null = await this.postsRepository.findOne({
       where: {
         id: postId,

@@ -1,7 +1,7 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ERRORS } from '../../../../../constants';
 import { PgCommentsRepository } from '../../infrastructure/pg.comments.repository';
+import { Comments } from '../../domain/entities/comment.entity';
 
 export class DeleteCommentCommand extends Command<void> {
   constructor(
@@ -22,19 +22,14 @@ export class DeleteCommentUseCase
     const { commentId, userId } = command;
 
     // Check, that comment exists
-    const comment: {
-      commentId: string;
-      commentatorId: string;
-    } | null = await this.pgCommentsRepository.findCommentById(commentId);
-    if (!comment) {
-      throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
-    }
+    const comment: Comments =
+      await this.pgCommentsRepository.findCommentByIdOrThrow(commentId);
 
     // Check, that user is able to update the comment
-    if (comment.commentatorId !== userId) {
+    if (comment.user.id.toString() !== userId) {
       throw new ForbiddenException();
     }
 
-    await this.pgCommentsRepository.deleteComment(commentId, userId);
+    await this.pgCommentsRepository.deleteComment(commentId);
   }
 }

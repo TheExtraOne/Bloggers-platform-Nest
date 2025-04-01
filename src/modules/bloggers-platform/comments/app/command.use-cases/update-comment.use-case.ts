@@ -2,8 +2,7 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UpdateCommentInputDto } from '../../api/input-dto/comment.input.dto';
 import { ForbiddenException } from '@nestjs/common';
 import { PgCommentsRepository } from '../../infrastructure/pg.comments.repository';
-import { NotFoundException } from '@nestjs/common';
-import { ERRORS } from '../../../../../constants';
+import { Comments } from '../../domain/entities/comment.entity';
 
 export class UpdateCommentCommand extends Command<void> {
   constructor(
@@ -25,23 +24,14 @@ export class UpdateCommentUseCase
     const { commentId, userId, dto } = command;
 
     // Check, that comment exists
-    const comment: {
-      commentId: string;
-      commentatorId: string;
-    } | null = await this.pgCommentsRepository.findCommentById(commentId);
-    if (!comment) {
-      throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
-    }
+    const comment: Comments =
+      await this.pgCommentsRepository.findCommentByIdOrThrow(commentId);
 
     // Check, that user is able to update the comment
-    if (comment.commentatorId !== userId) {
+    if (comment.user.id.toString() !== userId) {
       throw new ForbiddenException();
     }
 
-    await this.pgCommentsRepository.updateComment(
-      commentId,
-      userId,
-      dto.content,
-    );
+    await this.pgCommentsRepository.updateComment(commentId, dto.content);
   }
 }
