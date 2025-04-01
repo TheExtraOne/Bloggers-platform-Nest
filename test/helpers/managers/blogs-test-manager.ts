@@ -19,7 +19,7 @@ export class BlogsTestManager {
     password: string = 'qwerty',
   ): Promise<PgBlogsViewDto> {
     const response = await request(this.app.getHttpServer())
-      .post(`/${PATHS.BLOGS}`)
+      .post(`/${PATHS.SA_BLOGS}`)
       .auth(username, password)
       .send(createModel)
       .expect(statusCode);
@@ -35,7 +35,7 @@ export class BlogsTestManager {
     password: string = 'qwerty',
   ): Promise<void> {
     await request(this.app.getHttpServer())
-      .put(`/${PATHS.BLOGS}/${id}`)
+      .put(`/${PATHS.SA_BLOGS}/${id}`)
       .auth(username, password)
       .send(updateModel)
       .expect(statusCode);
@@ -48,7 +48,7 @@ export class BlogsTestManager {
     password: string = 'qwerty',
   ): Promise<void> {
     await request(this.app.getHttpServer())
-      .delete(`/${PATHS.BLOGS}/${id}`)
+      .delete(`/${PATHS.SA_BLOGS}/${id}`)
       .auth(username, password)
       .expect(statusCode);
   }
@@ -61,7 +61,7 @@ export class BlogsTestManager {
     password: string = 'qwerty',
   ): Promise<PgPostsViewDto> {
     const response = await request(this.app.getHttpServer())
-      .post(`/${PATHS.BLOGS}/${blogId}/posts`)
+      .post(`/${PATHS.SA_BLOGS}/${blogId}/posts`)
       .auth(username, password)
       .send(createModel)
       .expect(statusCode);

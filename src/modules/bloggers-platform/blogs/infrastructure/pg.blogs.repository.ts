@@ -76,8 +76,15 @@ export class PgBlogsRepository extends PgBaseRepository {
   }
 
   async deleteBlog(id: string): Promise<void> {
-    const blog = await this.findBlogByIdOrThrow(id);
+    if (!this.isCorrectNumber(id)) {
+      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+    }
 
-    await this.blogsRepository.softDelete(blog.id);
+    const result = await this.blogsRepository.softDelete(id);
+
+    // `result[affected]` contains the number of affected rows.
+    if (result.affected === 0) {
+      throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+    }
   }
 }

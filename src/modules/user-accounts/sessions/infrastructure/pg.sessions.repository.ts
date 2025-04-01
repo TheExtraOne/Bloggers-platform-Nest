@@ -1,10 +1,15 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { Not, Repository } from 'typeorm';
 import { Sessions } from '../domain/entities/session.entity';
 import { PgExternalUsersRepository } from '../../users/infrastructure/pg.external.users.repository';
 import { Users } from '../../users/domain/entities/user.entity';
+import { ERRORS } from '../../../../constants';
 
 @Injectable()
 export class PgSessionsRepository extends PgBaseRepository {
@@ -25,7 +30,6 @@ export class PgSessionsRepository extends PgBaseRepository {
     userId: string;
   }): Promise<void> {
     const { userId, deviceId, ip, title, lastActiveDate, expirationDate } = dto;
-    // TODO: refactor
     if (!this.isCorrectNumber(userId) || !this.isCorrectUuid(deviceId)) {
       throw new InternalServerErrorException();
     }
@@ -43,6 +47,7 @@ export class PgSessionsRepository extends PgBaseRepository {
 
     await this.sessionsRepository.save(session);
   }
+
   async findSessionByDeviceId(deviceId: string): Promise<Sessions | null> {
     if (!this.isCorrectUuid(deviceId)) {
       return null;
@@ -93,7 +98,7 @@ export class PgSessionsRepository extends PgBaseRepository {
 
   async deleteSessionByDeviceId(deviceId: string): Promise<void> {
     if (!this.isCorrectUuid(deviceId)) {
-      throw new InternalServerErrorException();
+      throw new NotFoundException(ERRORS.SESSION_NOT_FOUND);
     }
 
     await this.sessionsRepository.softDelete({ id: deviceId });

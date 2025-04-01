@@ -12,7 +12,6 @@ import { Users } from '../domain/entities/user.entity';
 import { UsersEmailConfirmation } from '../domain/entities/email.confirmation.entity';
 import { UsersPasswordRecovery } from '../domain/entities/password.recovery.entity';
 
-// TODO: refactor. Move repeatable parts of user check into a separate method
 @Injectable()
 export class PgUsersRepository extends PgBaseRepository {
   constructor(
@@ -59,7 +58,6 @@ export class PgUsersRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.USER_NOT_FOUND);
     }
 
-    // softDelete
     const result = await this.usersRepository.softDelete(userId);
 
     // `result[affected]` contains the number of affected rows.
@@ -87,9 +85,23 @@ export class PgUsersRepository extends PgBaseRepository {
     });
   }
 
+  async findUserOrThrow(userId: string): Promise<Users> {
+    if (!this.isCorrectNumber(userId)) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
+
+    const user = await this.usersRepository.findOne({
+      where: { id: +userId },
+      relations: ['emailConfirmation', 'passwordRecovery'],
+    });
+
+    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+
+    return user;
+  }
+
   async findUserByLoginOrEmail(loginOrEmail: string): Promise<Users | null> {
     const user = await this.usersRepository.findOne({
-      select: [],
       where: [{ login: loginOrEmail }, { email: loginOrEmail }],
       relations: ['emailConfirmation'],
     });
@@ -148,16 +160,7 @@ export class PgUsersRepository extends PgBaseRepository {
     newConfirmationCode: string,
     newExpirationDate: Date,
   ): Promise<void> {
-    if (!this.isCorrectNumber(userId)) {
-      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
-    }
-
-    const user = await this.usersRepository.findOne({
-      where: { id: +userId },
-      relations: ['emailConfirmation'],
-    });
-
-    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    const user = await this.findUserOrThrow(userId);
 
     user.emailConfirmation.confirmationCode = newConfirmationCode;
     user.emailConfirmation.expirationDate = newExpirationDate;
@@ -171,13 +174,7 @@ export class PgUsersRepository extends PgBaseRepository {
     newRecoveryCode: string,
     newExpirationDate: Date,
   ): Promise<void> {
-    if (!this.isCorrectNumber(userId)) {
-      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
-    }
-    const user = await this.usersRepository.findOne({
-      where: { id: +userId },
-    });
-    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    const user = await this.findUserOrThrow(userId);
 
     const passwordRecovery = new UsersPasswordRecovery();
     passwordRecovery.recoveryCode = newRecoveryCode;
@@ -211,11 +208,7 @@ export class PgUsersRepository extends PgBaseRepository {
     userId: string,
     newPassword: string,
   ): Promise<void> {
-    const user = await this.usersRepository.findOne({
-      where: { id: +userId },
-    });
-
-    if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    const user = await this.findUserOrThrow(userId);
 
     user.passwordHash = newPassword;
 

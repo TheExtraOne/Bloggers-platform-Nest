@@ -34,7 +34,7 @@ describe('Blogs Controller (e2e)', () => {
     await app.close();
   });
 
-  describe('POST /blogs', () => {
+  describe('POST /sa/blogs', () => {
     const validBlog: CreateBlogInputDto = {
       name: 'Test Blog',
       description: 'Test Description',
@@ -208,7 +208,7 @@ describe('Blogs Controller (e2e)', () => {
     });
   });
 
-  describe('PUT /blogs/:id', () => {
+  describe('PUT /sa/blogs/:id', () => {
     const validBlog: CreateBlogInputDto = {
       name: 'Test Blog',
       description: 'Test Description',
@@ -271,7 +271,7 @@ describe('Blogs Controller (e2e)', () => {
     });
   });
 
-  describe('DELETE /blogs/:id', () => {
+  describe('DELETE /sa/blogs/:id', () => {
     const validBlog: CreateBlogInputDto = {
       name: 'Test Blog',
       description: 'Test Description',
@@ -304,7 +304,7 @@ describe('Blogs Controller (e2e)', () => {
     });
   });
 
-  describe('POST /blogs/:id/posts', () => {
+  describe('POST /sa/blogs/:id/posts', () => {
     const validPost: Omit<CreatePostInputDto, 'blogId'> = {
       title: 'Test Post',
       shortDescription: 'Test Short Description',

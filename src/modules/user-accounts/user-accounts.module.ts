@@ -7,7 +7,6 @@ import { JwtStrategy } from './guards/jwt/jwt-auth.strategy';
 import { BasicStrategy } from './guards/basic/basic.strategy';
 import { JwtRefreshStrategy } from './guards/jwt/jwt-refresh.strategy';
 import { UserAccountsConfig } from './user-account.config';
-import { DeleteSessionUseCase } from './sessions/app/sessions.use-cases/delete-session.use-case';
 import { ConfirmEmailRegistrationUseCase } from './auth/app/auth.use-cases/confirm-email-registration.use-case';
 import { LoginUseCases } from './auth/app/auth.use-cases/login.use-cases';
 import { RefreshTokenUseCases } from './auth/app/auth.use-cases/refresh-token.use-cases';
@@ -60,7 +59,6 @@ const authUseCases = [
 ];
 
 const sessionsUseCases = [
-  DeleteSessionUseCase,
   DeleteAllSessionsUseCase,
   DeleteSessionByIdUseCase,
   ValidateRefreshTokenUseCase,

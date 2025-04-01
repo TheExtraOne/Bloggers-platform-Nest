@@ -14,13 +14,14 @@ export class PostsTestManager {
   constructor(private app: INestApplication) {}
 
   async createPost(
-    createModel: CreatePostInputDto,
+    blogId: string,
+    createModel: Omit<CreatePostInputDto, 'blogId'>,
     statusCode: number = HttpStatus.CREATED,
     username: string = 'admin',
     password: string = 'qwerty',
   ): Promise<PgPostsViewDto> {
     const response = await request(this.app.getHttpServer())
-      .post(`/${PATHS.POSTS}`)
+      .post(`/${PATHS.SA_BLOGS}/${blogId}/posts`)
       .auth(username, password)
       .send(createModel)
       .expect(statusCode);
@@ -29,27 +30,29 @@ export class PostsTestManager {
   }
 
   async updatePost(
-    id: string,
+    blogId: string,
+    postId: string,
     updateModel: UpdatePostInputDto,
     statusCode: number = HttpStatus.NO_CONTENT,
     username: string = 'admin',
     password: string = 'qwerty',
   ): Promise<void> {
     await request(this.app.getHttpServer())
-      .put(`/${PATHS.POSTS}/${id}`)
+      .put(`/${PATHS.SA_BLOGS}/${blogId}/${PATHS.POSTS}/${postId}`)
       .auth(username, password)
       .send(updateModel)
       .expect(statusCode);
   }
 
   async deletePost(
-    id: string,
+    blogId: string,
+    postId: string,
     statusCode: number = HttpStatus.NO_CONTENT,
     username: string = 'admin',
     password: string = 'qwerty',
   ): Promise<void> {
     await request(this.app.getHttpServer())
-      .delete(`/${PATHS.POSTS}/${id}`)
+      .delete(`/${PATHS.SA_BLOGS}/${blogId}/${PATHS.POSTS}/${postId}`)
       .auth(username, password)
       .expect(statusCode);
   }
@@ -58,11 +61,10 @@ export class PostsTestManager {
     const posts = [] as PgPostsViewDto[];
 
     for (let i = 0; i < count; ++i) {
-      const response = await this.createPost({
+      const response = await this.createPost(blogId, {
         title: `post${i}`,
         shortDescription: `description of post${i}`,
         content: `content of post${i}`,
-        blogId,
       });
 
       posts.push(response);

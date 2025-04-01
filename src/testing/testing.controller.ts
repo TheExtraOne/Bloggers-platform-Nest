@@ -31,7 +31,9 @@ export class TestingController {
     //   public.users_password_recovery,
     //   public.users_email_confirmation,
     //   public.users,
-    //   public.sessions
+    //   public.sessions,
+    //   public.blogs,
+    //   public.posts
     //   RESTART IDENTITY CASCADE;
     // `);
   }

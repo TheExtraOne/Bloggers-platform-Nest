@@ -26,7 +26,6 @@ import { CommandBus } from '@nestjs/cqrs';
 import { JwtRefreshGuard } from '../../guards/jwt/jwt-refresh.guard';
 import { CurrentUserData } from '../../guards/decorators/current-user-data.decorator';
 import { RefreshTokenCommand } from '../app/auth.use-cases/refresh-token.use-cases';
-import { DeleteSessionCommand } from '../../sessions/app/sessions.use-cases/delete-session.use-case';
 import { CreateUserInputDto } from '../../users/api/input-dto/users.input-dto';
 import { ResendRegistrationEmailCommand } from '../app/auth.use-cases/resend-registration-email.use-case';
 import { SendRecoverPasswordEmailCommand } from '../app/auth.use-cases/send-recover-password-email.use-case';
@@ -44,6 +43,7 @@ import {
 } from './swagger';
 import { PgUsersQueryRepository } from '../../users/infrastructure/query/pg.users.query-repository';
 import { PGMeViewDto } from '../../users/api/view-dto/users.view-dto';
+import { DeleteSessionByIdCommand } from '../../sessions/app/sessions.use-cases/delete-session-by-id.use-case';
 
 // TODO: add cron job for cleaning sessions
 @UseGuards(ThrottlerGuard)
@@ -116,10 +116,12 @@ export class AuthController {
   @LogoutSwagger()
   async logout(
     @CurrentUserData()
-    { deviceId }: { deviceId: string },
+    { deviceId, userId }: { deviceId: string; userId: string },
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    await this.commandBus.execute(new DeleteSessionCommand(deviceId));
+    await this.commandBus.execute(
+      new DeleteSessionByIdCommand(deviceId, userId),
+    );
     response.clearCookie('refreshToken');
   }
 

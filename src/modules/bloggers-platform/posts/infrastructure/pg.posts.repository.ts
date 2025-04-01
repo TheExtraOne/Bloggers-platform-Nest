@@ -76,12 +76,16 @@ export class PgPostsRepository extends PgBaseRepository {
   }
 
   async deletePost(postId: string, blogId: string): Promise<void> {
-    const post: Posts = await this.findPostByBlogIdAndPostIdOrThrow(
-      blogId,
-      postId,
-    );
+    if (!this.isCorrectUuid(postId) || !this.isCorrectNumber(blogId)) {
+      throw new NotFoundException(ERRORS.POST_NOT_FOUND);
+    }
 
-    await this.postsRepository.softDelete(post.id);
+    const result = await this.postsRepository.softDelete(postId);
+
+    // `result[affected]` contains the number of affected rows.
+    if (result.affected === 0) {
+      throw new NotFoundException(ERRORS.POST_NOT_FOUND);
+    }
   }
 
   async checkPostExists(postId: string): Promise<boolean> {

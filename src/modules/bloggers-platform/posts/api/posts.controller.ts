@@ -40,7 +40,6 @@ import {
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
 // import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
 
-// TODO: tests for blogs and posts
 @Controller(PATHS.POSTS)
 export class PostsController {
   constructor(
