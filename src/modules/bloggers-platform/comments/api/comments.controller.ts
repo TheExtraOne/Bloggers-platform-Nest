@@ -20,7 +20,7 @@ import { DeleteCommentCommand } from '../app/command.use-cases/delete-comment.us
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
 import { UpdateLikeStatusCommand } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
-// import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
+import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 import {
   GetCommentByIdSwagger,
   UpdateCommentSwagger,
@@ -29,7 +29,7 @@ import {
 } from './swagger';
 import { PgCommentsQueryRepository } from '../infrastructure/query/pg.comments.query-repository';
 import { EntityType } from '../../likes/domain/enums/entity-type.enum';
-// import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
+import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
 
 @Controller(PATHS.COMMENTS)
 export class CommentsController {
@@ -37,22 +37,21 @@ export class CommentsController {
     private readonly pgCommentsQueryRepository: PgCommentsQueryRepository,
     private readonly commandBus: CommandBus,
   ) {}
-  // TODO
+
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   @GetCommentByIdSwagger()
   async getCommentById(
     @Param('id') id: string,
-    // @CurrentOptionalUserId() userId: string | null,
+    @CurrentOptionalUserId() userId: string | null,
   ): Promise<PgCommentsViewDto> {
     const comment: PgCommentsViewDto =
       await this.pgCommentsQueryRepository.findCommentById(id);
 
     // Enrich comment with user's like status
-    // return this.commandBus.execute(
-    //   new EnrichEntityWithLikeCommand(comment, userId, EntityType.Comment),
-    // );
-    return comment;
+    return this.commandBus.execute(
+      new EnrichEntityWithLikeCommand(comment, userId, EntityType.Comment),
+    );
   }
 
   @Put(':id')

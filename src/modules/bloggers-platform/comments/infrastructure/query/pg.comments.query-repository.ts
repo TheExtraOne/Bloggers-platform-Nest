@@ -26,16 +26,32 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
     }
 
-    const comment = await this.commentsRepository.findOne({
-      where: {
-        id: +commentId,
-      },
-      relations: ['user'],
-    });
+    const commentWithStats = await this.commentsRepository
+      .createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.user', 'user')
+      .leftJoin('comment.commentLikes', 'comment_likes')
+      .addSelect([
+        `SUM(CASE WHEN comment_likes.likeStatus = 'Like' THEN 1 ELSE 0 END) AS "likesCount"`,
+        `SUM(CASE WHEN comment_likes.likeStatus = 'Dislike' THEN 1 ELSE 0 END) AS "dislikesCount"`,
+      ])
+      .where('comment.id = :commentId', { commentId: +commentId })
+      .groupBy('comment.id')
+      .addGroupBy('user.id')
+      .getRawAndEntities();
 
+    const comment = commentWithStats.entities[0];
     if (!comment) throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
 
-    return PgCommentsViewDto.mapToView(comment);
+    const raw = commentWithStats.raw[0];
+
+    const likesCount = Number(raw.likesCount ?? '0');
+    const dislikesCount = Number(raw.dislikesCount ?? '0');
+
+    return PgCommentsViewDto.mapToView({
+      ...comment,
+      likesCount,
+      dislikesCount,
+    });
   }
 
   async findAllCommentsForPostId(
@@ -52,17 +68,40 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
       | 'ASC'
       | 'DESC';
 
-    const [comments, totalCount] = await this.commentsRepository
+    const result = await this.commentsRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.post', 'post')
       .leftJoinAndSelect('comment.user', 'user')
+      .leftJoin('comment.commentLikes', 'likes')
+      .addSelect([
+        `SUM(CASE WHEN likes.likeStatus = 'Like' THEN 1 ELSE 0 END) AS "likesCount"`,
+        `SUM(CASE WHEN likes.likeStatus = 'Dislike' THEN 1 ELSE 0 END) AS "dislikesCount"`,
+      ])
       .where('comment.post.id = :postId', { postId: post.id })
+      .groupBy('comment.id')
+      .addGroupBy('post.id')
+      .addGroupBy('user.id')
       .orderBy(`comment.${sortColumn}`, upperCaseSortDirection)
       .offset(offset)
       .limit(limit)
-      .getManyAndCount();
+      .getRawAndEntities();
 
-    const items = comments.map((comment) =>
+    const comments = result.entities;
+    const rawStats = result.raw;
+
+    const totalCount = await this.commentsRepository
+      .createQueryBuilder('comment')
+      .where('comment.post.id = :postId', { postId: post.id })
+      .getCount();
+
+    // Merge like/dislike counts
+    const commentsWithStats = comments.map((comment, idx) => ({
+      ...comment,
+      likesCount: Number(rawStats[idx]?.likesCount ?? 0),
+      dislikesCount: Number(rawStats[idx]?.dislikesCount ?? 0),
+    }));
+
+    const items = commentsWithStats.map((comment) =>
       PgCommentsViewDto.mapToView(comment),
     );
 

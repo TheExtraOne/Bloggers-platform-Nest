@@ -18,7 +18,9 @@ export class PgCommentsViewDto {
   createdAt: Date;
   likesInfo: TLikesInfo;
 
-  static mapToView(comment: Comments): PgCommentsViewDto {
+  static mapToView(
+    comment: Comments & { likesCount: number; dislikesCount: number },
+  ): PgCommentsViewDto {
     const dto = new PgCommentsViewDto();
 
     dto.id = comment.id.toString();
@@ -29,8 +31,8 @@ export class PgCommentsViewDto {
     };
     dto.createdAt = comment.createdAt;
     dto.likesInfo = {
-      likesCount: 0,
-      dislikesCount: 0,
+      likesCount: comment.likesCount ?? 0,
+      dislikesCount: comment.dislikesCount ?? 0,
       myStatus: LikeStatus.None,
     };
 

@@ -2,6 +2,8 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
 import { LikeStatus } from '../../domain/enums/like-status.enum';
 import { EntityType } from '../../domain/enums/entity-type.enum';
+import { CommentLikes } from '../../domain/entities/comment-like.entity';
+import { PostLikes } from '../../domain/entities/post-like.entity';
 
 export interface LikeableEntity {
   id: string;
@@ -39,11 +41,12 @@ export class EnrichEntityWithLikeUseCase<T extends LikeableEntity>
       return entity;
     }
 
-    const like = await this.pgLikesRepository.findLikeByAuthorIdAndParentId(
-      userId,
-      entity.id,
-      entityType,
-    );
+    const like: CommentLikes | null | PostLikes =
+      await this.pgLikesRepository.findLikeByAuthorIdAndParentId(
+        userId,
+        entity.id,
+        entityType,
+      );
 
     const myStatus = like ? (like.likeStatus as LikeStatus) : LikeStatus.None;
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { LikeStatus } from '../domain/enums/like-status.enum';
 import { EntityType } from '../domain/enums/entity-type.enum';
 import { CommentLikes } from '../domain/entities/comment-like.entity';
@@ -82,38 +82,44 @@ export class PgLikesRepository extends PgBaseRepository {
     }
     return null;
   }
-  // TODO
+
   async findLikesByAuthorIdAndParentIdArray(
     userId: string,
-    parentIds: string[],
-  ): Promise<
-    | {
-        id: number;
-        user_id: string;
-        parent_id: string;
-        created_at: Date;
-        updated_at: Date;
-        like_status: LikeStatus;
-      }[]
-    | []
-  > {
-    if (
-      !this.isCorrectNumber(userId) ||
-      !parentIds.every(this.isCorrectNumber)
-    ) {
+    parentIds: number[],
+    entityType: EntityType,
+  ): Promise<CommentLikes[] | PostLikes[] | []> {
+    if (!this.isCorrectNumber(userId)) {
       return [];
     }
-    const query = `
-      SELECT likes.*
-      FROM public.likes as likes
-      WHERE likes.user_id = $1
-      AND likes.parent_id = ANY($2)
-    `;
 
-    const params = [userId, parentIds];
-    const result = await this.dataSource.query(query, params);
+    if (entityType === EntityType.Comment) {
+      return await this.commentLikeRepository.find({
+        where: {
+          user: {
+            id: +userId,
+          },
+          comment: {
+            id: In(parentIds),
+          },
+        },
+        relations: ['comment'],
+      });
+    }
+    if (entityType === EntityType.Post) {
+      return await this.postLikeRepository.find({
+        where: {
+          user: {
+            id: +userId,
+          },
+          post: {
+            id: In(parentIds),
+          },
+        },
+        relations: ['post'],
+      });
+    }
 
-    return result.length ? result : [];
+    return [];
   }
   // TODO
   async getLikesAndDislikesCount(

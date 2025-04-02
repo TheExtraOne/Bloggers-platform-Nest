@@ -4,6 +4,10 @@ import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
 import { LikeableEntity } from './enrich-entity-with-like.use-case';
 import { LikeStatus } from '../../domain/enums/like-status.enum';
 import { EntityType } from '../../domain/enums/entity-type.enum';
+import { CommentLikes } from '../../domain/entities/comment-like.entity';
+import { PostLikes } from '../../domain/entities/post-like.entity';
+import { Comments } from 'src/modules/bloggers-platform/comments/domain/entities/comment.entity';
+import { Posts } from 'src/modules/bloggers-platform/posts/domain/entities/post.entity';
 
 export class EnrichEntitiesWithLikesCommand<
   T extends LikeableEntity,
@@ -35,30 +39,24 @@ export class EnrichEntitiesWithLikesUseCase<T extends LikeableEntity>
     }
 
     // Get all user's likes for passed parentIds
-    const parentIds = entities.items.map((entity) => entity.id);
-
+    const parentIds = entities.items.map((entity) => +entity.id);
     const userLikes =
       await this.pgLikesRepository.findLikesByAuthorIdAndParentIdArray(
         userId,
         parentIds,
+        entityType,
       );
 
     let userLikesObject = {};
     if (userLikes.length) {
       // Object instead of array with userLikes. A key will be parentId and value will be LikeStatus. O (1)
       userLikesObject = (
-        userLikes as {
-          id: number;
-          user_id: string;
-          parent_id: string;
-          created_at: Date;
-          updated_at: Date;
-          parent_type: EntityType;
-          like_status: LikeStatus;
-        }[]
+        userLikes as
+          | (CommentLikes & { comment: Comments })[]
+          | (PostLikes & { post: Posts })[]
       ).reduce(
         (acc, like) => {
-          acc[like.parent_id] = like.like_status;
+          acc[like[entityType].id] = like.likeStatus as LikeStatus;
           return acc;
         },
         {} as Record<string, LikeStatus>,
