@@ -33,11 +33,9 @@ import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-opti
 // import { CurrentOptionalUserId } from 'src/modules/user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments.query-params.input-dto';
 // import { EnrichEntitiesWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
-import {
-  EntityType,
-  UpdateLikeStatusCommand,
-} from '../../likes/app/likes.use-cases/update-like-status.use-case';
+import { UpdateLikeStatusCommand } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
+import { EntityType } from '../../likes/domain/enums/entity-type.enum';
 // import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
 
 @Controller(PATHS.POSTS)
@@ -47,7 +45,7 @@ export class PostsController {
     private readonly commandBus: CommandBus,
     private readonly pgCommentsQueryRepository: PgCommentsQueryRepository,
   ) {}
-
+  // TODO
   @Get()
   @UseGuards(JwtOptionalAuthGuard)
   @GetAllPostsSwagger()
@@ -63,7 +61,7 @@ export class PostsController {
     // );
     return posts;
   }
-
+  // TODO
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   @GetPostByIdSwagger()
@@ -79,7 +77,7 @@ export class PostsController {
     // );
     return post;
   }
-
+  // TODO
   @Get(':id/comments')
   @UseGuards(JwtOptionalAuthGuard)
   @GetPostCommentsSwagger()

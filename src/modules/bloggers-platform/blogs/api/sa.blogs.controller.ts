@@ -65,7 +65,7 @@ export class SaBlogsController {
   ): Promise<PaginatedViewDto<PgBlogsViewDto[]>> {
     return await this.pgBlogsQueryRepository.findAll(query);
   }
-
+  // TODO
   @Get(':id/posts')
   @UseGuards(JwtOptionalAuthGuard)
   @GetBlogPostsSwagger()

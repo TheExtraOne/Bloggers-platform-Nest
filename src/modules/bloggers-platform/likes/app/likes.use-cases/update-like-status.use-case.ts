@@ -4,14 +4,12 @@ import { PgCommentsRepository } from '../../../comments/infrastructure/pg.commen
 import { PgPostsRepository } from '../../../posts/infrastructure/pg.posts.repository';
 import { PgExternalUsersRepository } from '../../../../user-accounts/users/infrastructure/pg.external.users.repository';
 import { PgLikesRepository } from '../../infrastructure/pg.likes.repository';
-import { NotFoundException } from '@nestjs/common';
-import { ERRORS } from '../../../../../constants';
-import { LikeStatus } from '../../domain/enums/like-status.enum';
-
-export enum EntityType {
-  Comment = 'comment',
-  Post = 'post',
-}
+import { EntityType } from '../../domain/enums/entity-type.enum';
+import { CommentLikes } from '../../domain/entities/comment-like.entity';
+import { PostLikes } from '../../domain/entities/post-like.entity';
+import { Comments } from '../../../comments/domain/entities/comment.entity';
+import { Posts } from '../../../posts/domain/entities/post.entity';
+import { Users } from '../../../../user-accounts/users/domain/entities/user.entity';
 
 export class UpdateLikeStatusCommand extends Command<void> {
   constructor(
@@ -38,34 +36,38 @@ export class UpdateLikeStatusUseCase
   async execute(command: UpdateLikeStatusCommand): Promise<void> {
     const { parentId, entityType, userId, updateLikeStatusDto } = command;
     // Check if comment or post exists
-    await this.validateParentId(parentId, entityType);
-
-    // Check if user exists
-    await this.validateAndGetUser(userId);
-
-    // Check if like already exists
-    const existingLike: {
-      likeId: string;
-      status: LikeStatus;
-    } | null = await this.pgLikesRepository.findLikeByAuthorIdAndParentId(
-      userId,
+    const parent: Comments | Posts = await this.validateParentId(
       parentId,
+      entityType,
     );
 
+    // Check if user exists
+    const user: Users = await this.pgUsersRepository.findUserOrThrow(userId);
+
+    // Check if like already exists
+    const existingLike: CommentLikes | PostLikes | null =
+      await this.pgLikesRepository.findLikeByAuthorIdAndParentId(
+        userId,
+        parentId,
+        entityType,
+      );
+
     if (existingLike) {
-      if (existingLike.status === updateLikeStatusDto.likeStatus) {
+      if (existingLike.likeStatus === updateLikeStatusDto.likeStatus) {
         return;
       }
 
       await this.pgLikesRepository.updateLikeStatus(
-        existingLike.likeId,
+        existingLike,
         updateLikeStatusDto.likeStatus,
+        entityType,
       );
     } else {
       await this.pgLikesRepository.createLike({
-        userId,
-        parentId,
+        user,
+        parent,
         status: updateLikeStatusDto.likeStatus,
+        entityType,
       });
     }
   }
@@ -73,32 +75,15 @@ export class UpdateLikeStatusUseCase
   private async validateParentId(
     parentId: string,
     entityType: EntityType,
-  ): Promise<void> {
+  ): Promise<Comments | Posts> {
     if (entityType !== EntityType.Comment && entityType !== EntityType.Post) {
       throw new Error('Entity type must be either "comment" or "post"');
     }
 
     if (entityType === EntityType.Comment) {
-      const commentExists =
-        await this.pgCommentsRepository.checkCommentExists(parentId);
-      if (!commentExists) {
-        throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
-      }
+      return await this.pgCommentsRepository.findCommentByIdOrThrow(parentId);
     } else {
-      const postExists = await this.pgPostsRepository.checkPostExists(parentId);
-      if (!postExists) {
-        throw new NotFoundException(ERRORS.POST_NOT_FOUND);
-      }
+      return await this.pgPostsRepository.findPostByIdOrThrow(parentId);
     }
-  }
-
-  private async validateAndGetUser(userId: string): Promise<{
-    userId: string;
-  }> {
-    const userExists = await this.pgUsersRepository.checkUserExists(userId);
-    if (!userExists) {
-      throw new Error('User not found');
-    }
-    return { userId };
   }
 }

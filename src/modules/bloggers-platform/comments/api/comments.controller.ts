@@ -18,10 +18,7 @@ import { CurrentUserId } from '../../../user-accounts/guards/decorators/current-
 import { UpdateCommentCommand } from '../app/command.use-cases/update-comment.use-case';
 import { DeleteCommentCommand } from '../app/command.use-cases/delete-comment.use-case';
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
-import {
-  EntityType,
-  UpdateLikeStatusCommand,
-} from '../../likes/app/likes.use-cases/update-like-status.use-case';
+import { UpdateLikeStatusCommand } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
 // import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 import {
@@ -31,6 +28,7 @@ import {
   DeleteCommentSwagger,
 } from './swagger';
 import { PgCommentsQueryRepository } from '../infrastructure/query/pg.comments.query-repository';
+import { EntityType } from '../../likes/domain/enums/entity-type.enum';
 // import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
 
 @Controller(PATHS.COMMENTS)
@@ -39,7 +37,7 @@ export class CommentsController {
     private readonly pgCommentsQueryRepository: PgCommentsQueryRepository,
     private readonly commandBus: CommandBus,
   ) {}
-
+  // TODO
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   @GetCommentByIdSwagger()
@@ -70,7 +68,7 @@ export class CommentsController {
       new UpdateCommentCommand(id, userId, updateCommentDto),
     );
   }
-  // TODO
+
   @Put(':id/like-status')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)

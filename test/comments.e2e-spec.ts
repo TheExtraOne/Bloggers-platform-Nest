@@ -241,8 +241,8 @@ describe('Comments Controller (e2e)', () => {
     });
 
     it('should paginate comments correctly', async () => {
-      // Create 11 comments
-      for (let i = 0; i < 11; i++) {
+      // Create 3 comments
+      for (let i = 0; i < 3; i++) {
         await postsTestManager.createComment(
           createdPostId,
           { content: `Comment ${i + 1} with some content` },
@@ -250,24 +250,24 @@ describe('Comments Controller (e2e)', () => {
         );
       }
 
-      // Get first page (10 items)
+      // Get first page (2 items)
       const firstPage = await postsTestManager.getPostComments(createdPostId, {
         pageNumber: 1,
-        pageSize: 10,
+        pageSize: 2,
       });
-      expect(firstPage.items.length).toBe(10);
+      expect(firstPage.items.length).toBe(2);
       expect(firstPage.page).toBe(1);
-      expect(firstPage.totalCount).toBe(12); // 11 new + 1 initial
+      expect(firstPage.totalCount).toBe(4); // 3 new + 1 initial
 
       // Get second page (2 items)
       const secondPage = await postsTestManager.getPostComments(createdPostId, {
         pageNumber: 2,
-        pageSize: 10,
+        pageSize: 2,
       });
       expect(secondPage.items.length).toBe(2);
       expect(secondPage.page).toBe(2);
-      expect(secondPage.totalCount).toBe(12);
-    }, 10000);
+      expect(secondPage.totalCount).toBe(4);
+    });
   });
 
   describe('GET /comments/:id', () => {

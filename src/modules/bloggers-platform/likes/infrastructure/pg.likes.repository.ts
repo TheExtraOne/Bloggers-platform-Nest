@@ -1,48 +1,88 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { LikeStatus } from '../domain/enums/like-status.enum';
+import { EntityType } from '../domain/enums/entity-type.enum';
+import { CommentLikes } from '../domain/entities/comment-like.entity';
+import { PostLikes } from '../domain/entities/post-like.entity';
+import { Comments } from '../../comments/domain/entities/comment.entity';
+import { Posts } from '../../posts/domain/entities/post.entity';
+import { Users } from 'src/modules/user-accounts/users/domain/entities/user.entity';
 
 @Injectable()
 export class PgLikesRepository extends PgBaseRepository {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @InjectRepository(CommentLikes)
+    private readonly commentLikeRepository: Repository<CommentLikes>,
+    @InjectRepository(PostLikes)
+    private readonly postLikeRepository: Repository<PostLikes>,
+  ) {
     super();
   }
 
   async createLike(dto: {
-    userId: string;
-    parentId: string;
+    user: Users;
+    parent: Comments | Posts;
     status: LikeStatus;
+    entityType: EntityType;
   }): Promise<void> {
-    const query = `
-      INSERT INTO public.likes (user_id, parent_id, like_status)
-      VALUES ($1, $2, $3)`;
-    const values = [dto.userId, dto.parentId, dto.status];
+    const { user, parent, status, entityType } = dto;
+    if (entityType === EntityType.Comment) {
+      const newCommentLike = new CommentLikes();
 
-    await this.dataSource.query(query, values);
+      newCommentLike.user = user;
+      newCommentLike.comment = parent as Comments;
+      newCommentLike.likeStatus = status;
+
+      await this.commentLikeRepository.save(newCommentLike);
+    } else {
+      const newPostLike = new PostLikes();
+
+      newPostLike.user = user;
+      newPostLike.post = parent as Posts;
+      newPostLike.likeStatus = status;
+
+      await this.postLikeRepository.save(newPostLike);
+    }
   }
 
   async findLikeByAuthorIdAndParentId(
     userId: string,
     parentId: string,
-  ): Promise<{ likeId: string; status: LikeStatus } | null> {
+    entityType: EntityType,
+  ): Promise<CommentLikes | null | PostLikes> {
     if (!this.isCorrectNumber(userId) || !this.isCorrectNumber(parentId)) {
       return null;
     }
-    const query = `
-      SELECT likes.*
-      FROM public.likes as likes
-      WHERE likes.user_id = $1
-      AND likes.parent_id = $2
-    `;
-
-    const params = [userId, parentId];
-    const result = await this.dataSource.query(query, params);
-    const like = result[0];
-    return like ? { likeId: like.id, status: like.like_status } : null;
+    if (entityType === EntityType.Comment) {
+      return await this.commentLikeRepository.findOne({
+        where: {
+          user: {
+            id: +userId,
+          },
+          comment: {
+            id: +parentId,
+          },
+        },
+      });
+    }
+    if (entityType === EntityType.Post) {
+      return await this.postLikeRepository.findOne({
+        where: {
+          user: {
+            id: +userId,
+          },
+          post: {
+            id: +parentId,
+          },
+        },
+      });
+    }
+    return null;
   }
-
+  // TODO
   async findLikesByAuthorIdAndParentIdArray(
     userId: string,
     parentIds: string[],
@@ -75,7 +115,7 @@ export class PgLikesRepository extends PgBaseRepository {
 
     return result.length ? result : [];
   }
-
+  // TODO
   async getLikesAndDislikesCount(
     parentId: string,
   ): Promise<{ likesCount: number; dislikesCount: number }> {
@@ -100,16 +140,17 @@ export class PgLikesRepository extends PgBaseRepository {
       : { likesCount: 0, dislikesCount: 0 };
   }
 
-  async updateLikeStatus(likeId: string, newStatus: LikeStatus): Promise<void> {
-    if (!this.isCorrectNumber(likeId)) {
-      return;
+  async updateLikeStatus(
+    like: CommentLikes | PostLikes,
+    newStatus: LikeStatus,
+    entityType: EntityType,
+  ): Promise<void> {
+    like.likeStatus = newStatus;
+    if (entityType === EntityType.Comment) {
+      await this.commentLikeRepository.save(like);
     }
-    const query = `
-      UPDATE public.likes
-      SET like_status = $1, updated_at = NOW()
-      WHERE id = $2
-    `;
-    const params = [newStatus, likeId];
-    await this.dataSource.query(query, params);
+    if (entityType === EntityType.Post) {
+      await this.postLikeRepository.save(like);
+    }
   }
 }
