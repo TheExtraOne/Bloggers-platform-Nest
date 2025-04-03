@@ -36,7 +36,7 @@ import { EnrichEntitiesWithLikesCommand } from '../../likes/app/likes.use-cases/
 import { UpdateLikeStatusCommand } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
 import { EntityType } from '../../likes/domain/enums/entity-type.enum';
-// import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
+import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
 
 @Controller(PATHS.POSTS)
 export class PostsController {
@@ -45,37 +45,35 @@ export class PostsController {
     private readonly commandBus: CommandBus,
     private readonly pgCommentsQueryRepository: PgCommentsQueryRepository,
   ) {}
-  // TODO
+
   @Get()
   @UseGuards(JwtOptionalAuthGuard)
   @GetAllPostsSwagger()
   async getAllPosts(
     @Query() query: GetPostsQueryParams,
-    // @CurrentOptionalUserId() userId: string | null,
+    @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
     const posts = await this.pgPostsQueryRepository.findAllPosts(query);
 
     // Enrich post with user's like status
-    // return this.commandBus.execute(
-    //   new EnrichEntitiesWithLikesCommand(posts, userId, EntityType.Post),
-    // );
-    return posts;
+    return this.commandBus.execute(
+      new EnrichEntitiesWithLikesCommand(posts, userId, EntityType.Post),
+    );
   }
-  // TODO
+
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   @GetPostByIdSwagger()
   async getPostById(
     @Param('id') id: string,
-    // @CurrentOptionalUserId() userId: string | null,
+    @CurrentOptionalUserId() userId: string | null,
   ): Promise<PgPostsViewDto | null> {
     const post = await this.pgPostsQueryRepository.findPostById(id);
 
     // Enrich post with user's like status
-    // return this.commandBus.execute(
-    //   new EnrichEntityWithLikeCommand(post, userId, EntityType.Post),
-    // );
-    return post;
+    return this.commandBus.execute(
+      new EnrichEntityWithLikeCommand(post, userId, EntityType.Post),
+    );
   }
 
   @Get(':id/comments')

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
-import { DataSource, In, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { LikeStatus } from '../domain/enums/like-status.enum';
 import { EntityType } from '../domain/enums/entity-type.enum';
 import { CommentLikes } from '../domain/entities/comment-like.entity';
@@ -13,7 +13,6 @@ import { Users } from 'src/modules/user-accounts/users/domain/entities/user.enti
 @Injectable()
 export class PgLikesRepository extends PgBaseRepository {
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(CommentLikes)
     private readonly commentLikeRepository: Repository<CommentLikes>,
     @InjectRepository(PostLikes)
@@ -120,30 +119,6 @@ export class PgLikesRepository extends PgBaseRepository {
     }
 
     return [];
-  }
-  // TODO
-  async getLikesAndDislikesCount(
-    parentId: string,
-  ): Promise<{ likesCount: number; dislikesCount: number }> {
-    if (!this.isCorrectNumber(parentId)) {
-      return { likesCount: 0, dislikesCount: 0 };
-    }
-    const query = `
-      SELECT 
-          parent_id,
-          COUNT(*) FILTER (WHERE like_status = 'Like') AS like_count,
-          COUNT(*) FILTER (WHERE like_status = 'Dislike') AS dislike_count
-      FROM likes
-      WHERE parent_id = $1
-      GROUP BY parent_id
-      ORDER BY parent_id;
-    `;
-    const params = [parentId];
-    const result = await this.dataSource.query(query, params);
-    const { like_count, dislike_count } = result[0];
-    return result[0]
-      ? { likesCount: like_count, dislikesCount: dislike_count }
-      : { likesCount: 0, dislikesCount: 0 };
   }
 
   async updateLikeStatus(

@@ -43,7 +43,6 @@ export class PgCommentsQueryRepository extends PgBaseRepository {
     if (!comment) throw new NotFoundException(ERRORS.COMMENT_NOT_FOUND);
 
     const raw = commentWithStats.raw[0];
-
     const likesCount = Number(raw.likesCount ?? '0');
     const dislikesCount = Number(raw.dislikesCount ?? '0');
 

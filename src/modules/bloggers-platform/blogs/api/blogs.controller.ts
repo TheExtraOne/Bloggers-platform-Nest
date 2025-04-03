@@ -8,16 +8,16 @@ import { PgBlogsQueryRepository } from '../infrastructure/query/pg.blogs.query-r
 import { PgPostsQueryRepository } from '../../posts/infrastructure/query/pg.posts.query-repository';
 import { PgPostsViewDto } from '../../posts/api/view-dto/posts.view-dto';
 import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts.query-params.input-dto';
-// import { CommandBus } from '@nestjs/cqrs';
-// import { EnrichEntitiesWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
+import { CommandBus } from '@nestjs/cqrs';
+import { EnrichEntitiesWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
-// import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
-// import { EntityType } from '../../likes/app/likes.use-cases/update-like-status.use-case';
+import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
+import { EntityType } from '../../likes/domain/enums/entity-type.enum';
 
 @Controller(PATHS.BLOGS)
 export class BlogsController {
   constructor(
-    // private readonly commandBus: CommandBus,
+    private readonly commandBus: CommandBus,
     private readonly pgBlogsQueryRepository: PgBlogsQueryRepository,
     private readonly pgPostsQueryRepository: PgPostsQueryRepository,
   ) {}
@@ -36,13 +36,12 @@ export class BlogsController {
     return await this.pgBlogsQueryRepository.getBlogById(id);
   }
 
-  // TODO
   @Get(':id/posts')
   @UseGuards(JwtOptionalAuthGuard)
   async getAllPostsByBlogId(
     @Param('id') id: string,
     @Query() query: GetPostsQueryParams,
-    // @CurrentOptionalUserId() userId: string | null,
+    @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
     const posts = await this.pgPostsQueryRepository.findAllPostsForBlogId(
       id,
@@ -50,9 +49,8 @@ export class BlogsController {
     );
 
     // Enrich posts with user's like status
-    // return this.commandBus.execute(
-    //   new EnrichEntitiesWithLikesCommand(posts, userId, EntityType.Post),
-    // );
-    return posts;
+    return this.commandBus.execute(
+      new EnrichEntitiesWithLikesCommand(posts, userId, EntityType.Post),
+    );
   }
 }
