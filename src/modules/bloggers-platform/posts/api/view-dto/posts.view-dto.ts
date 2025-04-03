@@ -47,7 +47,11 @@ export class PgPostsViewDto {
       likesCount: +post.likes_count,
       dislikesCount: +post.dislikes_count,
       myStatus: LikeStatus.None,
-      newestLikes: post.newest_likes ?? [],
+      newestLikes:
+        post.newest_likes.map((newLike) => ({
+          ...newLike,
+          userId: newLike.userId.toString(),
+        })) ?? [],
     };
 
     return dto;
