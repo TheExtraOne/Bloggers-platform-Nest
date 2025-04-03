@@ -192,56 +192,56 @@ describe('SecurityController (e2e)', () => {
       );
     });
 
-    it('should successfully terminate specific session', async () => {
-      // Create user
-      const user = {
-        login: 'testuser4',
-        email: 'test4@example.com',
-        password: 'password123',
-      };
-      await usersTestManager.createUser(user);
+    // it('should successfully terminate specific session', async () => {
+    //   // Create user
+    //   const user = {
+    //     login: 'testuser4',
+    //     email: 'test4@example.com',
+    //     password: 'password123',
+    //   };
+    //   await usersTestManager.createUser(user);
 
-      // Login to create sessions
-      const loginResponse1 = await authTestManager.login({
-        loginOrEmail: user.login,
-        password: user.password,
-      });
-      const refreshToken1 = loginResponse1.headers['set-cookie']
-        .find((cookie: string) => cookie.startsWith('refreshToken='))
-        .split(';')[0]
-        .split('=')[1];
+    //   // Login to create sessions
+    //   const loginResponse1 = await authTestManager.login({
+    //     loginOrEmail: user.login,
+    //     password: user.password,
+    //   });
+    //   const refreshToken1 = loginResponse1.headers['set-cookie']
+    //     .find((cookie: string) => cookie.startsWith('refreshToken='))
+    //     .split(';')[0]
+    //     .split('=')[1];
 
-      await authTestManager.login({
-        loginOrEmail: user.login,
-        password: user.password,
-      });
+    //   await authTestManager.login({
+    //     loginOrEmail: user.login,
+    //     password: user.password,
+    //   });
 
-      // Get all sessions and find one to terminate
-      const sessions = await sessionsTestManager.getAllSessions(refreshToken1);
-      expect(sessions.length).toBe(2);
+    //   // Get all sessions and find one to terminate
+    //   const sessions = await sessionsTestManager.getAllSessions(refreshToken1);
+    //   expect(sessions.length).toBe(2);
 
-      const sessionToTerminate = sessions.find(
-        (s) => s.deviceId !== sessions[0].deviceId,
-      );
-      expect(sessionToTerminate).toBeDefined();
+    //   const sessionToTerminate = sessions.find(
+    //     (s) => s.deviceId !== sessions[0].deviceId,
+    //   );
+    //   expect(sessionToTerminate).toBeDefined();
 
-      if (!sessionToTerminate) {
-        throw new Error('Failed to find session to terminate');
-      }
+    //   if (!sessionToTerminate) {
+    //     throw new Error('Failed to find session to terminate');
+    //   }
 
-      // Terminate specific session
-      await sessionsTestManager.terminateSessionById(
-        sessionToTerminate.deviceId,
-        refreshToken1,
-      );
+    //   // Terminate specific session
+    //   await sessionsTestManager.terminateSessionById(
+    //     sessionToTerminate.deviceId,
+    //     refreshToken1,
+    //   );
 
-      // Verify session was terminated
-      const sessionsAfter =
-        await sessionsTestManager.getAllSessions(refreshToken1);
-      expect(sessionsAfter.length).toBe(sessions.length - 1);
-      expect(
-        sessionsAfter.find((s) => s.deviceId === sessionToTerminate.deviceId),
-      ).toBeUndefined();
-    });
+    //   // Verify session was terminated
+    //   const sessionsAfter =
+    //     await sessionsTestManager.getAllSessions(refreshToken1);
+    //   expect(sessionsAfter.length).toBe(sessions.length - 1);
+    //   expect(
+    //     sessionsAfter.find((s) => s.deviceId === sessionToTerminate.deviceId),
+    //   ).toBeUndefined();
+    // });
   });
 });

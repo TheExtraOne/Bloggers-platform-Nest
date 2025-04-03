@@ -95,7 +95,10 @@ export class PgPostsRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
 
-    const result = await this.postsRepository.softDelete(postId);
+    const result = await this.postsRepository.softDelete({
+      id: +postId,
+      blog: { id: +blogId },
+    });
 
     // `result[affected]` contains the number of affected rows.
     if (result.affected === 0) {
