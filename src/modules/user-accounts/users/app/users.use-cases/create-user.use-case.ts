@@ -5,7 +5,7 @@ import { add } from 'date-fns';
 import { EmailService } from '../../../utils/email.service';
 import { UsersService } from '../users.service';
 import { PgUsersRepository } from '../../infrastructure/pg.users.repository';
-import { BcryptService } from 'src/modules/user-accounts/utils/bcrypt.service';
+import { BcryptService } from '../../../utils/bcrypt.service';
 import { EmailConfirmationStatus } from '../../domain/enums/user.enum';
 import { CreateUserDto } from '../../infrastructure/dto/create-user.dto';
 

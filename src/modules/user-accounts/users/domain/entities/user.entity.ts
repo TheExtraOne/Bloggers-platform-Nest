@@ -7,6 +7,14 @@ import { Comments } from '../../../../bloggers-platform/comments/domain/entities
 import { PostLikes } from '../../../../bloggers-platform/likes/domain/entities/post-like.entity';
 import { CommentLikes } from '../../../../bloggers-platform/likes/domain/entities/comment-like.entity';
 
+export const USERS_CONSTRAINTS = {
+  MAX_LOGIN_LENGTH: 10,
+  MIN_LOGIN_LENGTH: 3,
+  MAX_EMAIL_LENGTH: 30,
+  MAX_PASSWORD_LENGTH: 20,
+  MIN_PASSWORD_LENGTH: 6,
+};
+
 /**
  * Entity representing a user in the system.
  * Extends BaseWithId to inherit common fields like id and timestamps.
@@ -18,7 +26,7 @@ export class Users extends BaseWithId {
    * Must be unique and cannot be null.
    * Maximum length is 10 characters.
    */
-  @Column({ unique: true, type: 'varchar', length: 10, nullable: false })
+  @Column({ unique: true, type: 'varchar', length: USERS_CONSTRAINTS.MAX_LOGIN_LENGTH, nullable: false })
   public login: string;
 
   /**
@@ -26,7 +34,7 @@ export class Users extends BaseWithId {
    * Must be unique and cannot be null.
    * Maximum length is 30 characters.
    */
-  @Column({ unique: true, type: 'varchar', length: 30, nullable: false })
+  @Column({ unique: true, type: 'varchar', length: USERS_CONSTRAINTS.MAX_EMAIL_LENGTH, nullable: false })
   public email: string;
 
   /**

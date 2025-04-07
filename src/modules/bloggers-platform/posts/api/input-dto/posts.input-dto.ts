@@ -1,18 +1,19 @@
 import { MaxLength } from 'class-validator';
 import { IsStringWithTrim } from '../../../../../core/decorators/is-not-empty-string';
+import { POSTS_CONSTRAINTS } from '../../domain/entities/post.entity';
 // import { BlogIdExists } from '../../../decorators/blog-id-exists.decorator';
 
 export class CreatePostInputDto {
   @IsStringWithTrim()
-  @MaxLength(30)
+  @MaxLength(POSTS_CONSTRAINTS.MAX_TITLE_LENGTH)
   title: string;
 
   @IsStringWithTrim()
-  @MaxLength(100)
+  @MaxLength(POSTS_CONSTRAINTS.MAX_SHORT_DESCRIPTION_LENGTH)
   shortDescription: string;
 
   @IsStringWithTrim()
-  @MaxLength(1000)
+  @MaxLength(POSTS_CONSTRAINTS.MAX_CONTENT_LENGTH)
   content: string;
 
   @IsStringWithTrim()
@@ -22,28 +23,28 @@ export class CreatePostInputDto {
 
 export class UpdatePostInputDto {
   @IsStringWithTrim()
-  @MaxLength(30)
+  @MaxLength(POSTS_CONSTRAINTS.MAX_TITLE_LENGTH)
   title: string;
 
   @IsStringWithTrim()
-  @MaxLength(100)
+  @MaxLength(POSTS_CONSTRAINTS.MAX_SHORT_DESCRIPTION_LENGTH)
   shortDescription: string;
 
   @IsStringWithTrim()
-  @MaxLength(1000)
+  @MaxLength(POSTS_CONSTRAINTS.MAX_CONTENT_LENGTH)
   content: string;
 }
 
 export class CreatePostFromBlogInputDto {
   @IsStringWithTrim()
-  @MaxLength(30)
+  @MaxLength(POSTS_CONSTRAINTS.MAX_TITLE_LENGTH)
   title: string;
 
   @IsStringWithTrim()
-  @MaxLength(100)
+  @MaxLength(POSTS_CONSTRAINTS.MAX_SHORT_DESCRIPTION_LENGTH)
   shortDescription: string;
 
   @IsStringWithTrim()
-  @MaxLength(1000)
+  @MaxLength(POSTS_CONSTRAINTS.MAX_CONTENT_LENGTH)
   content: string;
 }

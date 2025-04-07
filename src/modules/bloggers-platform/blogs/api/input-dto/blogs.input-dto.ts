@@ -1,17 +1,18 @@
 import { Matches, MaxLength } from 'class-validator';
 import { IsStringWithTrim } from '../../../../../core/decorators/is-not-empty-string';
+import { BLOGS_CONSTRAINTS } from '../../domain/entities/blog.entity';
 
 export class CreateBlogInputDto {
   @IsStringWithTrim()
-  @MaxLength(15)
+  @MaxLength(BLOGS_CONSTRAINTS.MAX_NAME_LENGTH)
   name: string;
 
   @IsStringWithTrim()
-  @MaxLength(500)
+  @MaxLength(BLOGS_CONSTRAINTS.MAX_DESCRIPTION_LENGTH)
   description: string;
 
   @IsStringWithTrim()
-  @MaxLength(100)
+  @MaxLength(BLOGS_CONSTRAINTS.MAX_WEBSITE_URL_LENGTH)
   @Matches(
     /^(http|https):\/\/[a-z0-9]+([-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/,
   )
@@ -20,15 +21,15 @@ export class CreateBlogInputDto {
 
 export class UpdateBlogInputDto {
   @IsStringWithTrim()
-  @MaxLength(15)
+  @MaxLength(BLOGS_CONSTRAINTS.MAX_NAME_LENGTH)
   name: string;
 
   @IsStringWithTrim()
-  @MaxLength(500)
+  @MaxLength(BLOGS_CONSTRAINTS.MAX_DESCRIPTION_LENGTH)
   description: string;
 
   @IsStringWithTrim()
-  @MaxLength(100)
+  @MaxLength(BLOGS_CONSTRAINTS.MAX_WEBSITE_URL_LENGTH)
   @Matches(
     /^(http|https):\/\/[a-z0-9]+([-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/,
   )

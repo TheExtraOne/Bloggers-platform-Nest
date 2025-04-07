@@ -1,10 +1,11 @@
 import { IsEmail, IsNotEmpty, Length, Matches } from 'class-validator';
 import { IsStringWithTrim } from '../../../../../core/decorators/is-not-empty-string';
 import { ApiProperty } from '@nestjs/swagger';
+import { USERS_CONSTRAINTS } from '../../domain/entities/user.entity';
 
 export class CreateUserInputDto {
   @IsStringWithTrim()
-  @Length(3, 10)
+  @Length(USERS_CONSTRAINTS.MIN_LOGIN_LENGTH, USERS_CONSTRAINTS.MAX_LOGIN_LENGTH)
   @Matches(/^[a-zA-Z0-9_-]*$/)
   @ApiProperty({
     description: 'Must be unique',
@@ -12,7 +13,7 @@ export class CreateUserInputDto {
   login: string;
 
   @IsStringWithTrim()
-  @Length(6, 20)
+  @Length(USERS_CONSTRAINTS.MIN_PASSWORD_LENGTH, USERS_CONSTRAINTS.MAX_PASSWORD_LENGTH)
   password: string;
 
   @IsEmail()

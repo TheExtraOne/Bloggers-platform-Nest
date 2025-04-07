@@ -8,7 +8,7 @@ import { CommentLikes } from '../domain/entities/comment-like.entity';
 import { PostLikes } from '../domain/entities/post-like.entity';
 import { Comments } from '../../comments/domain/entities/comment.entity';
 import { Posts } from '../../posts/domain/entities/post.entity';
-import { Users } from 'src/modules/user-accounts/users/domain/entities/user.entity';
+import { Users } from '../../../user-accounts/users/domain/entities/user.entity';
 
 @Injectable()
 export class PgLikesRepository extends PgBaseRepository {

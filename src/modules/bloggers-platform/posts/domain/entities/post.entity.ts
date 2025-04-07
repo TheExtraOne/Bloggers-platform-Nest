@@ -2,7 +2,13 @@ import { Blogs } from '../../../blogs/domain/entities/blog.entity';
 import { BaseWithId } from '../../../../../core/base-entities/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Comments } from '../../../comments/domain/entities/comment.entity';
-import { PostLikes } from 'src/modules/bloggers-platform/likes/domain/entities/post-like.entity';
+import { PostLikes } from '../../../likes/domain/entities/post-like.entity';
+
+export const POSTS_CONSTRAINTS = {
+  MAX_CONTENT_LENGTH: 1000,
+  MAX_TITLE_LENGTH: 30,
+  MAX_SHORT_DESCRIPTION_LENGTH: 100,
+};
 
 /**
  * Entity representing a blog post in the system.
@@ -15,7 +21,7 @@ export class Posts extends BaseWithId {
    * @type {string}
    * @maxLength 30
    */
-  @Column({ type: 'varchar', length: 30, nullable: false })
+  @Column({ type: 'varchar', length: POSTS_CONSTRAINTS.MAX_TITLE_LENGTH, nullable: false })
   public title: string;
 
   /**
@@ -23,7 +29,7 @@ export class Posts extends BaseWithId {
    * @type {string}
    * @maxLength 100
    */
-  @Column({ type: 'varchar', length: 100, nullable: false })
+  @Column({ type: 'varchar', length: POSTS_CONSTRAINTS.MAX_SHORT_DESCRIPTION_LENGTH, nullable: false })
   public shortDescription: string;
 
   /**
@@ -31,7 +37,7 @@ export class Posts extends BaseWithId {
    * @type {string}
    * @maxLength 1000
    */
-  @Column({ type: 'varchar', length: 1000, nullable: false })
+  @Column({ type: 'varchar', length: POSTS_CONSTRAINTS.MAX_CONTENT_LENGTH, nullable: false })
   public content: string;
 
   /**

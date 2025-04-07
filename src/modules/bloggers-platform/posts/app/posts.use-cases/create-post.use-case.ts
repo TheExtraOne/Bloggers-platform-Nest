@@ -2,7 +2,7 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreatePostInputDto } from '../../api/input-dto/posts.input-dto';
 import { PgBlogsRepository } from '../../../blogs/infrastructure/pg.blogs.repository';
 import { PgPostsRepository } from '../../infrastructure/pg.posts.repository';
-import { Blogs } from 'src/modules/bloggers-platform/blogs/domain/entities/blog.entity';
+import { Blogs } from '../../../blogs/domain/entities/blog.entity';
 
 export class CreatePostCommand extends Command<string> {
   constructor(public readonly dto: CreatePostInputDto) {

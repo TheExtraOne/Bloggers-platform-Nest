@@ -6,8 +6,8 @@ import { LikeStatus } from '../../domain/enums/like-status.enum';
 import { EntityType } from '../../domain/enums/entity-type.enum';
 import { CommentLikes } from '../../domain/entities/comment-like.entity';
 import { PostLikes } from '../../domain/entities/post-like.entity';
-import { Comments } from 'src/modules/bloggers-platform/comments/domain/entities/comment.entity';
-import { Posts } from 'src/modules/bloggers-platform/posts/domain/entities/post.entity';
+import { Comments } from '../../../comments/domain/entities/comment.entity';
+import { Posts } from '../../../posts/domain/entities/post.entity';
 
 export class EnrichEntitiesWithLikesCommand<
   T extends LikeableEntity,

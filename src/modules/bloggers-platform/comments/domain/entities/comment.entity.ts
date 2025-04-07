@@ -2,7 +2,12 @@ import { Users } from '../../../../user-accounts/users/domain/entities/user.enti
 import { BaseWithId } from '../../../../../core/base-entities/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Posts } from '../../../posts/domain/entities/post.entity';
-import { CommentLikes } from 'src/modules/bloggers-platform/likes/domain/entities/comment-like.entity';
+import { CommentLikes } from '../../../likes/domain/entities/comment-like.entity';
+
+export const COMMENTS_CONSTRAINTS = {
+  MAX_CONTENT_LENGTH: 300,
+  MIN_CONTENT_LENGTH: 20,
+};
 
 /**
  * Entity representing comments in the blogging platform
@@ -14,7 +19,7 @@ export class Comments extends BaseWithId {
    * The content of the comment
    * @type {string}
    */
-  @Column({ type: 'varchar', length: 300, nullable: false })
+  @Column({ type: 'varchar', length: COMMENTS_CONSTRAINTS.MAX_CONTENT_LENGTH, nullable: false })
   public content: string;
 
   /**

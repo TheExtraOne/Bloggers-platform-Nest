@@ -11,6 +11,7 @@ export function pipesSetup(app: INestApplication) {
     new ValidationPipe({
       // class-transformer creates an instance dto, applies default values and class methods.
       transform: true,
+      whitelist: true,
       stopAtFirstError: true,
       exceptionFactory: (errors: ValidationError[]) => {
         // Mapping errors to the desired format

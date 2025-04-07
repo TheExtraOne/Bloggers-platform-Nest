@@ -30,7 +30,7 @@ import { CreateCommentCommand } from '../../comments/app/command.use-cases/creat
 import { CommandBus } from '@nestjs/cqrs';
 import { PgCommentsQueryRepository } from '../../comments/infrastructure/query/pg.comments.query-repository';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
-import { CurrentOptionalUserId } from 'src/modules/user-accounts/guards/decorators/current-optional-user-id.decorator';
+import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments.query-params.input-dto';
 import { EnrichEntitiesWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
 import { UpdateLikeStatusCommand } from '../../likes/app/likes.use-cases/update-like-status.use-case';
