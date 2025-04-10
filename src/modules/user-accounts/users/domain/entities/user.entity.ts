@@ -1,5 +1,5 @@
 import { BaseWithId } from '../../../../../core/base-entities/base.entity';
-import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, Index, OneToMany, OneToOne } from 'typeorm';
 import { UsersEmailConfirmation } from './email.confirmation.entity';
 import { UsersPasswordRecovery } from './password.recovery.entity';
 import { Sessions } from '../../../sessions/domain/entities/session.entity';
@@ -26,7 +26,12 @@ export class Users extends BaseWithId {
    * Must be unique and cannot be null.
    * Maximum length is 10 characters.
    */
-  @Column({ unique: true, type: 'varchar', length: USERS_CONSTRAINTS.MAX_LOGIN_LENGTH, nullable: false })
+  @Column({
+    unique: true,
+    type: 'varchar',
+    length: USERS_CONSTRAINTS.MAX_LOGIN_LENGTH,
+    nullable: false,
+  })
   public login: string;
 
   /**
@@ -34,7 +39,13 @@ export class Users extends BaseWithId {
    * Must be unique and cannot be null.
    * Maximum length is 30 characters.
    */
-  @Column({ unique: true, type: 'varchar', length: USERS_CONSTRAINTS.MAX_EMAIL_LENGTH, nullable: false })
+  @Index('userEmail', { unique: true })
+  @Column({
+    unique: true,
+    type: 'varchar',
+    length: USERS_CONSTRAINTS.MAX_EMAIL_LENGTH,
+    nullable: false,
+  })
   public email: string;
 
   /**

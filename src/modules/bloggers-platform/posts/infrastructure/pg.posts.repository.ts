@@ -6,6 +6,7 @@ import { ERRORS } from '../../../../constants';
 import { Posts } from '../domain/entities/post.entity';
 import { Blogs } from '../../blogs/domain/entities/blog.entity';
 
+// TODO: refactor, move create and update to entity
 @Injectable()
 export class PgPostsRepository extends PgBaseRepository {
   constructor(
