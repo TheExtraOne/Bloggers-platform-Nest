@@ -45,7 +45,7 @@ import { PgUsersQueryRepository } from '../../users/infrastructure/query/pg.user
 import { PGMeViewDto } from '../../users/api/view-dto/users.view-dto';
 import { DeleteSessionByIdCommand } from '../../sessions/app/sessions.use-cases/delete-session-by-id.use-case';
 
-// TODO: add cron job for cleaning sessions
+// TODO: add cron job for cleaning old sessions
 @UseGuards(ThrottlerGuard)
 @Controller(PATHS.AUTH)
 export class AuthController {
