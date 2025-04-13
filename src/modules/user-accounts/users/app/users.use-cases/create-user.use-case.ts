@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
 import { EmailService } from '../../../utils/email.service';
@@ -9,10 +9,12 @@ import { BcryptService } from '../../../utils/bcrypt.service';
 import { EmailConfirmationStatus } from '../../domain/enums/user.enum';
 import { CreateUserDto } from '../../infrastructure/dto/create-user.dto';
 
-export class CreateUserCommand {
+export class CreateUserCommand extends Command<{ userId: string }> {
   constructor(
     public readonly dto: { login: string; password: string; email: string },
-  ) {}
+  ) {
+    super();
+  }
 }
 
 @CommandHandler(CreateUserCommand)

@@ -1,14 +1,16 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { convertUnixToDate } from '../../../../../core/utils/time.utils';
 import { PgSessionsRepository } from '../../infrastructure/pg.sessions.repository';
 import { Sessions } from '../../domain/entities/session.entity';
 
-export class ValidateRefreshTokenCommand {
+export class ValidateRefreshTokenCommand extends Command<Sessions | null> {
   constructor(
     public readonly userId: string,
     public readonly deviceId: string,
     public readonly iat: number,
-  ) {}
+  ) {
+    super();
+  }
 }
 
 @CommandHandler(ValidateRefreshTokenCommand)

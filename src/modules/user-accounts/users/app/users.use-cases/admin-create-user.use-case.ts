@@ -1,15 +1,17 @@
 import { BadRequestException } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersService } from '../users.service';
 import { PgUsersRepository } from '../../infrastructure/pg.users.repository';
 import { BcryptService } from '../../../utils/bcrypt.service';
 import { EmailConfirmationStatus } from '../../domain/enums/user.enum';
 import { CreateUserDto } from '../../infrastructure/dto/create-user.dto';
 
-export class AdminCreateUserCommand {
+export class AdminCreateUserCommand extends Command<{ userId: string }> {
   constructor(
     public readonly dto: { login: string; password: string; email: string },
-  ) {}
+  ) {
+    super();
+  }
 }
 
 @CommandHandler(AdminCreateUserCommand)
@@ -47,3 +49,6 @@ export class AdminCreateUserUseCase
     return await this.pgUsersRepository.createUser(createUserDto);
   }
 }
+// TODO: map in query repository
+// TODO: add query bus
+// TODO: add event bus + extract into a separate module

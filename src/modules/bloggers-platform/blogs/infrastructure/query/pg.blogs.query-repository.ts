@@ -29,12 +29,23 @@ export class PgBlogsQueryRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
     }
 
-    const blog: Blogs | null = await this.blogsRepository.findOneBy({
-      id: +id,
-    });
+    // Used query builder in order to avoid extra mapping
+    const blog: PgBlogsViewDto | undefined = await this.blogsRepository
+      .createQueryBuilder('blog')
+      .select([
+        'blog.id::text AS id', // cast to text, alias as `id`
+        'blog.name AS name',
+        'blog.description AS description',
+        'blog.websiteUrl AS "websiteUrl"',
+        'blog.createdAt AS "createdAt"',
+        'blog.isMembership AS "isMembership"',
+      ])
+      .where('blog.id = :id', { id: +id })
+      .getRawOne();
+
     if (!blog) throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
 
-    return PgBlogsViewDto.mapToView(blog);
+    return blog;
   }
 
   async findAll(
@@ -49,8 +60,17 @@ export class PgBlogsQueryRepository extends PgBaseRepository {
       | 'ASC'
       | 'DESC';
 
+    // Used query builder in order to avoid extra mapping
     const builder = this.blogsRepository
       .createQueryBuilder('blog')
+      .select([
+        'blog.id::text AS id', // cast to text, alias as `id`
+        'blog.name AS name',
+        'blog.description AS description',
+        'blog.websiteUrl AS "websiteUrl"',
+        'blog.createdAt AS "createdAt"',
+        'blog.isMembership AS "isMembership"',
+      ])
       .orderBy(`blog.${sortColumn}`, upperCaseSortDirection)
       .offset(offset)
       .limit(limit);
@@ -59,12 +79,22 @@ export class PgBlogsQueryRepository extends PgBaseRepository {
       builder.where('blog.name ILIKE :name', { name: `%${searchNameTerm}%` });
     }
 
-    const [blogs, totalCount] = await builder.getManyAndCount();
+    const totalCountBuilder =
+      this.blogsRepository.createQueryBuilder('blogCount');
 
-    const items = blogs.map((blog) => PgBlogsViewDto.mapToView(blog));
+    if (searchNameTerm) {
+      totalCountBuilder.where('blogCount.name ILIKE :name', {
+        name: `%${searchNameTerm}%`,
+      });
+    }
+
+    const [blogs, totalCount]: [PgBlogsViewDto[], number] = await Promise.all([
+      builder.getRawMany(),
+      totalCountBuilder.getCount(),
+    ]);
 
     return PaginatedViewDto.mapToView({
-      items,
+      items: blogs,
       totalCount,
       page: pageNumber,
       size: pageSize,
