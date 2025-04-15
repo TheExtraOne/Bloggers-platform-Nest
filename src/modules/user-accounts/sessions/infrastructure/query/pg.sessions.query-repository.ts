@@ -20,14 +20,21 @@ export class PgSessionsQueryRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.SESSION_NOT_FOUND);
     }
 
-    const sessions: Sessions[] = await this.sessionsRepository.find({
-      where: { user: { id: +userId } },
-      order: { lastActiveDate: 'DESC' },
-    });
+    const sessions: PgSessionsViewDto[] = await this.sessionsRepository
+      .createQueryBuilder('session')
+      .select([
+        'session.ip AS ip',
+        'session.title AS title',
+        'session.last_active_date AS "lastActiveDate"',
+        'session.id AS "deviceId"',
+      ])
+      .where('session.user_id = :userId', { userId: userId })
+      .orderBy('"lastActiveDate"', 'DESC')
+      .getRawMany();
 
     if (sessions.length === 0) {
       throw new NotFoundException(ERRORS.SESSION_NOT_FOUND);
     }
-    return sessions.map(PgSessionsViewDto.mapToView);
+    return sessions;
   }
 }

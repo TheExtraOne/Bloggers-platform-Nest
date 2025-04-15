@@ -39,34 +39,32 @@ export class PgUsersQueryRepository extends PgBaseRepository {
 
     const builder = this.usersRepository
       .createQueryBuilder('user')
+      .select([
+        'user.id AS id',
+        'user.login AS login',
+        'user.email AS email',
+        'user.created_at AS "createdAt"',
+      ])
       .orderBy(`user.${sortColumn}`, upperCaseSortDirection)
       .offset(offset)
       .limit(limit);
 
-    // Apply filters only if searchLoginTerm or searchEmailTerm exist
-    const whereConditions: string[] = [];
-    const parameters: Record<string, string> = {};
+    this.applySearchFilters(builder, searchLoginTerm, searchEmailTerm);
 
-    if (searchLoginTerm) {
-      whereConditions.push('user.login ILIKE :login');
-      parameters.login = `%${searchLoginTerm}%`;
-    }
+    const totalCountBuilder = this.usersRepository.createQueryBuilder('user');
+    this.applySearchFilters(
+      totalCountBuilder,
+      searchLoginTerm,
+      searchEmailTerm,
+    );
 
-    if (searchEmailTerm) {
-      whereConditions.push('user.email ILIKE :email');
-      parameters.email = `%${query.searchEmailTerm}%`;
-    }
-
-    if (whereConditions.length > 0) {
-      builder.where(whereConditions.join(' OR '), parameters);
-    }
-
-    const [users, totalCount] = await builder.getManyAndCount();
-
-    const items = users.map((user) => PGUserViewDto.mapToView(user));
+    const [users, totalCount] = await Promise.all([
+      builder.getRawMany<PGUserViewDto>(),
+      totalCountBuilder.getCount(),
+    ]);
 
     return PaginatedViewDto.mapToView({
-      items,
+      items: users,
       totalCount,
       page: pageNumber,
       size: pageSize,
@@ -95,5 +93,28 @@ export class PgUsersQueryRepository extends PgBaseRepository {
     if (!user) throw new NotFoundException(ERRORS.USER_NOT_FOUND);
 
     return PGMeViewDto.mapToView(user);
+  }
+
+  private applySearchFilters(
+    builder: any,
+    searchLoginTerm: string | null,
+    searchEmailTerm: string | null,
+  ): void {
+    const whereConditions: string[] = [];
+    const parameters: Record<string, string> = {};
+
+    if (searchLoginTerm) {
+      whereConditions.push('user.login ILIKE :login');
+      parameters.login = `%${searchLoginTerm}%`;
+    }
+
+    if (searchEmailTerm) {
+      whereConditions.push('user.email ILIKE :email');
+      parameters.email = `%${searchEmailTerm}%`;
+    }
+
+    if (whereConditions.length > 0) {
+      builder.where(whereConditions.join(' OR '), parameters);
+    }
   }
 }

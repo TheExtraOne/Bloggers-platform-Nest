@@ -1,7 +1,8 @@
 import { LikeStatus } from '../../../likes/domain/enums/like-status.enum';
 
 type TNewestLikes = { addedAt: Date; userId: string; login: string }[] | [];
-export type TPost = {
+
+type TPost = {
   blog_id: number;
   created_at: Date;
   updated_at: Date;
