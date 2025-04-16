@@ -49,5 +49,3 @@ export class AdminCreateUserUseCase
     return await this.pgUsersRepository.createUser(createUserDto);
   }
 }
-
-// TODO: add event bus + extract into a separate module

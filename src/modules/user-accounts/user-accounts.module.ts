@@ -15,7 +15,6 @@ import { SendRecoverPasswordEmailUseCase } from './auth/app/use-cases/send-recov
 import { SetNewPasswordUseCase } from './auth/app/use-cases/set-new-password.use-case';
 import { BcryptService } from './utils/bcrypt.service';
 import { CustomJwtService } from './utils/custom-jwt.service';
-import { EmailService } from './utils/email.service';
 import { CheckIfUserIsAbleToLoginUseCase } from './users/app/use-cases/check-user-able-login.use-case';
 import { CreateUserUseCase } from './users/app/use-cases/create-user.use-case';
 import { DeleteUserUseCase } from './users/app/use-cases/delete-user.use-case';
@@ -40,7 +39,7 @@ import { GetAllUsersQueryHandler } from './users/app/queries/get-all-users.query
 import { GetUserByIdQueryHandler } from './users/app/queries/get-user-by-id.query';
 import { GetAllSessionsQueryHandler } from './sessions/app/queries/get-all-sessions.query';
 
-const adapters = [BcryptService, EmailService, CustomJwtService];
+const adapters = [BcryptService, CustomJwtService];
 const strategies = [
   JwtStrategy,
   LocalStrategy,

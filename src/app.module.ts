@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
 import { TestingModule } from './testing/testing.module';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { CoreModule } from './core/core-module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -68,6 +69,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
     TestingModule,
     BloggersPlatformModule,
     CoreModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

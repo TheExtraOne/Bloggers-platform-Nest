@@ -11,11 +11,6 @@ export class UserAccountsConfig {
   }
 
   @IsNotEmpty({
-    message: 'Set Env variable MAIL_PASSWORD, example: your_password',
-  })
-  mailPassword: string = this.configService.get('MAIL_PASSWORD');
-
-  @IsNotEmpty({
     message: 'Set Env variable JWT_SECRET, example: your_jwt_secret',
   })
   jwtSecret: string = this.configService.get('JWT_SECRET');

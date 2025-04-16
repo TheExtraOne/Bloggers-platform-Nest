@@ -6,6 +6,7 @@ import { deleteAllData } from './delete-all-data';
 import { EmailServiceMock } from '../mock/email-service.mock';
 import { UserAccountsModule } from '../../src/modules/user-accounts/user-accounts.module';
 import { BloggersPlatformModule } from '../../src/modules/bloggers-platform/bloggers-platform.module';
+import { NotificationsModule } from '../../src/modules/notifications/notifications.module';
 import { TestingModule } from '../../src/testing/testing.module';
 import { CoreModule } from '../../src/core/core-module';
 import { PostsTestManager } from './managers/posts-test-manager';
@@ -14,7 +15,7 @@ import { AuthTestManager } from './managers/auth-test-manager';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CommentsTestManager } from './managers/comments-test-manager';
-import { EmailService } from '../../src/modules/user-accounts/utils/email.service';
+import { EmailService } from '../../src/modules/notifications/email.service';
 import { SessionsTestManager } from './managers/sessions-test-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
@@ -55,6 +56,7 @@ export class TestSettingsInitializer {
         BloggersPlatformModule,
         TestingModule,
         CoreModule,
+        NotificationsModule,
       ],
     })
       .overrideProvider(EmailService)

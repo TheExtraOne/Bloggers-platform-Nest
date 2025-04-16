@@ -6,7 +6,7 @@ import { AuthTestManager } from './helpers/managers/auth-test-manager';
 import { UsersTestManager } from './helpers/managers/users-test-manager';
 import { deleteAllData } from './helpers/delete-all-data';
 import { CreateUserInputDto } from '../src/modules/user-accounts/users/api/input-dto/users.input-dto';
-import { EmailService } from '../src/modules/user-accounts/utils/email.service';
+import { EmailService } from '../src/modules/notifications/email.service';
 
 describe('Auth Controller (e2e)', () => {
   let app: INestApplication;

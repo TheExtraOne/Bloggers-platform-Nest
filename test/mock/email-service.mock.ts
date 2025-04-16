@@ -1,4 +1,4 @@
-import { EmailService } from '../../src/modules/user-accounts/utils/email.service';
+import { EmailService } from '../../src/modules/notifications/email.service';
 
 export class EmailServiceMock extends EmailService {
   // @ts-expect-error

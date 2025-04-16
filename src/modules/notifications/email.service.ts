@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import nodemailer from 'nodemailer';
-import { UserAccountsConfig } from '../user-account.config';
-// TODO: "@nestjs-modules/mailer"?
+import { MailerService } from '@nestjs-modules/mailer';
+
 @Injectable()
 export class EmailService {
-  constructor(private readonly userAccountsConfig: UserAccountsConfig) {}
+  constructor(private readonly mailerService: MailerService) {}
 
   sendRegistrationMail({
     email,
@@ -55,15 +54,7 @@ export class EmailService {
     subject: string;
     message: string;
   }): void {
-    const transporter = nodemailer.createTransport({
-      service: 'Mail.ru',
-      auth: {
-        user: 'kate_blogs_posts_it_incubator@mail.ru',
-        pass: this.userAccountsConfig.mailPassword,
-      },
-    });
-
-    transporter
+    this.mailerService
       .sendMail({
         from: 'Ekaterina <kate_blogs_posts_it_incubator@mail.ru>',
         to: userEmail,

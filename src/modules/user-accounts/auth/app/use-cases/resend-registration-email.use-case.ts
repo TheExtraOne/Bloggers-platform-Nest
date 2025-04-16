@@ -1,12 +1,17 @@
 import { BadRequestException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
-import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { EmailService } from '../../../utils/email.service';
+import {
+  Command,
+  CommandHandler,
+  ICommandHandler,
+  EventBus,
+} from '@nestjs/cqrs';
 import { ResendRegistrationInputDto } from '../../api/input-dto/resend-registration.input-dto';
 import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
 import { EmailConfirmationStatus } from '../../../users/domain/enums/user.enum';
 import { Users } from '../../../users/domain/entities/user.entity';
+import { UserRegisteredEvent } from 'src/modules/notifications/events/send-registration-email.event';
 
 export class ResendRegistrationEmailCommand extends Command<void> {
   constructor(public readonly dto: ResendRegistrationInputDto) {
@@ -20,7 +25,7 @@ export class ResendRegistrationEmailUseCase
 {
   constructor(
     private readonly pgUsersRepository: PgUsersRepository,
-    private readonly emailService: EmailService,
+    private eventBus: EventBus,
   ) {}
 
   async execute(command: ResendRegistrationEmailCommand): Promise<void> {
@@ -55,9 +60,8 @@ export class ResendRegistrationEmailUseCase
     );
 
     // Send confirmation letter
-    this.emailService.sendRegistrationMail({
-      email: command.dto.email,
-      confirmationCode: newConfirmationCode,
-    });
+    this.eventBus.publish(
+      new UserRegisteredEvent(command.dto.email, newConfirmationCode),
+    );
   }
 }

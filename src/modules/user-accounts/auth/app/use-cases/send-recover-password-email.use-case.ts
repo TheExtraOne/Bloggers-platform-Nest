@@ -1,10 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
-import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { EmailService } from '../../../utils/email.service';
+import {
+  Command,
+  CommandHandler,
+  ICommandHandler,
+  EventBus,
+} from '@nestjs/cqrs';
 import { PasswordRecoveryInputDto } from '../../api/input-dto/password-recovery.input-dto';
 import { PgUsersRepository } from '../../../users/infrastructure/pg.users.repository';
 import { Users } from '../../../users/domain/entities/user.entity';
+import { UserRecoveryEvent } from '../../../../notifications/events/send-recovery-email.event';
 
 export class SendRecoverPasswordEmailCommand extends Command<void> {
   constructor(public readonly dto: PasswordRecoveryInputDto) {
@@ -18,7 +23,7 @@ export class SendRecoverPasswordEmailUseCase
 {
   constructor(
     private readonly pgUsersRepository: PgUsersRepository,
-    private readonly emailService: EmailService,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: SendRecoverPasswordEmailCommand): Promise<void> {
@@ -43,9 +48,8 @@ export class SendRecoverPasswordEmailUseCase
     );
 
     // Send recovery password letter
-    this.emailService.sendRecoveryPasswordMail({
-      userEmail: command.dto.email,
-      recoveryCode: newRecoveryCode,
-    });
+    this.eventBus.publish(
+      new UserRecoveryEvent(command.dto.email, newRecoveryCode),
+    );
   }
 }
