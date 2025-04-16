@@ -18,11 +18,13 @@ import {
 import { PgBlogsViewDto } from './view-dto/blogs.view-dto';
 import { GetBlogsQueryParams } from './input-dto/get-blogs.query-params.input-dto';
 import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.guard';
-import { CreateBlogCommand } from '../app/blogs.use-cases/create-blog.use-case';
-import { CommandBus } from '@nestjs/cqrs';
-import { DeleteBlogCommand } from '../app/blogs.use-cases/delete-blog.use-case';
-import { UpdateBlogCommand } from '../app/blogs.use-cases/update-blog.use-case';
+import { CreateBlogCommand } from '../app/use-cases/create-blog.use-case';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { DeleteBlogCommand } from '../app/use-cases/delete-blog.use-case';
+import { UpdateBlogCommand } from '../app/use-cases/update-blog.use-case';
 import { PATHS } from '../../../../constants';
+import { GetAllBlogsQuery } from '../app/queries/get-all-blogs.query';
+import { GetAllPostsByBlogIdQuery } from '../app/queries/get-all-posts-by-blog-id.query';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
 import {
   GetAllBlogsSwagger,
@@ -32,30 +34,29 @@ import {
   CreateBlogPostSwagger,
   GetBlogPostsSwagger,
 } from './swagger';
-import { PgBlogsQueryRepository } from '../infrastructure/query/pg.blogs.query-repository';
 import {
   CreatePostFromBlogInputDto,
   UpdatePostInputDto,
 } from '../../posts/api/input-dto/posts.input-dto';
 import { PgPostsViewDto } from '../../posts/api/view-dto/posts.view-dto';
-import { CreatePostCommand } from '../../posts/app/posts.use-cases/create-post.use-case';
-import { PgPostsQueryRepository } from '../../posts/infrastructure/query/pg.posts.query-repository';
+import { CreatePostCommand } from '../../posts/app/use-cases/create-post.use-case';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
 import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts.query-params.input-dto';
 import { DeletePostSwagger, UpdatePostSwagger } from '../../posts/api/swagger';
-import { UpdatePostCommand } from '../../posts/app/posts.use-cases/update-post.use-case';
-import { DeletePostCommand } from '../../posts/app/posts.use-cases/delete-post.use-case';
+import { UpdatePostCommand } from '../../posts/app/use-cases/update-post.use-case';
+import { DeletePostCommand } from '../../posts/app/use-cases/delete-post.use-case';
 import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { EnrichEntitiesWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
 import { EntityType } from '../../likes/domain/enums/entity-type.enum';
+import { GetBlogByIdQuery } from '../app/queries/get-blog-by-id.query';
+import { GetPostByIdQuery } from '../../posts/app/queries/get-post-by-id.query';
 
 @UseGuards(BasicAuthGuard)
 @Controller(PATHS.SA_BLOGS)
 export class SaBlogsController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly pgBlogsQueryRepository: PgBlogsQueryRepository,
-    private readonly pgPostsQueryRepository: PgPostsQueryRepository,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Get()
@@ -63,7 +64,7 @@ export class SaBlogsController {
   async getAllBlogs(
     @Query() query: GetBlogsQueryParams,
   ): Promise<PaginatedViewDto<PgBlogsViewDto[]>> {
-    return await this.pgBlogsQueryRepository.findAll(query);
+    return await this.queryBus.execute(new GetAllBlogsQuery(query));
   }
 
   @Get(':id/posts')
@@ -74,9 +75,8 @@ export class SaBlogsController {
     @Query() query: GetPostsQueryParams,
     @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
-    const posts = await this.pgPostsQueryRepository.findAllPostsForBlogId(
-      id,
-      query,
+    const posts = await this.queryBus.execute(
+      new GetAllPostsByBlogIdQuery(id, query),
     );
 
     // Enrich posts with user's like status
@@ -94,7 +94,7 @@ export class SaBlogsController {
     const blogId = await this.commandBus.execute(
       new CreateBlogCommand(createBlogDto),
     );
-    return this.pgBlogsQueryRepository.getBlogById(blogId);
+    return this.queryBus.execute(new GetBlogByIdQuery(blogId));
   }
 
   @Post(':id/posts')
@@ -110,7 +110,7 @@ export class SaBlogsController {
       }),
     );
 
-    return this.pgPostsQueryRepository.findPostById(postId);
+    return this.queryBus.execute(new GetPostByIdQuery(postId));
   }
 
   @Put(':id')

@@ -21,14 +21,16 @@ import {
   GetPostCommentsSwagger,
   UpdatePostLikeStatusSwagger,
 } from './swagger';
-import { PgPostsQueryRepository } from '../infrastructure/query/pg.posts.query-repository';
 import { JwtAuthGuard } from '../../../user-accounts/guards/jwt/jwt-auth.guard';
+import { GetAllPostsQuery } from '../app/queries/get-all-posts.query';
+import { GetPostByIdQuery } from '../app/queries/get-post-by-id.query';
+import { GetAllCommentsForPostQuery } from '../../comments/app/queries/get-all-comments-for-post.query';
+import { GetCommentByIdQuery } from '../../comments/app/queries/get-comment-by-id.query';
 import { CurrentUserId } from '../../../user-accounts/guards/decorators/current-user-id.decorator';
 import { CreateCommentInputDto } from '../../comments/api/input-dto/comment.input.dto';
 import { PgCommentsViewDto } from '../../comments/api/view-dto/comment.view-dto';
-import { CreateCommentCommand } from '../../comments/app/command.use-cases/create-comment.use-case';
-import { CommandBus } from '@nestjs/cqrs';
-import { PgCommentsQueryRepository } from '../../comments/infrastructure/query/pg.comments.query-repository';
+import { CreateCommentCommand } from '../../comments/app/use-cases/create-comment.use-case';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
 import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments.query-params.input-dto';
@@ -41,9 +43,8 @@ import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enr
 @Controller(PATHS.POSTS)
 export class PostsController {
   constructor(
-    private readonly pgPostsQueryRepository: PgPostsQueryRepository,
     private readonly commandBus: CommandBus,
-    private readonly pgCommentsQueryRepository: PgCommentsQueryRepository,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Get()
@@ -53,7 +54,7 @@ export class PostsController {
     @Query() query: GetPostsQueryParams,
     @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
-    const posts = await this.pgPostsQueryRepository.findAllPosts(query);
+    const posts = await this.queryBus.execute(new GetAllPostsQuery(query));
 
     // Enrich post with user's like status
     return this.commandBus.execute(
@@ -68,7 +69,7 @@ export class PostsController {
     @Param('id') id: string,
     @CurrentOptionalUserId() userId: string | null,
   ): Promise<PgPostsViewDto | null> {
-    const post = await this.pgPostsQueryRepository.findPostById(id);
+    const post = await this.queryBus.execute(new GetPostByIdQuery(id));
 
     // Enrich post with user's like status
     return this.commandBus.execute(
@@ -84,8 +85,9 @@ export class PostsController {
     @CurrentOptionalUserId() userId: string | null,
     @Query() query: GetCommentsQueryParams,
   ): Promise<PaginatedViewDto<PgCommentsViewDto[]>> {
-    const comments =
-      await this.pgCommentsQueryRepository.findAllCommentsForPostId(id, query);
+    const comments = await this.queryBus.execute(
+      new GetAllCommentsForPostQuery(id, query),
+    );
 
     // Enrich comments with user's like status
     return this.commandBus.execute(
@@ -105,7 +107,7 @@ export class PostsController {
     const commentId = await this.commandBus.execute(
       new CreateCommentCommand(id, userId, commentDto),
     );
-    return await this.pgCommentsQueryRepository.findCommentById(commentId);
+    return await this.queryBus.execute(new GetCommentByIdQuery(commentId));
   }
 
   @Put(':id/like-status')

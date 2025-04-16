@@ -4,22 +4,22 @@ import { GetBlogsQueryParams } from './input-dto/get-blogs.query-params.input-dt
 import { PATHS } from '../../../../constants';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
 import { GetAllBlogsSwagger, GetBlogByIdSwagger } from './swagger';
-import { PgBlogsQueryRepository } from '../infrastructure/query/pg.blogs.query-repository';
-import { PgPostsQueryRepository } from '../../posts/infrastructure/query/pg.posts.query-repository';
 import { PgPostsViewDto } from '../../posts/api/view-dto/posts.view-dto';
 import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts.query-params.input-dto';
-import { CommandBus } from '@nestjs/cqrs';
-import { EnrichEntitiesWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
-import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { GetBlogByIdQuery } from '../app/queries/get-blog-by-id.query';
+import { GetAllPostsByBlogIdQuery } from '../app/queries/get-all-posts-by-blog-id.query';
 import { CurrentOptionalUserId } from '../../../user-accounts/guards/decorators/current-optional-user-id.decorator';
 import { EntityType } from '../../likes/domain/enums/entity-type.enum';
+import { GetAllBlogsQuery } from '../app/queries/get-all-blogs.query';
+import { EnrichEntitiesWithLikesCommand } from '../../likes/app/likes.use-cases/enrich-entities-with-likes.use-case';
+import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
 
 @Controller(PATHS.BLOGS)
 export class BlogsController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly pgBlogsQueryRepository: PgBlogsQueryRepository,
-    private readonly pgPostsQueryRepository: PgPostsQueryRepository,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Get()
@@ -27,13 +27,13 @@ export class BlogsController {
   async getAllBlogs(
     @Query() query: GetBlogsQueryParams,
   ): Promise<PaginatedViewDto<PgBlogsViewDto[]>> {
-    return await this.pgBlogsQueryRepository.findAll(query);
+    return await this.queryBus.execute(new GetAllBlogsQuery(query));
   }
 
   @Get(':id')
   @GetBlogByIdSwagger()
   async getBlogById(@Param('id') id: string): Promise<PgBlogsViewDto> {
-    return await this.pgBlogsQueryRepository.getBlogById(id);
+    return await this.queryBus.execute(new GetBlogByIdQuery(id));
   }
 
   @Get(':id/posts')
@@ -43,9 +43,8 @@ export class BlogsController {
     @Query() query: GetPostsQueryParams,
     @CurrentOptionalUserId() userId: string | null,
   ): Promise<PaginatedViewDto<PgPostsViewDto[]>> {
-    const posts = await this.pgPostsQueryRepository.findAllPostsForBlogId(
-      id,
-      query,
+    const posts = await this.queryBus.execute(
+      new GetAllPostsByBlogIdQuery(id, query),
     );
 
     // Enrich posts with user's like status

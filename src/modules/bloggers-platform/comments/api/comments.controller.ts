@@ -10,13 +10,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PATHS } from '../../../../constants';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { PgCommentsViewDto } from './view-dto/comment.view-dto';
 import { JwtAuthGuard } from '../../../user-accounts/guards/jwt/jwt-auth.guard';
 import { UpdateCommentInputDto } from './input-dto/comment.input.dto';
 import { CurrentUserId } from '../../../user-accounts/guards/decorators/current-user-id.decorator';
-import { UpdateCommentCommand } from '../app/command.use-cases/update-comment.use-case';
-import { DeleteCommentCommand } from '../app/command.use-cases/delete-comment.use-case';
+import { UpdateCommentCommand } from '../app/use-cases/update-comment.use-case';
+import { DeleteCommentCommand } from '../app/use-cases/delete-comment.use-case';
 import { UpdateLikeStatusInputDto } from '../../likes/api/input-dto/update-like-input.dto';
 import { UpdateLikeStatusCommand } from '../../likes/app/likes.use-cases/update-like-status.use-case';
 import { JwtOptionalAuthGuard } from '../../../user-accounts/guards/jwt/jwt-optional-auth.guard';
@@ -27,15 +27,15 @@ import {
   UpdateCommentLikeStatusSwagger,
   DeleteCommentSwagger,
 } from './swagger';
-import { PgCommentsQueryRepository } from '../infrastructure/query/pg.comments.query-repository';
+import { GetCommentByIdQuery } from '../app/queries/get-comment-by-id.query';
 import { EntityType } from '../../likes/domain/enums/entity-type.enum';
 import { EnrichEntityWithLikeCommand } from '../../likes/app/likes.use-cases/enrich-entity-with-like.use-case';
 
 @Controller(PATHS.COMMENTS)
 export class CommentsController {
   constructor(
-    private readonly pgCommentsQueryRepository: PgCommentsQueryRepository,
     private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Get(':id')
@@ -45,8 +45,9 @@ export class CommentsController {
     @Param('id') id: string,
     @CurrentOptionalUserId() userId: string | null,
   ): Promise<PgCommentsViewDto> {
-    const comment: PgCommentsViewDto =
-      await this.pgCommentsQueryRepository.findCommentById(id);
+    const comment: PgCommentsViewDto = await this.queryBus.execute(
+      new GetCommentByIdQuery(id),
+    );
 
     // Enrich comment with user's like status
     return this.commandBus.execute(
