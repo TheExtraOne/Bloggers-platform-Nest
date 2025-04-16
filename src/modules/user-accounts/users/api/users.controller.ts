@@ -13,8 +13,8 @@ import {
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
 import { PATHS } from '../../../../constants';
 import { BasicAuthGuard } from '../../guards/basic/basic-auth.guard';
-import { CommandBus } from '@nestjs/cqrs';
-import { DeleteUserCommand } from '../app/users.use-cases/delete-user.use-case';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { DeleteUserCommand } from '../app/use-cases/delete-user.use-case';
 import { GetUsersQueryParams } from './input-dto/get-users.query-params.input-dto';
 import { CreateUserInputDto } from './input-dto/users.input-dto';
 import {
@@ -23,15 +23,16 @@ import {
   DeleteUserSwagger,
 } from './swagger';
 import { PGUserViewDto } from './view-dto/users.view-dto';
-import { AdminCreateUserCommand } from '../app/users.use-cases/admin-create-user.use-case';
-import { PgUsersQueryRepository } from '../infrastructure/query/pg.users.query-repository';
+import { AdminCreateUserCommand } from '../app/use-cases/admin-create-user.use-case';
+import { GetAllUsersQuery } from '../app/queries/get-all-users.query';
+import { GetUserByIdQuery } from '../app/queries/get-user-by-id.query';
 
 @UseGuards(BasicAuthGuard)
 @Controller(PATHS.SA_USERS)
 export class UserController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly pgUsersQueryRepository: PgUsersQueryRepository,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Get()
@@ -40,7 +41,7 @@ export class UserController {
   async getAllUsers(
     @Query() query: GetUsersQueryParams,
   ): Promise<PaginatedViewDto<PGUserViewDto[]>> {
-    return await this.pgUsersQueryRepository.findAll(query);
+    return await this.queryBus.execute(new GetAllUsersQuery(query));
   }
 
   @Post()
@@ -53,7 +54,7 @@ export class UserController {
       new AdminCreateUserCommand(createUserDto),
     );
 
-    return await this.pgUsersQueryRepository.findUserById(userId);
+    return await this.queryBus.execute(new GetUserByIdQuery(userId));
   }
 
   @Delete(':id')

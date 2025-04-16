@@ -19,17 +19,17 @@ import { JwtAuthGuard } from '../../guards/jwt/jwt-auth.guard';
 import { LocalAuthGuard } from '../../guards/local/local-auth.guard';
 import { CurrentUserId } from '../../guards/decorators/current-user-id.decorator';
 import { ThrottlerGuard, SkipThrottle } from '@nestjs/throttler';
-import { LoginCommand } from '../app/auth.use-cases/login.use-cases';
-import { CreateUserCommand } from '../../users/app/users.use-cases/create-user.use-case';
-import { ConfirmEmailRegistrationCommand } from '../app/auth.use-cases/confirm-email-registration.use-case';
-import { CommandBus } from '@nestjs/cqrs';
+import { LoginCommand } from '../app/use-cases/login.use-cases';
+import { CreateUserCommand } from '../../users/app/use-cases/create-user.use-case';
+import { ConfirmEmailRegistrationCommand } from '../app/use-cases/confirm-email-registration.use-case';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtRefreshGuard } from '../../guards/jwt/jwt-refresh.guard';
 import { CurrentUserData } from '../../guards/decorators/current-user-data.decorator';
-import { RefreshTokenCommand } from '../app/auth.use-cases/refresh-token.use-cases';
+import { RefreshTokenCommand } from '../app/use-cases/refresh-token.use-cases';
 import { CreateUserInputDto } from '../../users/api/input-dto/users.input-dto';
-import { ResendRegistrationEmailCommand } from '../app/auth.use-cases/resend-registration-email.use-case';
-import { SendRecoverPasswordEmailCommand } from '../app/auth.use-cases/send-recover-password-email.use-case';
-import { SetNewPasswordCommand } from '../app/auth.use-cases/set-new-password.use-case';
+import { ResendRegistrationEmailCommand } from '../app/use-cases/resend-registration-email.use-case';
+import { SendRecoverPasswordEmailCommand } from '../app/use-cases/send-recover-password-email.use-case';
+import { SetNewPasswordCommand } from '../app/use-cases/set-new-password.use-case';
 import {
   GetMeSwagger,
   LoginSwagger,
@@ -41,7 +41,7 @@ import {
   PasswordRecoverySwagger,
   NewPasswordSwagger,
 } from './swagger';
-import { PgUsersQueryRepository } from '../../users/infrastructure/query/pg.users.query-repository';
+import { GetMeQuery } from '../../users/app/queries/get-me.query';
 import { PGMeViewDto } from '../../users/api/view-dto/users.view-dto';
 import { DeleteSessionByIdCommand } from '../../sessions/app/sessions.use-cases/delete-session-by-id.use-case';
 
@@ -51,7 +51,7 @@ import { DeleteSessionByIdCommand } from '../../sessions/app/sessions.use-cases/
 export class AuthController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly pgUsersQueryRepository: PgUsersQueryRepository,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @SkipThrottle()
@@ -61,7 +61,7 @@ export class AuthController {
   async getUserInformation(
     @CurrentUserId() userId: string,
   ): Promise<PGMeViewDto> {
-    return this.pgUsersQueryRepository.findMe(userId);
+    return this.queryBus.execute(new GetMeQuery(userId));
   }
 
   @Post('login')

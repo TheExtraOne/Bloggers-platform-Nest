@@ -50,5 +50,4 @@ export class AdminCreateUserUseCase
   }
 }
 
-// TODO: add query bus
 // TODO: add event bus + extract into a separate module

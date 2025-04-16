@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PATHS } from '../../../../constants';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { JwtRefreshGuard } from '../../guards/jwt/jwt-refresh.guard';
 import { CurrentUserData } from '../../guards/decorators/current-user-data.decorator';
 import { PgSessionsViewDto } from './view-dto/sessions.view-dto';
@@ -17,14 +17,14 @@ import { DeleteAllSessionsCommand } from '../app/sessions.use-cases/delete-all-s
 import { DeleteAllSessionsSwagger } from './swagger/delete-all-sessions.swagger';
 import { DeleteSessionByIdCommand } from '../app/sessions.use-cases/delete-session-by-id.use-case';
 import { DeleteSessionByIdSwagger } from './swagger/delete-session-by-id.swagger';
-import { PgSessionsQueryRepository } from '../infrastructure/query/pg.sessions.query-repository';
+import { GetAllSessionsQuery } from '../app/queries/get-all-sessions.query';
 
 @UseGuards(JwtRefreshGuard)
 @Controller(PATHS.SECURITY)
 export class SecurityController {
   constructor(
     private readonly commandBus: CommandBus,
-    private readonly pgSessionsQueryRepository: PgSessionsQueryRepository,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Get('devices')
@@ -33,7 +33,7 @@ export class SecurityController {
     @CurrentUserData()
     { userId }: { userId: string },
   ): Promise<PgSessionsViewDto[]> {
-    return this.pgSessionsQueryRepository.findAllSessionsByUserId(userId);
+    return this.queryBus.execute(new GetAllSessionsQuery(userId));
   }
 
   @Delete('devices')
