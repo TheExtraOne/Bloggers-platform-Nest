@@ -31,7 +31,38 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     if (!this.isCorrectNumber(postId)) {
       throw new NotFoundException(ERRORS.POST_NOT_FOUND);
     }
-    const query = `SELECT json_build_object(
+    const query = `
+    WITH like_counts AS (
+      SELECT
+        post_id,
+        COUNT(CASE WHEN like_status = 'Like' THEN 1 END) AS likes_count,
+        COUNT(CASE WHEN like_status = 'Dislike' THEN 1 END) AS dislikes_count
+      FROM public.post_likes
+      GROUP BY post_id
+    ),
+    recent_likes AS (
+      SELECT pl.post_id, pl.user_id, pl.created_at
+      FROM public.post_likes pl
+      WHERE pl.like_status = 'Like'
+      AND pl.post_id = $1
+      ORDER BY pl.created_at DESC
+      LIMIT 3
+    ),
+    like_details AS (
+      SELECT 
+        recent_likes.post_id,
+        json_agg(
+          json_build_object(
+            'userId', users.id::text,
+            'login', users.login,
+            'addedAt', recent_likes.created_at
+          ) ORDER BY recent_likes.created_at DESC
+        ) AS likes
+      FROM recent_likes
+      JOIN public.users ON users.id = recent_likes.user_id
+      GROUP BY recent_likes.post_id
+    )
+    SELECT json_build_object(
       'id', posts.id::text,
       'title', posts.title,
       'shortDescription', posts.short_description,
@@ -48,36 +79,8 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     ) AS post
     FROM public.posts
     LEFT JOIN public.blogs ON posts.blog_id = blogs.id
-    
-    -- Like/dislike counts
-    LEFT JOIN (
-      SELECT
-        post_id,
-        COUNT(CASE WHEN like_status = 'Like' THEN 1 END) AS likes_count,
-        COUNT(CASE WHEN like_status = 'Dislike' THEN 1 END) AS dislikes_count
-      FROM public.post_likes
-      GROUP BY post_id
-    ) AS like_counts ON like_counts.post_id = posts.id
-    
-    -- Nested like details
-    LEFT JOIN LATERAL (
-      SELECT json_agg(
-        json_build_object(
-          'userId', users.id::text,
-          'login', users.login,
-          'addedAt', pl.created_at
-        ) ORDER BY pl.created_at DESC
-      ) AS likes
-      FROM (
-        SELECT pl.user_id, pl.created_at
-        FROM public.post_likes pl
-        WHERE pl.post_id = posts.id AND pl.like_status = 'Like'
-        ORDER BY pl.created_at DESC
-        LIMIT 3
-      ) AS pl
-      JOIN public.users ON users.id = pl.user_id
-    ) AS like_details ON true
-    
+    LEFT JOIN like_counts ON like_counts.post_id = posts.id
+    LEFT JOIN like_details ON like_details.post_id = posts.id
     WHERE posts.id = $1 AND posts.deleted_at IS NULL;`;
 
     const params = [postId];
@@ -106,16 +109,56 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     const { offset, limit } = this.getPaginationParams(pageNumber, pageSize);
 
     const querySQL = `
-    SELECT json_agg(post_data) AS posts
-    FROM (
+    WITH base_posts AS (
+      SELECT posts.*, blogs.name as blog_name
+      FROM public.posts
+      LEFT JOIN public.blogs ON posts.blog_id = blogs.id
+      WHERE posts.blog_id = $1 AND posts.deleted_at IS NULL
+    ),
+    like_counts AS (
+      SELECT
+        post_id,
+        COUNT(CASE WHEN like_status = 'Like' THEN 1 END) AS likes_count,
+        COUNT(CASE WHEN like_status = 'Dislike' THEN 1 END) AS dislikes_count
+      FROM public.post_likes
+      GROUP BY post_id
+    ),
+    recent_likes AS (
+      SELECT pl.post_id, pl.user_id, pl.created_at
+      FROM public.post_likes pl
+      WHERE pl.like_status = 'Like'
+      AND pl.post_id IN (SELECT id FROM base_posts)
+    ),
+    like_details AS (
+      SELECT 
+        recent_likes.post_id,
+        json_agg(
+          json_build_object(
+            'userId', users.id::text,
+            'login', users.login,
+            'addedAt', recent_likes.created_at
+          ) ORDER BY recent_likes.created_at DESC
+        ) AS likes
+      FROM (
+        SELECT pl.*
+        FROM recent_likes pl
+        WHERE (SELECT COUNT(*) 
+               FROM recent_likes pl2 
+               WHERE pl2.post_id = pl.post_id 
+               AND pl2.created_at >= pl.created_at) <= 3
+      ) recent_likes
+      JOIN public.users ON users.id = recent_likes.user_id
+      GROUP BY recent_likes.post_id
+    ),
+    post_data AS (
       SELECT json_build_object(
-        'id', posts.id::text,
-        'title', posts.title,
-        'shortDescription', posts.short_description,
-        'content', posts.content,
-        'createdAt', posts.created_at,
-        'blogId', posts.blog_id::text,
-        'blogName', blogs.name,
+        'id', bp.id::text,
+        'title', bp.title,
+        'shortDescription', bp.short_description,
+        'content', bp.content,
+        'createdAt', bp.created_at,
+        'blogId', bp.blog_id::text,
+        'blogName', bp.blog_name,
         'extendedLikesInfo', json_build_object(
           'likesCount', COALESCE(like_counts.likes_count, 0),
           'dislikesCount', COALESCE(like_counts.dislikes_count, 0),
@@ -123,43 +166,15 @@ export class PgPostsQueryRepository extends PgBaseRepository {
           'newestLikes', COALESCE(like_details.likes, '[]')
         )
       ) AS post_data
-      FROM public.posts
-      LEFT JOIN public.blogs ON posts.blog_id = blogs.id
-
-      -- subquery to count likes/dislikes
-      LEFT JOIN (
-        SELECT
-          post_id,
-          COUNT(CASE WHEN like_status = 'Like' THEN 1 END) AS likes_count,
-          COUNT(CASE WHEN like_status = 'Dislike' THEN 1 END) AS dislikes_count
-        FROM public.post_likes
-        GROUP BY post_id
-      ) AS like_counts ON like_counts.post_id = posts.id
-
-      -- subquery to build newestLikes array
-      LEFT JOIN LATERAL (
-        SELECT json_agg(
-          json_build_object(
-            'userId', users.id::text,
-            'login', users.login,
-            'addedAt', pl.created_at
-          ) ORDER BY pl.created_at DESC
-        ) AS likes
-        FROM (
-          SELECT pl.user_id, pl.created_at
-          FROM public.post_likes pl
-          WHERE pl.post_id = posts.id AND pl.like_status = 'Like'
-          ORDER BY pl.created_at DESC
-          LIMIT 3
-        ) AS pl
-        JOIN public.users ON users.id = pl.user_id
-      ) AS like_details ON true
-
-      WHERE posts.blog_id = $1 AND posts.deleted_at IS NULL
-      ORDER BY posts.${sortColumn} ${sortDirection}
+      FROM base_posts bp
+      LEFT JOIN like_counts ON like_counts.post_id = bp.id
+      LEFT JOIN like_details ON like_details.post_id = bp.id
+      ORDER BY bp.${sortColumn} ${sortDirection}
       LIMIT $2
       OFFSET $3
-    ) AS subquery;
+    )
+    SELECT json_agg(post_data ORDER BY post_data->>'${sortColumn}' ${sortDirection}) AS posts
+    FROM post_data;
     `;
     const params = [blogId, limit, offset];
     const [posts, totalCount]: [[{ posts: PgPostsViewDto[] }], number] =
@@ -189,16 +204,56 @@ export class PgPostsQueryRepository extends PgBaseRepository {
     const sortColumn = this.getSortColumn(sortBy, this.allowedColumns);
     const { offset, limit } = this.getPaginationParams(pageNumber, pageSize);
     const querySQL = `
-    SELECT json_agg(post_data) AS posts
-    FROM (
+    WITH base_posts AS (
+      SELECT posts.*, blogs.name as blog_name
+      FROM public.posts
+      LEFT JOIN public.blogs ON posts.blog_id = blogs.id
+      WHERE posts.deleted_at IS NULL
+    ),
+    like_counts AS (
+      SELECT
+        post_id,
+        COUNT(CASE WHEN like_status = 'Like' THEN 1 END) AS likes_count,
+        COUNT(CASE WHEN like_status = 'Dislike' THEN 1 END) AS dislikes_count
+      FROM public.post_likes
+      GROUP BY post_id
+    ),
+    recent_likes AS (
+      SELECT pl.post_id, pl.user_id, pl.created_at
+      FROM public.post_likes pl
+      WHERE pl.like_status = 'Like'
+      AND pl.post_id IN (SELECT id FROM base_posts)
+    ),
+    like_details AS (
+      SELECT 
+        recent_likes.post_id,
+        json_agg(
+          json_build_object(
+            'userId', users.id::text,
+            'login', users.login,
+            'addedAt', recent_likes.created_at
+          ) ORDER BY recent_likes.created_at DESC
+        ) AS likes
+      FROM (
+        SELECT pl.*
+        FROM recent_likes pl
+        WHERE (SELECT COUNT(*) 
+               FROM recent_likes pl2 
+               WHERE pl2.post_id = pl.post_id 
+               AND pl2.created_at >= pl.created_at) <= 3
+      ) recent_likes
+      JOIN public.users ON users.id = recent_likes.user_id
+      GROUP BY recent_likes.post_id
+    ),
+    post_data AS (
       SELECT json_build_object(
-        'id', posts.id::text,
-        'title', posts.title,
-        'shortDescription', posts.short_description,
-        'content', posts.content,
-        'createdAt', posts.created_at,
-        'blogId', posts.blog_id::text,
-        'blogName', blogs.name,
+        'id', bp.id::text,
+        'title', bp.title,
+        'shortDescription', bp.short_description,
+        'content', bp.content,
+        'createdAt', bp.created_at,
+        'blogId', bp.blog_id::text,
+        'blogName', bp.blog_name,
         'extendedLikesInfo', json_build_object(
           'likesCount', COALESCE(like_counts.likes_count, 0),
           'dislikesCount', COALESCE(like_counts.dislikes_count, 0),
@@ -206,43 +261,15 @@ export class PgPostsQueryRepository extends PgBaseRepository {
           'newestLikes', COALESCE(like_details.likes, '[]')
         )
       ) AS post_data
-    FROM public.posts
-    LEFT JOIN public.blogs ON posts.blog_id = blogs.id
-
-    -- Like/dislike counts
-    LEFT JOIN (
-      SELECT
-        post_id,
-        COUNT(CASE WHEN like_status = 'Like' THEN 1 END) AS likes_count,
-        COUNT(CASE WHEN like_status = 'Dislike' THEN 1 END) AS dislikes_count
-      FROM public.post_likes
-      GROUP BY post_id
-    ) AS like_counts ON like_counts.post_id = posts.id
-    
-    -- Nested like details
-    LEFT JOIN LATERAL (
-      SELECT json_agg(
-        json_build_object(
-          'userId', users.id::text,
-          'login', users.login,
-          'addedAt', pl.created_at
-        ) ORDER BY pl.created_at DESC
-      ) AS likes
-      FROM (
-        SELECT pl.user_id, pl.created_at
-        FROM public.post_likes pl
-        WHERE pl.post_id = posts.id AND pl.like_status = 'Like'
-        ORDER BY pl.created_at DESC
-        LIMIT 3
-      ) AS pl
-      JOIN public.users ON users.id = pl.user_id
-    ) AS like_details ON true
-    
-    WHERE posts.deleted_at IS NULL
-    ORDER BY ${sortColumn === 'blog_name' ? 'blogs.name' : `posts.${sortColumn}`} ${sortDirection}
-    LIMIT $1
-    OFFSET $2
-    ) AS subquery;`;
+      FROM base_posts bp
+      LEFT JOIN like_counts ON like_counts.post_id = bp.id
+      LEFT JOIN like_details ON like_details.post_id = bp.id
+      ORDER BY ${sortColumn === 'blog_name' ? 'bp.blog_name' : `bp.${sortColumn}`} ${sortDirection}
+      LIMIT $1
+      OFFSET $2
+    )
+    SELECT json_agg(post_data ORDER BY ${sortColumn === 'blog_name' ? 'post_data->>\'blogName\'' : `post_data->>'${sortColumn}'`} ${sortDirection}) AS posts
+    FROM post_data;`;
 
     const params = [limit, offset];
     const [posts, totalCount]: [[{ posts: PgPostsViewDto[] }], number] =
