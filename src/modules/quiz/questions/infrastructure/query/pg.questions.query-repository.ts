@@ -1,19 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { PgBaseRepository } from '../../../../../core/base-classes/pg.base.repository';
 import { ERRORS } from 'src/constants';
 import { Questions } from '../../domain/question.entity';
 import { PGQuestionViewDto } from '../../api/view-dto/question.view-dto';
+import { GetQuestionsQueryParams } from '../../api/input-dto/get-questions.query-params.input-dto';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
+import { QuestionsPublishStatus } from '../../api/input-dto/questions-publish-status';
 
 @Injectable()
 export class PgQuestionsQueryRepository extends PgBaseRepository {
-  // private readonly allowedColumns = [
-  //   'created_at',
-  //   'question',
-  //   'description',
-  //   'website_url',
-  // ] as const;
+  private readonly allowedColumns = ['created_at', 'body'] as const;
 
   constructor(
     @InjectRepository(Questions)
@@ -47,57 +45,78 @@ export class PgQuestionsQueryRepository extends PgBaseRepository {
     return question;
   }
 
-  // TODO: implement
-  // async findAll(
-  //   query: GetBlogsQueryParams,
-  // ): Promise<PaginatedViewDto<PgBlogsViewDto[]>> {
-  //   const { sortBy, sortDirection, searchNameTerm, pageNumber, pageSize } =
-  //     query;
+  async findAll(
+    query: GetQuestionsQueryParams,
+  ): Promise<PaginatedViewDto<PGQuestionViewDto[]>> {
+    const {
+      bodySearchTerm,
+      publishedStatus,
+      sortBy,
+      sortDirection,
+      pageNumber,
+      pageSize,
+    } = query;
 
-  //   const sortColumn = this.getSortColumn(sortBy, this.allowedColumns);
-  //   const { offset, limit } = this.getPaginationParams(pageNumber, pageSize);
-  //   const upperCaseSortDirection = sortDirection.toUpperCase() as unknown as
-  //     | 'ASC'
-  //     | 'DESC';
+    const sortColumn = this.getSortColumn(sortBy, this.allowedColumns);
+    const { offset, limit } = this.getPaginationParams(pageNumber, pageSize);
+    const upperCaseSortDirection = sortDirection.toUpperCase() as unknown as
+      | 'ASC'
+      | 'DESC';
 
-  //   // Used query builder in order to avoid extra mapping
-  //   const builder = this.blogsRepository
-  //     .createQueryBuilder('blog')
-  //     .select([
-  //       'blog.id::text AS id', // cast to text, alias as `id`
-  //       'blog.name AS name',
-  //       'blog.description AS description',
-  //       'blog.websiteUrl AS "websiteUrl"',
-  //       'blog.createdAt AS "createdAt"',
-  //       'blog.isMembership AS "isMembership"',
-  //     ])
-  //     .orderBy(`blog.${sortColumn}`, upperCaseSortDirection)
-  //     .offset(offset)
-  //     .limit(limit);
+    // Used query builder in order to avoid extra mapping
+    const builder = this.questionsRepository
+      .createQueryBuilder('question')
+      .select([
+        'question.id::text AS id', // cast to text, alias as `id`
+        'question.body AS body',
+        'question.correctAnswers AS "correctAnswers"',
+        'question.published AS published',
+        'question.createdAt AS "createdAt"',
+        'question.updatedAt AS "updatedAt"',
+      ])
+      .orderBy(`question.${sortColumn}`, upperCaseSortDirection)
+      .offset(offset)
+      .limit(limit);
 
-  //   if (searchNameTerm) {
-  //     builder.where('blog.name ILIKE :name', { name: `%${searchNameTerm}%` });
-  //   }
+    this.applyQuestionFilters(builder, bodySearchTerm, publishedStatus);
 
-  //   const totalCountBuilder =
-  //     this.blogsRepository.createQueryBuilder('blogCount');
+    const totalCountBuilder =
+      this.questionsRepository.createQueryBuilder('question');
 
-  //   if (searchNameTerm) {
-  //     totalCountBuilder.where('blogCount.name ILIKE :name', {
-  //       name: `%${searchNameTerm}%`,
-  //     });
-  //   }
+    this.applyQuestionFilters(
+      totalCountBuilder,
+      bodySearchTerm,
+      publishedStatus,
+    );
 
-  //   const [blogs, totalCount]: [PgBlogsViewDto[], number] = await Promise.all([
-  //     builder.getRawMany(),
-  //     totalCountBuilder.getCount(),
-  //   ]);
+    const [questions, totalCount]: [PGQuestionViewDto[], number] =
+      await Promise.all([builder.getRawMany(), totalCountBuilder.getCount()]);
 
-  //   return PaginatedViewDto.mapToView({
-  //     items: blogs,
-  //     totalCount,
-  //     page: pageNumber,
-  //     size: pageSize,
-  //   });
-  // }
+    return PaginatedViewDto.mapToView({
+      items: questions,
+      totalCount,
+      page: pageNumber,
+      size: pageSize,
+    });
+  }
+
+  private applyQuestionFilters(
+    builder: SelectQueryBuilder<Questions>,
+    bodySearchTerm: string | null,
+    publishedStatus: QuestionsPublishStatus,
+  ) {
+    if (bodySearchTerm) {
+      builder.andWhere(`question.body ILIKE :body`, {
+        body: `%${bodySearchTerm}%`,
+      });
+    }
+
+    if (publishedStatus !== QuestionsPublishStatus.All) {
+      builder.andWhere(`question.published = :published`, {
+        published: publishedStatus === QuestionsPublishStatus.Published,
+      });
+    }
+
+    return builder;
+  }
 }

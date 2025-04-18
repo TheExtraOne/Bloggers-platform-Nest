@@ -6,9 +6,13 @@ import { Questions } from './questions/domain/question.entity';
 import { PgQuestionsRepository } from './questions/infrastructure/pg.questions.repository';
 import { GetQuestionByIdQueryHandler } from './questions/app/queries/get-question-by-id.query';
 import { PgQuestionsQueryRepository } from './questions/infrastructure/query/pg.questions.query-repository';
+import { GetAllQuestionsQueryHandler } from './questions/app/queries/get-all-questions.query';
 
 const questionUseCases = [CreateQuestionUseCase];
-const questionQueries = [GetQuestionByIdQueryHandler];
+const questionQueries = [
+  GetQuestionByIdQueryHandler,
+  GetAllQuestionsQueryHandler,
+];
 
 @Module({
   imports: [TypeOrmModule.forFeature([Questions])],

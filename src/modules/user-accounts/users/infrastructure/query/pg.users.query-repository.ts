@@ -3,7 +3,7 @@ import { PGMeViewDto, PGUserViewDto } from '../../api/view-dto/users.view-dto';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users.query-params.input-dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ERRORS } from '../../../../../constants';
 import { PgBaseRepository } from '../../../../../core/base-classes/pg.base.repository';
 import { Users } from '../../domain/entities/user.entity';
@@ -96,7 +96,7 @@ export class PgUsersQueryRepository extends PgBaseRepository {
   }
 
   private applySearchFilters(
-    builder: any,
+    builder: SelectQueryBuilder<Users>,
     searchLoginTerm: string | null,
     searchEmailTerm: string | null,
   ): void {

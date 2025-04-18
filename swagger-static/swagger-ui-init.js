@@ -1848,6 +1848,116 @@ window.onload = function() {
         }
       },
       "/sa/quiz/questions": {
+        "get": {
+          "description": "Retrieves a paginated list of questions with optional filtering by body and published status",
+          "operationId": "QuestionController_getAllQuestions",
+          "parameters": [
+            {
+              "name": "sortBy",
+              "required": false,
+              "in": "query",
+              "description": "Field to sort by",
+              "schema": {
+                "default": "createdAt",
+                "example": "createdAt",
+                "type": "string",
+                "enum": [
+                  "createdAt",
+                  "body"
+                ]
+              }
+            },
+            {
+              "name": "bodySearchTerm",
+              "required": false,
+              "in": "query",
+              "description": "Search term to filter questions by body content",
+              "schema": {
+                "nullable": true,
+                "default": null,
+                "type": "string"
+              }
+            },
+            {
+              "name": "publishedStatus",
+              "required": false,
+              "in": "query",
+              "description": "Filter questions by their published status",
+              "schema": {
+                "enum": [
+                  "published",
+                  "notPublished",
+                  "all"
+                ],
+                "type": "string"
+              }
+            },
+            {
+              "name": "pageNumber",
+              "required": false,
+              "in": "query",
+              "description": "Page number for pagination",
+              "schema": {
+                "minimum": 1,
+                "default": 1,
+                "example": 1,
+                "type": "number"
+              }
+            },
+            {
+              "name": "pageSize",
+              "required": false,
+              "in": "query",
+              "description": "Number of items per page",
+              "schema": {
+                "minimum": 1,
+                "default": 10,
+                "example": 10,
+                "type": "number"
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": false,
+              "in": "query",
+              "description": "Sort direction (asc or desc)",
+              "schema": {
+                "enum": [
+                  "asc",
+                  "desc"
+                ],
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Questions have been successfully retrieved",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PaginatedQuestionsViewModel"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "security": [
+            {
+              "basic": []
+            },
+            {
+              "basic": []
+            }
+          ],
+          "summary": "Get all questions with pagination and filters",
+          "tags": [
+            "Questions"
+          ]
+        },
         "post": {
           "description": "Creates a new quiz question with the specified body and correct answers",
           "operationId": "QuestionController_createQuestion",
@@ -2596,33 +2706,6 @@ window.onload = function() {
             "likeStatus"
           ]
         },
-        "CreateQuestionInputDto": {
-          "type": "object",
-          "properties": {
-            "body": {
-              "type": "string",
-              "minLength": 10,
-              "maxLength": 500,
-              "description": "The text content of the question",
-              "example": "What is the capital of France?"
-            },
-            "correctAnswers": {
-              "minItems": 1,
-              "description": "Array of correct answers for the question",
-              "example": [
-                "Paris"
-              ],
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "required": [
-            "body",
-            "correctAnswers"
-          ]
-        },
         "PGQuestionViewDto": {
           "type": "object",
           "properties": {
@@ -2657,6 +2740,63 @@ window.onload = function() {
             "published",
             "createdAt",
             "updatedAt"
+          ]
+        },
+        "PaginatedQuestionsViewModel": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PGQuestionViewDto"
+              }
+            },
+            "totalCount": {
+              "type": "number"
+            },
+            "pagesCount": {
+              "type": "number"
+            },
+            "page": {
+              "type": "number"
+            },
+            "pageSize": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "items",
+            "totalCount",
+            "pagesCount",
+            "page",
+            "pageSize"
+          ]
+        },
+        "CreateQuestionInputDto": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 500,
+              "description": "The text content of the question",
+              "example": "What is the capital of France?"
+            },
+            "correctAnswers": {
+              "minItems": 1,
+              "description": "Array of correct answers for the question",
+              "example": [
+                "Paris"
+              ],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "body",
+            "correctAnswers"
           ]
         }
       }

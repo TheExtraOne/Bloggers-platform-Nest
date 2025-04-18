@@ -22,17 +22,28 @@ export class QuestionsTestManager {
     return response.body;
   }
 
-  async createSeveralQuestions(count: number): Promise<PGQuestionViewDto[]> {
-    const questions = [] as PGQuestionViewDto[];
+  async createTestQuestions() {
+    const questions = [
+      {
+        body: 'Question 1?',
+        correctAnswers: ['Answer 1'],
+      },
+      {
+        body: 'Question 2?',
+        correctAnswers: ['Answer 2'],
+      },
+      {
+        body: 'Question 3?',
+        correctAnswers: ['Answer 3'],
+      },
+    ];
 
-    for (let i = 0; i < count; ++i) {
-      const response = await this.createQuestion({
-        body: `Test question ${i}?`,
-        correctAnswers: [`Answer ${i}`],
-      });
-      questions.push(response);
+    const createdQuestions: PGQuestionViewDto[] = [];
+    for (const question of questions) {
+      const response = await this.createQuestion(question);
+      createdQuestions.push(response);
     }
 
-    return questions;
+    return createdQuestions;
   }
 }

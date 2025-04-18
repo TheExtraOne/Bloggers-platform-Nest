@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { PATHS } from '../../../../constants';
@@ -14,7 +16,10 @@ import { CreateQuestionInputDto } from './input-dto/create-question.input-dto';
 import { PGQuestionViewDto } from './view-dto/question.view-dto';
 import { CreateQuestionCommand } from '../app/use-cases/create-question.use-case';
 import { GetQuestionByIdQuery } from '../app/queries/get-question-by-id.query';
-import { CreateQuestionSwagger } from './swagger';
+import { CreateQuestionSwagger, GetAllQuestionsSwagger } from './swagger';
+import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
+import { GetQuestionsQueryParams } from './input-dto/get-questions.query-params.input-dto';
+import { GetAllQuestionsQuery } from '../app/queries/get-all-questions.query';
 
 @ApiTags('Questions')
 @ApiBasicAuth()
@@ -26,14 +31,14 @@ export class QuestionController {
     private readonly queryBus: QueryBus,
   ) {}
 
-  // @Get()
-  // @HttpCode(HttpStatus.OK)
-  // @GetAllUsersSwagger()
-  // async getAllUsers(
-  //   @Query() query: GetUsersQueryParams,
-  // ): Promise<PaginatedViewDto<PGUserViewDto[]>> {
-  //   return await this.queryBus.execute(new GetAllUsersQuery(query));
-  // }
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @GetAllQuestionsSwagger()
+  async getAllQuestions(
+    @Query() query: GetQuestionsQueryParams,
+  ): Promise<PaginatedViewDto<PGQuestionViewDto[]>> {
+    return await this.queryBus.execute(new GetAllQuestionsQuery(query));
+  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
