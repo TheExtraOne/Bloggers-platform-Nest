@@ -8,8 +8,13 @@ import { GetQuestionByIdQueryHandler } from './questions/app/queries/get-questio
 import { PgQuestionsQueryRepository } from './questions/infrastructure/query/pg.questions.query-repository';
 import { GetAllQuestionsQueryHandler } from './questions/app/queries/get-all-questions.query';
 import { DeleteQuestionUseCase } from './questions/app/use-cases/delete-question.use-case';
+import { PublishQuestionUseCase } from './questions/app/use-cases/publish-question.use-case';
 
-const questionUseCases = [CreateQuestionUseCase, DeleteQuestionUseCase];
+const questionUseCases = [
+  CreateQuestionUseCase,
+  DeleteQuestionUseCase,
+  PublishQuestionUseCase,
+];
 const questionQueries = [
   GetQuestionByIdQueryHandler,
   GetAllQuestionsQueryHandler,

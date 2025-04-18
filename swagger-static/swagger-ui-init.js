@@ -2043,6 +2043,68 @@ window.onload = function() {
             "Questions"
           ]
         }
+      },
+      "/sa/quiz/questions/{id}/publish": {
+        "put": {
+          "description": "Update the published status of a question (publish/unpublish)",
+          "operationId": "QuestionController_publishQuestion",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Question id",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "published"
+                  ],
+                  "properties": {
+                    "published": {
+                      "type": "boolean",
+                      "description": "New published status for the question"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "Question publish status has been successfully updated"
+            },
+            "400": {
+              "description": "If the inputModel has incorrect values"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Question not found"
+            }
+          },
+          "security": [
+            {
+              "basic": []
+            },
+            {
+              "basicAuth": []
+            }
+          ],
+          "summary": "Change question publish status",
+          "tags": [
+            "Questions"
+          ]
+        }
       }
     },
     "info": {

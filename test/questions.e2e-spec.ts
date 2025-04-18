@@ -313,4 +313,62 @@ describe('Questions Controller (e2e)', () => {
       await questionsTestManager.deleteQuestionUnauthorized(questionId, 'wrong', 'credentials');
     });
   });
+
+  describe('PUT /sa/quiz/questions/:id/publish - publish/unpublish question', () => {
+    let questionId: string;
+
+    beforeEach(async () => {
+      const question = await questionsTestManager.createQuestion({
+        body: 'Test question to publish?',
+        correctAnswers: ['Test answer'],
+      });
+      questionId = question.id;
+    });
+
+    it('should publish question', async () => {
+      // Initially question should be unpublished
+      const beforeQuestion = await questionsTestManager.getQuestionById(questionId);
+      expect(beforeQuestion.published).toBe(false);
+
+      // Publish question
+      await questionsTestManager.publishQuestion(questionId, true);
+
+      // Verify question is published
+      const afterQuestion = await questionsTestManager.getQuestionById(questionId);
+      expect(afterQuestion.published).toBe(true);
+    });
+
+    it('should unpublish question', async () => {
+      // First publish the question
+      await questionsTestManager.publishQuestion(questionId, true);
+
+      // Then unpublish it
+      await questionsTestManager.publishQuestion(questionId, false);
+
+      // Verify question is unpublished
+      const question = await questionsTestManager.getQuestionById(questionId);
+      expect(question.published).toBe(false);
+    });
+
+    it('should return 400 if published field is missing', async () => {
+      await questionsTestManager.publishQuestionInvalid(questionId, {});
+    });
+
+    it('should return 400 if published field is not boolean', async () => {
+      await questionsTestManager.publishQuestionInvalid(questionId, { published: 'true' });
+    });
+
+    it('should return 404 if question not found', async () => {
+      const nonExistentId = '999999';
+      await questionsTestManager.publishQuestion(nonExistentId, true, HttpStatus.NOT_FOUND);
+    });
+
+    it('should return 401 if unauthorized', async () => {
+      await questionsTestManager.publishQuestionUnauthorized(questionId, true);
+    });
+
+    it('should return 401 if wrong credentials', async () => {
+      await questionsTestManager.publishQuestionUnauthorized(questionId, true, 'wrong', 'credentials');
+    });
+  });
 });

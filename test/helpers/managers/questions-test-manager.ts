@@ -101,6 +101,51 @@ export class QuestionsTestManager {
     }
   }
 
+  async publishQuestion(
+    id: string,
+    published: boolean,
+    statusCode: HttpStatus = HttpStatus.NO_CONTENT,
+  ) {
+    await request(this.app.getHttpServer())
+      .put(`/${PATHS.SA_QUESTIONS}/${id}/publish`)
+      .auth('admin', 'qwerty')
+      .send({ published })
+      .expect(statusCode);
+  }
+
+  async publishQuestionInvalid(
+    id: string,
+    invalidBody: any,
+    statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
+  ) {
+    await request(this.app.getHttpServer())
+      .put(`/${PATHS.SA_QUESTIONS}/${id}/publish`)
+      .auth('admin', 'qwerty')
+      .send(invalidBody)
+      .expect(statusCode);
+  }
+
+  async publishQuestionUnauthorized(
+    id: string,
+    published: boolean,
+    username?: string,
+    password?: string,
+  ) {
+    const request = this.app.getHttpServer();
+    if (username && password) {
+      await supertest(request)
+        .put(`/${PATHS.SA_QUESTIONS}/${id}/publish`)
+        .auth(username, password)
+        .send({ published })
+        .expect(HttpStatus.UNAUTHORIZED);
+    } else {
+      await supertest(request)
+        .put(`/${PATHS.SA_QUESTIONS}/${id}/publish`)
+        .send({ published })
+        .expect(HttpStatus.UNAUTHORIZED);
+    }
+  }
+
   async deleteQuestion(
     id: string,
     statusCode: HttpStatus = HttpStatus.NO_CONTENT,
@@ -112,15 +157,18 @@ export class QuestionsTestManager {
   }
 
   async getQuestionById(id: string, statusCode: HttpStatus = HttpStatus.OK) {
-    const response = await request(this.app.getHttpServer())
-      .get(`/${PATHS.SA_QUESTIONS}/${id}`)
-      .auth('admin', 'qwerty')
-      .expect(statusCode);
-
-    if (statusCode === HttpStatus.OK) {
-      return response.body;
+    const { items } = await this.getAllQuestions();
+    const question = items.find(q => q.id === id);
+    
+    if (!question && statusCode === HttpStatus.NOT_FOUND) {
+      return;
     }
-    return null;
+    
+    if (!question) {
+      throw new Error(`Question with id ${id} not found`);
+    }
+    
+    return question;
   }
 
   async createTestQuestions() {

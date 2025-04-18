@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -22,11 +23,14 @@ import {
   CreateQuestionSwagger,
   DeleteQuestionSwagger,
   GetAllQuestionsSwagger,
+  PublishQuestionSwagger,
 } from './swagger';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
 import { GetQuestionsQueryParams } from './input-dto/get-questions.query-params.input-dto';
 import { GetAllQuestionsQuery } from '../app/queries/get-all-questions.query';
 import { DeleteQuestionCommand } from '../app/use-cases/delete-question.use-case';
+import { PublishQuestionInputDto } from './input-dto/publish-question.input-dto';
+import { PublishQuestionCommand } from '../app/use-cases/publish-question.use-case';
 
 @ApiTags('Questions')
 @ApiBasicAuth()
@@ -65,5 +69,20 @@ export class QuestionController {
   @DeleteQuestionSwagger()
   async deleteQuestion(@Param('id') id: string): Promise<void> {
     await this.commandBus.execute(new DeleteQuestionCommand(id));
+  }
+
+  @Put(':id/publish')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @PublishQuestionSwagger()
+  async publishQuestion(
+    @Param('id') id: string,
+    @Body() publishQuestionDto: PublishQuestionInputDto,
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new PublishQuestionCommand({
+        id,
+        isPublished: publishQuestionDto.published,
+      }),
+    );
   }
 }

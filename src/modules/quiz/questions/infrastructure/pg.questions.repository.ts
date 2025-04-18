@@ -14,19 +14,18 @@ export class PgQuestionsRepository extends PgBaseRepository {
     super();
   }
 
-  // TODO?
-  // async findQuestionByIdOrThrow(id: string): Promise<Questions> {
-  //   if (!this.isCorrectNumber(id)) {
-  //     throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
-  //   }
+  async findQuestionByIdOrThrow(id: string): Promise<Questions> {
+    if (!this.isCorrectNumber(id)) {
+      throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
+    }
 
-  //   const question = await this.questionsRepository.findOneBy({
-  //     id: +id,
-  //   });
-  //   if (!question) throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
+    const question = await this.questionsRepository.findOneBy({
+      id: +id,
+    });
+    if (!question) throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
 
-  //   return question;
-  // }
+    return question;
+  }
 
   async createQuestion(dto: {
     body: string;
@@ -73,6 +72,12 @@ export class PgQuestionsRepository extends PgBaseRepository {
 
   //   await this.blogsRepository.save(blog);
   // }
+
+  async publishQuestion(id: string, isPublished: boolean): Promise<void> {
+    const question = await this.findQuestionByIdOrThrow(id);
+    question.published = isPublished;
+    await this.questionsRepository.save(question);
+  }
 
   async deleteQuestion(id: string): Promise<void> {
     if (!this.isCorrectNumber(id)) {
