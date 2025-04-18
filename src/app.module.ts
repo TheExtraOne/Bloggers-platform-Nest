@@ -15,8 +15,8 @@ import { join } from 'path';
 import { CoreConfig } from './core/config/core.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { QuizModule } from './modules/quiz/quiz.module';
 
-// TODO: add dynamic inserting of testing module
 @Module({
   imports: [
     configModule,
@@ -70,6 +70,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
     BloggersPlatformModule,
     CoreModule,
     NotificationsModule,
+    QuizModule,
   ],
   controllers: [AppController],
   providers: [AppService],

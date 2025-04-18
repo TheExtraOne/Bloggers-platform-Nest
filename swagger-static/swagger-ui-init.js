@@ -1846,6 +1846,53 @@ window.onload = function() {
             "Comments"
           ]
         }
+      },
+      "/sa/quiz/questions": {
+        "post": {
+          "description": "Creates a new quiz question with the specified body and correct answers",
+          "operationId": "QuestionController_createQuestion",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateQuestionInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Question has been successfully created",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PGQuestionViewDto"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Invalid input data"
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "security": [
+            {
+              "basic": []
+            },
+            {
+              "basic": []
+            }
+          ],
+          "summary": "Create a new question",
+          "tags": [
+            "Questions"
+          ]
+        }
       }
     },
     "info": {
@@ -2547,6 +2594,69 @@ window.onload = function() {
           },
           "required": [
             "likeStatus"
+          ]
+        },
+        "CreateQuestionInputDto": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 500,
+              "description": "The text content of the question",
+              "example": "What is the capital of France?"
+            },
+            "correctAnswers": {
+              "minItems": 1,
+              "description": "Array of correct answers for the question",
+              "example": [
+                "Paris"
+              ],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "body",
+            "correctAnswers"
+          ]
+        },
+        "PGQuestionViewDto": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "body": {
+              "type": "string"
+            },
+            "correctAnswers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "published": {
+              "type": "boolean"
+            },
+            "createdAt": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "updatedAt": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "body",
+            "correctAnswers",
+            "published",
+            "createdAt",
+            "updatedAt"
           ]
         }
       }

@@ -14,7 +14,7 @@ export class TestingController {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    
+
     try {
       // TRUNCATE TABLE - removes all data but keeps the table structure
       // RESTART IDENTITY - resets auto-incremented IDs (SERIAL primary keys)
@@ -29,10 +29,11 @@ export class TestingController {
         public.posts,
         public.comments,
         public.post_likes,
-        public.comment_likes
+        public.comment_likes,
+        public.questions
         RESTART IDENTITY CASCADE;
       `);
-      
+
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();

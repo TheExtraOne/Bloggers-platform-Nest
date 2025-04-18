@@ -1,6 +1,7 @@
 export const PATHS = {
   AUTH: 'auth',
   SA_BLOGS: 'sa/blogs',
+  SA_QUESTIONS: 'sa/quiz/questions',
   BLOGS: 'blogs',
   COMMENTS: 'comments',
   POSTS: 'posts',
@@ -16,4 +17,5 @@ export const ERRORS = {
   COMMENT_NOT_FOUND: 'Comment not found',
   LIKE_NOT_FOUND: 'Like not found',
   SESSION_NOT_FOUND: 'Session not found',
+  QUESTION_NOT_FOUND: 'Question not found',
 };

@@ -19,7 +19,9 @@ import { EmailService } from '../../src/modules/notifications/email.service';
 import { SessionsTestManager } from './managers/sessions-test-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import { CoreConfig } from 'src/core/config/core.config';
+import { CoreConfig } from '../../src/core/config/core.config';
+import { QuizModule } from '../../src/modules/quiz/quiz.module';
+import { QuestionsTestManager } from './managers/questions-test-manager';
 
 export class TestSettingsInitializer {
   private readonly defaultTtl = 1000;
@@ -57,6 +59,7 @@ export class TestSettingsInitializer {
         TestingModule,
         CoreModule,
         NotificationsModule,
+        QuizModule,
       ],
     })
       .overrideProvider(EmailService)
@@ -81,6 +84,7 @@ export class TestSettingsInitializer {
     const emailServiceMock =
       testingAppModule.get<EmailServiceMock>(EmailService);
     const sessionsTestManager = new SessionsTestManager(app);
+    const questionsTestManager = new QuestionsTestManager(app);
 
     await deleteAllData(app);
 
@@ -94,6 +98,7 @@ export class TestSettingsInitializer {
       commentsTestManager,
       emailServiceMock,
       sessionsTestManager,
+      questionsTestManager,
     };
   }
 }
