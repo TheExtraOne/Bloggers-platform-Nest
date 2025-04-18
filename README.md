@@ -10,6 +10,13 @@ A modern, feature-rich blogging platform built with NestJS, providing a robust b
   - Blog ownership and permissions
   - Blog post management
 
+- **Quiz System**
+
+  - Create, read, update, and delete quiz questions
+  - Question publishing management
+  - Answer validation
+  - Comprehensive question filtering and sorting
+
 - **Post System**
 
   - Rich post creation and editing
@@ -64,7 +71,8 @@ A modern, feature-rich blogging platform built with NestJS, providing a robust b
 │   ├── modules/        # Feature modules
 │   │   ├── user-accounts/
 │   │   ├── bloggers-platform/
-│   │   └── notifications/
+│   │   ├── notifications/
+│   │   └── quiz/       # Quiz questions and answers management
 │   ├── setup/         # Application setup and configuration
 │   └── testing/       # Testing utilities
 ├── test/              # Test files
@@ -76,10 +84,28 @@ A modern, feature-rich blogging platform built with NestJS, providing a robust b
 ## Architecture & Patterns
 
 - **Modular Architecture**: The application is organized into feature modules, each responsible for specific business functionality.
+
+  - Quiz module implements a clean separation of concerns with distinct layers for API, application logic, and infrastructure
+  - Each module maintains its own set of DTOs, entities, and repositories
+
 - **CQRS Pattern**: Implements Command Query Responsibility Segregation for better separation of read and write operations.
+
+  - Commands: CreateQuestion, UpdateQuestion, DeleteQuestion, PublishQuestion
+  - Queries: GetQuestionById, GetAllQuestions with filtering and sorting
+
 - **Repository Pattern**: Used with TypeORM for database operations.
+
+  - Implements soft delete for data integrity
+  - Maintains clear separation between query and command repositories
+
 - **Dependency Injection**: Leverages NestJS's powerful DI container.
+
+  - Modules register their providers and exports
+  - Services are injected where needed
+
 - **DTO Pattern**: Data Transfer Objects for type-safe data validation.
+  - Input validation using class-validator
+  - Swagger documentation using class-transformer
 
 ## Security Features
 
@@ -149,6 +175,12 @@ A modern, feature-rich blogging platform built with NestJS, providing a robust b
 
 ## Testing
 
+### Test Coverage
+
+The application includes comprehensive test coverage across all modules.
+
+### Running Tests
+
 ```bash
 # Unit tests
 yarn test
@@ -156,9 +188,14 @@ yarn test
 # E2E tests
 yarn test:e2e
 
+# Test specific module
+yarn test:e2e test/questions.e2e-spec.ts
+
 # Test coverage
 yarn test:cov
 ```
+
+Test helpers are available in the `test/helpers` directory to facilitate testing of specific modules and functionalities.
 
 ## API Documentation
 
