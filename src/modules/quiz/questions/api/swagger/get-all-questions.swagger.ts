@@ -1,14 +1,20 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBasicAuth, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBasicAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { PaginatedQuestionsViewModel } from './paginated-questions.swagger';
 import { QuestionsPublishStatus } from '../input-dto/questions-publish-status';
 
 export function GetAllQuestionsSwagger() {
   return applyDecorators(
-    ApiBasicAuth(),
+    ApiBasicAuth('basicAuth'),
     ApiOperation({
       summary: 'Get all questions with pagination and filters',
-      description: 'Retrieves a paginated list of questions with optional filtering by body and published status',
+      description:
+        'Retrieves a paginated list of questions with optional filtering by body and published status',
     }),
     ApiQuery({
       name: 'bodySearchTerm',

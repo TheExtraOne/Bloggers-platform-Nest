@@ -7,8 +7,9 @@ import { PgQuestionsRepository } from './questions/infrastructure/pg.questions.r
 import { GetQuestionByIdQueryHandler } from './questions/app/queries/get-question-by-id.query';
 import { PgQuestionsQueryRepository } from './questions/infrastructure/query/pg.questions.query-repository';
 import { GetAllQuestionsQueryHandler } from './questions/app/queries/get-all-questions.query';
+import { DeleteQuestionUseCase } from './questions/app/use-cases/delete-question.use-case';
 
-const questionUseCases = [CreateQuestionUseCase];
+const questionUseCases = [CreateQuestionUseCase, DeleteQuestionUseCase];
 const questionQueries = [
   GetQuestionByIdQueryHandler,
   GetAllQuestionsQueryHandler,

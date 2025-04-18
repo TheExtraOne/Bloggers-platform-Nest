@@ -1950,7 +1950,7 @@ window.onload = function() {
               "basic": []
             },
             {
-              "basic": []
+              "basicAuth": []
             }
           ],
           "summary": "Get all questions with pagination and filters",
@@ -1995,10 +1995,50 @@ window.onload = function() {
               "basic": []
             },
             {
-              "basic": []
+              "basicAuth": []
             }
           ],
           "summary": "Create a new question",
+          "tags": [
+            "Questions"
+          ]
+        }
+      },
+      "/sa/quiz/questions/{id}": {
+        "delete": {
+          "description": "Delete question by id (soft delete)",
+          "operationId": "QuestionController_deleteQuestion",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Question id",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Question has been successfully deleted"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Question not found"
+            }
+          },
+          "security": [
+            {
+              "basic": []
+            },
+            {
+              "basicAuth": []
+            }
+          ],
+          "summary": "Delete question by id",
           "tags": [
             "Questions"
           ]

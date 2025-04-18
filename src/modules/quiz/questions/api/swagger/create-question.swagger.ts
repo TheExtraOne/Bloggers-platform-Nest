@@ -4,7 +4,7 @@ import { PGQuestionViewDto } from '../view-dto/question.view-dto';
 
 export function CreateQuestionSwagger() {
   return applyDecorators(
-    ApiBasicAuth(),
+    ApiBasicAuth('basicAuth'),
     ApiOperation({
       summary: 'Create a new question',
       description:

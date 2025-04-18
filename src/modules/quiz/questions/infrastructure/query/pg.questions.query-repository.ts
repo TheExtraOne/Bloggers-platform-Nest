@@ -37,7 +37,7 @@ export class PgQuestionsQueryRepository extends PgBaseRepository {
           'question.createdAt AS "createdAt"',
           'question.updatedAt AS "updatedAt"',
         ])
-        .where('question.id = :id', { id: +id })
+        .where('question.id = :id AND question.deletedAt IS NULL', { id: +id })
         .getRawOne();
 
     if (!question) throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
@@ -105,6 +105,7 @@ export class PgQuestionsQueryRepository extends PgBaseRepository {
     bodySearchTerm: string | null,
     publishedStatus: QuestionsPublishStatus,
   ) {
+    builder.andWhere('question.deletedAt IS NULL');
     if (bodySearchTerm) {
       builder.andWhere(`question.body ILIKE :body`, {
         body: `%${bodySearchTerm}%`,

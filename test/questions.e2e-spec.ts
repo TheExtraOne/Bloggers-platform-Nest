@@ -39,13 +39,10 @@ describe('Questions Controller (e2e)', () => {
 
     it('should return all questions with default pagination (page=1, pageSize=10)', async () => {
       // Add explicit sorting for consistent test results
-      const response = await request(httpServer)
-        .get(`/${PATHS.SA_QUESTIONS}?sortBy=${QuestionsSortBy.CreatedAt}&sortDirection=asc`)
-        .auth('admin', 'qwerty')
-        .expect(HttpStatus.OK);
+      const response = await questionsTestManager.getAllQuestions();
 
       // Check pagination metadata
-      expect(response.body).toMatchObject({
+      expect(response).toMatchObject({
         totalCount: 3,
         pagesCount: 1,
         page: 1,
@@ -53,11 +50,11 @@ describe('Questions Controller (e2e)', () => {
       });
 
       // Check items array
-      expect(response.body.items).toHaveLength(3);
-      expect(response.body.items.map(q => q.id)).toEqual([questions[0].id, questions[1].id, questions[2].id]);
+      expect(response.items).toHaveLength(3);
+      expect(response.items.map(q => q.id)).toEqual([questions[0].id, questions[1].id, questions[2].id]);
 
       // Check item structure
-      response.body.items.forEach(item => {
+      response.items.forEach(item => {
         expect(item).toEqual(expect.objectContaining({
           id: expect.any(String),
           body: expect.any(String),
@@ -71,69 +68,50 @@ describe('Questions Controller (e2e)', () => {
 
     it('should return questions filtered by bodySearchTerm (exact and partial match)', async () => {
       // Search for Question 1
-      const searchResponse = await request(httpServer)
-        .get(`/${PATHS.SA_QUESTIONS}?bodySearchTerm=Question%201&sortBy=${QuestionsSortBy.CreatedAt}&sortDirection=asc`)
-        .auth('admin', 'qwerty')
-        .expect(HttpStatus.OK);
+      const searchResponse = await questionsTestManager.searchQuestions('Question 1');
 
-      expect(searchResponse.body.items).toHaveLength(1);
-      expect(searchResponse.body.items[0].id).toBe(questions[0].id);
-      expect(searchResponse.body.items[0].body).toBe('Question 1?');
+      expect(searchResponse.items).toHaveLength(1);
+      expect(searchResponse.items[0].id).toBe(questions[0].id);
+      expect(searchResponse.items[0].body).toBe('Question 1?');
 
       // Search for all questions
-      const allQuestionsResponse = await request(httpServer)
-        .get(`/${PATHS.SA_QUESTIONS}?bodySearchTerm=Question&sortBy=${QuestionsSortBy.CreatedAt}&sortDirection=asc`)
-        .auth('admin', 'qwerty')
-        .expect(HttpStatus.OK);
+      const allQuestionsResponse = await questionsTestManager.getAllQuestions();
 
-      expect(allQuestionsResponse.body.items).toHaveLength(3);
-      expect(allQuestionsResponse.body.items.map(q => q.id)).toEqual([questions[0].id, questions[1].id, questions[2].id]);
+      expect(allQuestionsResponse.items).toHaveLength(3);
+      expect(allQuestionsResponse.items.map(q => q.id)).toEqual([questions[0].id, questions[1].id, questions[2].id]);
     });
 
     it('should return questions sorted by createdAt in ascending and descending order', async () => {
       // Get questions sorted by createdAt DESC
-      const descResponse = await request(httpServer)
-        .get(
-          `/${PATHS.SA_QUESTIONS}?sortBy=${QuestionsSortBy.CreatedAt}&sortDirection=desc`,
-        )
-        .auth('admin', 'qwerty')
-        .expect(HttpStatus.OK);
+      const descResponse = await questionsTestManager.getSortedQuestions(QuestionsSortBy.CreatedAt, 'desc');
 
-      const descDates = descResponse.body.items.map((item) =>
+      const descDates = descResponse.items.map((item) =>
         new Date(item.createdAt).getTime(),
       );
       const isSortedDesc = descDates.every(
         (date, i) => i === 0 || date <= descDates[i - 1],
       );
       expect(isSortedDesc).toBe(true);
-      expect(descResponse.body.items[0].id).toBe(questions[2].id); // Last created question first
+      expect(descResponse.items[0].id).toBe(questions[2].id); // Last created question first
 
       // Get questions sorted by createdAt ASC
-      const ascResponse = await request(httpServer)
-        .get(
-          `/${PATHS.SA_QUESTIONS}?sortBy=${QuestionsSortBy.CreatedAt}&sortDirection=asc`,
-        )
-        .auth('admin', 'qwerty')
-        .expect(HttpStatus.OK);
+      const ascResponse = await questionsTestManager.getSortedQuestions(QuestionsSortBy.CreatedAt, 'asc');
 
-      const ascDates = ascResponse.body.items.map((item) =>
+      const ascDates = ascResponse.items.map((item) =>
         new Date(item.createdAt).getTime(),
       );
       const isSortedAsc = ascDates.every(
         (date, i) => i === 0 || date >= ascDates[i - 1],
       );
       expect(isSortedAsc).toBe(true);
-      expect(ascResponse.body.items[0].id).toBe(questions[0].id); // First created question first
+      expect(ascResponse.items[0].id).toBe(questions[0].id); // First created question first
     });
 
     it('should handle custom pagination (pageSize=2) correctly across multiple pages', async () => {
       // Get first page with explicit sorting to ensure consistent order
-      const firstPageResponse = await request(httpServer)
-        .get(`/${PATHS.SA_QUESTIONS}?pageNumber=1&pageSize=2&sortBy=${QuestionsSortBy.CreatedAt}&sortDirection=asc`)
-        .auth('admin', 'qwerty')
-        .expect(HttpStatus.OK);
+      const firstPageResponse = await questionsTestManager.getPaginatedQuestions(1, 2);
 
-      expect(firstPageResponse.body).toEqual({
+      expect(firstPageResponse).toEqual({
         items: expect.arrayContaining([
           expect.objectContaining({ id: questions[0].id }),
           expect.objectContaining({ id: questions[1].id }),
@@ -143,22 +121,19 @@ describe('Questions Controller (e2e)', () => {
         page: 1,
         pageSize: 2,
       });
-      expect(firstPageResponse.body.items).toHaveLength(2);
+      expect(firstPageResponse.items).toHaveLength(2);
 
       // Get second page
-      const secondPageResponse = await request(httpServer)
-        .get(`/${PATHS.SA_QUESTIONS}?pageNumber=2&pageSize=2&sortBy=${QuestionsSortBy.CreatedAt}&sortDirection=asc`)
-        .auth('admin', 'qwerty')
-        .expect(HttpStatus.OK);
+      const secondPageResponse = await questionsTestManager.getPaginatedQuestions(2, 2);
 
-      expect(secondPageResponse.body).toEqual({
+      expect(secondPageResponse).toEqual({
         items: [expect.objectContaining({ id: questions[2].id })],
         totalCount: 3,
         pagesCount: 2,
         page: 2,
         pageSize: 2,
       });
-      expect(secondPageResponse.body.items).toHaveLength(1); // Last page with 1 item
+      expect(secondPageResponse.items).toHaveLength(1); // Last page with 1 item
     });
 
     it('should return 401 if unauthorized', async () => {
@@ -295,6 +270,47 @@ describe('Questions Controller (e2e)', () => {
           }),
         ]),
       });
+    });
+  });
+
+  describe('DELETE /sa/quiz/questions/:id - delete question', () => {
+    let questionId: string;
+
+    beforeEach(async () => {
+      const question = await questionsTestManager.createQuestion({
+        body: 'Test question to delete?',
+        correctAnswers: ['Test answer'],
+      });
+      questionId = question.id;
+    });
+
+    it('should delete existing question', async () => {
+      // Get all questions before delete
+      const { items: beforeItems } = await questionsTestManager.getAllQuestions();
+      expect(beforeItems.map(q => q.id)).toContain(questionId);
+
+      // Delete the question
+      await questionsTestManager.deleteQuestion(questionId);
+
+      // Verify question returns 404
+      await questionsTestManager.getQuestionById(questionId, HttpStatus.NOT_FOUND);
+
+      // Verify question doesn't appear in the list
+      const { items: afterItems } = await questionsTestManager.getAllQuestions();
+      expect(afterItems.map(q => q.id)).not.toContain(questionId);
+    });
+
+    it('should return 404 if question not found', async () => {
+      const nonExistentId = '999999';
+      await questionsTestManager.deleteQuestion(nonExistentId, HttpStatus.NOT_FOUND);
+    });
+
+    it('should return 401 if unauthorized', async () => {
+      await questionsTestManager.deleteQuestionUnauthorized(questionId);
+    });
+
+    it('should return 401 if wrong credentials', async () => {
+      await questionsTestManager.deleteQuestionUnauthorized(questionId, 'wrong', 'credentials');
     });
   });
 });

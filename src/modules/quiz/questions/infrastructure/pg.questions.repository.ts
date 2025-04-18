@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { Repository } from 'typeorm';
 import { Questions } from '../domain/question.entity';
+import { ERRORS } from '../../../../constants';
 
 @Injectable()
 export class PgQuestionsRepository extends PgBaseRepository {
@@ -12,18 +13,19 @@ export class PgQuestionsRepository extends PgBaseRepository {
   ) {
     super();
   }
-  // TODO: remove
-  // async findBlogByIdOrThrow(id: string): Promise<Blogs> {
+
+  // TODO?
+  // async findQuestionByIdOrThrow(id: string): Promise<Questions> {
   //   if (!this.isCorrectNumber(id)) {
-  //     throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+  //     throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
   //   }
 
-  //   const blog = await this.blogsRepository.findOneBy({
+  //   const question = await this.questionsRepository.findOneBy({
   //     id: +id,
   //   });
-  //   if (!blog) throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
+  //   if (!question) throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
 
-  //   return blog;
+  //   return question;
   // }
 
   async createQuestion(dto: {
@@ -52,7 +54,7 @@ export class PgQuestionsRepository extends PgBaseRepository {
 
   //   return exists;
   // }
-
+  // TODO: remove
   // async updateBlog(
   //   id: string,
   //   dto: {
@@ -72,16 +74,15 @@ export class PgQuestionsRepository extends PgBaseRepository {
   //   await this.blogsRepository.save(blog);
   // }
 
-  // async deleteBlog(id: string): Promise<void> {
-  //   if (!this.isCorrectNumber(id)) {
-  //     throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
-  //   }
+  async deleteQuestion(id: string): Promise<void> {
+    if (!this.isCorrectNumber(id)) {
+      throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
+    }
 
-  //   const result = await this.blogsRepository.softDelete(id);
+    const result = await this.questionsRepository.softDelete(id);
 
-  //   // `result[affected]` contains the number of affected rows.
-  //   if (result.affected === 0) {
-  //     throw new NotFoundException(ERRORS.BLOG_NOT_FOUND);
-  //   }
-  // }
+    if (result.affected === 0) {
+      throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
+    }
+  }
 }
