@@ -9,11 +9,13 @@ import { PgQuestionsQueryRepository } from './questions/infrastructure/query/pg.
 import { GetAllQuestionsQueryHandler } from './questions/app/queries/get-all-questions.query';
 import { DeleteQuestionUseCase } from './questions/app/use-cases/delete-question.use-case';
 import { PublishQuestionUseCase } from './questions/app/use-cases/publish-question.use-case';
+import { UpdateQuestionUseCase } from './questions/app/use-cases/update-question.use-case';
 
 const questionUseCases = [
   CreateQuestionUseCase,
   DeleteQuestionUseCase,
   PublishQuestionUseCase,
+  UpdateQuestionUseCase,
 ];
 const questionQueries = [
   GetQuestionByIdQueryHandler,

@@ -2042,6 +2042,58 @@ window.onload = function() {
           "tags": [
             "Questions"
           ]
+        },
+        "put": {
+          "description": "Update question body and correct answers",
+          "operationId": "QuestionController_updateQuestion",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Question id",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "description": "Question update data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateQuestionInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "Question has been successfully updated"
+            },
+            "400": {
+              "description": "If the inputModel has incorrect values"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Question not found"
+            }
+          },
+          "security": [
+            {
+              "basic": []
+            },
+            {
+              "basicAuth": []
+            }
+          ],
+          "summary": "Update question",
+          "tags": [
+            "Questions"
+          ]
         }
       },
       "/sa/quiz/questions/{id}/publish": {
@@ -2875,6 +2927,33 @@ window.onload = function() {
           ]
         },
         "CreateQuestionInputDto": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 500,
+              "description": "The text content of the question",
+              "example": "What is the capital of France?"
+            },
+            "correctAnswers": {
+              "minItems": 1,
+              "description": "Array of correct answers for the question",
+              "example": [
+                "Paris"
+              ],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "body",
+            "correctAnswers"
+          ]
+        },
+        "UpdateQuestionInputDto": {
           "type": "object",
           "properties": {
             "body": {

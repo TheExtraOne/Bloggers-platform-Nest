@@ -24,6 +24,7 @@ import {
   DeleteQuestionSwagger,
   GetAllQuestionsSwagger,
   PublishQuestionSwagger,
+  UpdateQuestionSwagger,
 } from './swagger';
 import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
 import { GetQuestionsQueryParams } from './input-dto/get-questions.query-params.input-dto';
@@ -31,6 +32,8 @@ import { GetAllQuestionsQuery } from '../app/queries/get-all-questions.query';
 import { DeleteQuestionCommand } from '../app/use-cases/delete-question.use-case';
 import { PublishQuestionInputDto } from './input-dto/publish-question.input-dto';
 import { PublishQuestionCommand } from '../app/use-cases/publish-question.use-case';
+import { UpdateQuestionInputDto } from './input-dto/update-question.input-dto';
+import { UpdateQuestionCommand } from '../app/use-cases/update-question.use-case';
 
 @ApiTags('Questions')
 @ApiBasicAuth()
@@ -69,6 +72,21 @@ export class QuestionController {
   @DeleteQuestionSwagger()
   async deleteQuestion(@Param('id') id: string): Promise<void> {
     await this.commandBus.execute(new DeleteQuestionCommand(id));
+  }
+
+  @Put(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UpdateQuestionSwagger()
+  async updateQuestion(
+    @Param('id') id: string,
+    @Body() updateQuestionDto: UpdateQuestionInputDto,
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new UpdateQuestionCommand({
+        id,
+        updateQuestionDto,
+      }),
+    );
   }
 
   @Put(':id/publish')

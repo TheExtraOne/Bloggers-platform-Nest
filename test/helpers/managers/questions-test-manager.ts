@@ -125,6 +125,57 @@ export class QuestionsTestManager {
       .expect(statusCode);
   }
 
+  async updateQuestion(
+    id: string,
+    updateDto: {
+      body: string;
+      correctAnswers: string[];
+    },
+    statusCode: HttpStatus = HttpStatus.NO_CONTENT,
+  ) {
+    await request(this.app.getHttpServer())
+      .put(`/${PATHS.SA_QUESTIONS}/${id}`)
+      .auth('admin', 'qwerty')
+      .send(updateDto)
+      .expect(statusCode);
+  }
+
+  async updateQuestionInvalid(
+    id: string,
+    invalidDto: any,
+    statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
+  ) {
+    await request(this.app.getHttpServer())
+      .put(`/${PATHS.SA_QUESTIONS}/${id}`)
+      .auth('admin', 'qwerty')
+      .send(invalidDto)
+      .expect(statusCode);
+  }
+
+  async updateQuestionUnauthorized(
+    id: string,
+    updateDto: {
+      body: string;
+      correctAnswers: string[];
+    },
+    username?: string,
+    password?: string,
+  ) {
+    const request = this.app.getHttpServer();
+    if (username && password) {
+      await supertest(request)
+        .put(`/${PATHS.SA_QUESTIONS}/${id}`)
+        .auth(username, password)
+        .send(updateDto)
+        .expect(HttpStatus.UNAUTHORIZED);
+    } else {
+      await supertest(request)
+        .put(`/${PATHS.SA_QUESTIONS}/${id}`)
+        .send(updateDto)
+        .expect(HttpStatus.UNAUTHORIZED);
+    }
+  }
+
   async publishQuestionUnauthorized(
     id: string,
     published: boolean,

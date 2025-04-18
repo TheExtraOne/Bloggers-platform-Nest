@@ -40,7 +40,7 @@ export class PgQuestionsRepository extends PgBaseRepository {
 
     return { questionId: newQuestion.id.toString() };
   }
-  // TODO: remove
+  // TODO: remove?
   // async checkBlogExists(id: string): Promise<boolean> {
   //   if (!this.isCorrectNumber(id)) {
   //     return false;
@@ -53,25 +53,22 @@ export class PgQuestionsRepository extends PgBaseRepository {
 
   //   return exists;
   // }
-  // TODO: remove
-  // async updateBlog(
-  //   id: string,
-  //   dto: {
-  //     name: string;
-  //     description: string;
-  //     websiteUrl: string;
-  //   },
-  // ): Promise<void> {
-  //   const { name, description, websiteUrl } = dto;
 
-  //   const blog = await this.findBlogByIdOrThrow(id);
+  async updateQuestion(
+    id: string,
+    dto: {
+      body: string;
+      correctAnswers: string[];
+    },
+  ): Promise<void> {
+    const { body, correctAnswers } = dto;
 
-  //   blog.name = name;
-  //   blog.description = description;
-  //   blog.websiteUrl = websiteUrl;
+    const question = await this.findQuestionByIdOrThrow(id);
 
-  //   await this.blogsRepository.save(blog);
-  // }
+    question.body = body;
+    question.correctAnswers = correctAnswers;
+    await this.questionsRepository.save(question);
+  }
 
   async publishQuestion(id: string, isPublished: boolean): Promise<void> {
     const question = await this.findQuestionByIdOrThrow(id);

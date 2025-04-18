@@ -371,4 +371,91 @@ describe('Questions Controller (e2e)', () => {
       await questionsTestManager.publishQuestionUnauthorized(questionId, true, 'wrong', 'credentials');
     });
   });
+
+  describe('PUT /sa/quiz/questions/:id - update question', () => {
+    let questionId: string;
+
+    beforeEach(async () => {
+      const question = await questionsTestManager.createQuestion({
+        body: 'Original question body?',
+        correctAnswers: ['Original answer'],
+      });
+      questionId = question.id;
+    });
+
+    it('should update question', async () => {
+      const updateDto = {
+        body: 'Updated question body?',
+        correctAnswers: ['Updated answer'],
+      };
+
+      await questionsTestManager.updateQuestion(questionId, updateDto);
+
+      // Verify question is updated
+      const { items } = await questionsTestManager.getAllQuestions();
+      const updatedQuestion = items.find(q => q.id === questionId);
+      expect(updatedQuestion).toBeDefined();
+      expect(updatedQuestion.body).toBe(updateDto.body);
+      expect(updatedQuestion.correctAnswers).toEqual(updateDto.correctAnswers);
+    });
+
+    it('should return 400 if body is too short', async () => {
+      await questionsTestManager.updateQuestionInvalid(questionId, {
+        body: 'Short?',
+        correctAnswers: ['Answer'],
+      });
+    });
+
+    it('should return 400 if body is too long', async () => {
+      await questionsTestManager.updateQuestionInvalid(questionId, {
+        body: 'a'.repeat(501),
+        correctAnswers: ['Answer'],
+      });
+    });
+
+    it('should return 400 if correctAnswers is empty', async () => {
+      await questionsTestManager.updateQuestionInvalid(questionId, {
+        body: 'Valid question body?',
+        correctAnswers: [],
+      });
+    });
+
+    it('should return 400 if correctAnswers contains non-string values', async () => {
+      await questionsTestManager.updateQuestionInvalid(questionId, {
+        body: 'Valid question body?',
+        correctAnswers: [123 as any],
+      });
+    });
+
+    it('should return 404 if question not found', async () => {
+      const nonExistentId = '999999';
+      await questionsTestManager.updateQuestion(
+        nonExistentId,
+        {
+          body: 'Valid question body?',
+          correctAnswers: ['Answer'],
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    });
+
+    it('should return 401 if unauthorized', async () => {
+      await questionsTestManager.updateQuestionUnauthorized(questionId, {
+        body: 'Valid question body?',
+        correctAnswers: ['Answer'],
+      });
+    });
+
+    it('should return 401 if wrong credentials', async () => {
+      await questionsTestManager.updateQuestionUnauthorized(
+        questionId,
+        {
+          body: 'Valid question body?',
+          correctAnswers: ['Answer'],
+        },
+        'wrong',
+        'credentials',
+      );
+    });
+  });
 });
