@@ -62,9 +62,4 @@ export class CoreConfig {
     },
   )
   limit: number = Number(this.configService.get('LIMIT'));
-
-  @IsNotEmpty({
-    message: 'Set Env variable MAIL_PASSWORD, example: your_password',
-  })
-  mailPassword: string = this.configService.get('MAIL_PASSWORD');
 }
