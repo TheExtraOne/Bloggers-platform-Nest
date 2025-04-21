@@ -1,5 +1,6 @@
 import { BaseWithId } from '../../../../core/base-entities/base.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { Answers } from '../../answers/domain/answers.entity';
 
 export const QUESTIONS_CONSTRAINTS = {
   MAX_QUESTION_LENGTH: 500,
@@ -38,4 +39,7 @@ export class Questions extends BaseWithId {
    */
   @Column({ type: 'boolean', default: false })
   public published: boolean;
+
+  @OneToMany(() => Answers, (answer) => answer.pairGame)
+  public answers: Answers[];
 }

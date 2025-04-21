@@ -10,6 +10,10 @@ import { GetAllQuestionsQueryHandler } from './questions/app/queries/get-all-que
 import { DeleteQuestionUseCase } from './questions/app/use-cases/delete-question.use-case';
 import { PublishQuestionUseCase } from './questions/app/use-cases/publish-question.use-case';
 import { UpdateQuestionUseCase } from './questions/app/use-cases/update-question.use-case';
+import { GamePairsController } from './pair-games/api/game-pairs.controller';
+import { PlayerProgress } from './player-progress/domain/player-progress.entity';
+import { PairGames } from './pair-games/domain/pair-game.entity';
+import { Answers } from './answers/domain/answers.entity';
 
 const questionUseCases = [
   CreateQuestionUseCase,
@@ -23,8 +27,10 @@ const questionQueries = [
 ];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Questions])],
-  controllers: [QuestionController],
+  imports: [
+    TypeOrmModule.forFeature([Questions, PairGames, PlayerProgress, Answers]),
+  ],
+  controllers: [QuestionController, GamePairsController],
   providers: [
     ...questionUseCases,
     ...questionQueries,

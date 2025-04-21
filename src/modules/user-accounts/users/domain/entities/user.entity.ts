@@ -6,6 +6,7 @@ import { Sessions } from '../../../sessions/domain/entities/session.entity';
 import { Comments } from '../../../../bloggers-platform/comments/domain/entities/comment.entity';
 import { PostLikes } from '../../../../bloggers-platform/likes/domain/entities/post-like.entity';
 import { CommentLikes } from '../../../../bloggers-platform/likes/domain/entities/comment-like.entity';
+import { PlayerProgress } from '../../../../quiz/player-progress/domain/player-progress.entity';
 
 export const USERS_CONSTRAINTS = {
   MAX_LOGIN_LENGTH: 10,
@@ -112,4 +113,11 @@ export class Users extends BaseWithId {
    */
   @OneToMany(() => CommentLikes, (commentLikes) => commentLikes.user)
   commentLikes: CommentLikes[];
+
+  /**
+   * Collection of player progress
+   * @type {PlayerProgress[]}
+   */
+  @OneToMany(() => PlayerProgress, (playerProgress) => playerProgress.user)
+  playerProgress: PlayerProgress[];
 }

@@ -2157,6 +2157,32 @@ window.onload = function() {
             "Questions"
           ]
         }
+      },
+      "/pair-game-quiz/pairs/connection": {
+        "post": {
+          "operationId": "GamePairsController_createQuestion",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PairViewDto"
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "basic": []
+            }
+          ],
+          "tags": [
+            "Pairs"
+          ]
+        }
       }
     },
     "info": {
@@ -2978,6 +3004,64 @@ window.onload = function() {
           "required": [
             "body",
             "correctAnswers"
+          ]
+        },
+        "Questions": {
+          "type": "object",
+          "properties": {}
+        },
+        "PairViewDto": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "firstPlayerProgress": {
+              "type": "object"
+            },
+            "secondPlayerProgress": {
+              "type": "object",
+              "nullable": true
+            },
+            "questions": {
+              "nullable": true,
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Questions"
+              }
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "PendingSecondPlayer",
+                "Active",
+                "Finished"
+              ]
+            },
+            "pairCreatedDate": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "startGameDate": {
+              "format": "date-time",
+              "type": "string",
+              "nullable": true
+            },
+            "finishGameDate": {
+              "format": "date-time",
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "required": [
+            "id",
+            "firstPlayerProgress",
+            "secondPlayerProgress",
+            "questions",
+            "status",
+            "pairCreatedDate",
+            "startGameDate",
+            "finishGameDate"
           ]
         }
       }

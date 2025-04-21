@@ -34,7 +34,9 @@ import { QuizModule } from './modules/quiz/quiz.module';
       useFactory: (coreConfig: CoreConfig) => {
         return {
           type: 'postgres',
-          url: coreConfig.postgresUri,
+          url:
+            coreConfig.postgresUri ||
+            'postgres://postgres:mysupersecretpassword@127.0.0.1:5432/postgres',
           namingStrategy: new SnakeNamingStrategy(),
           autoLoadEntities: true,
           synchronize: true,

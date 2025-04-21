@@ -2,6 +2,7 @@ export const PATHS = {
   AUTH: 'auth',
   SA_BLOGS: 'sa/blogs',
   SA_QUESTIONS: 'sa/quiz/questions',
+  PAIR_GAME_QUIZ: 'pair-game-quiz/pairs',
   BLOGS: 'blogs',
   COMMENTS: 'comments',
   POSTS: 'posts',
