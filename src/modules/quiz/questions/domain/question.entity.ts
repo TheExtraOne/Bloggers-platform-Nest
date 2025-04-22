@@ -40,6 +40,10 @@ export class Questions extends BaseWithId {
   @Column({ type: 'boolean', default: false })
   public published: boolean;
 
+  /**
+   * Collection of all answers given to this question across all games
+   * @type {Answers[]}
+   */
   @OneToMany(() => Answers, (answer) => answer.pairGame)
   public answers: Answers[];
 }
