@@ -5,7 +5,7 @@ import { Answers } from '../../answers/domain/answers.entity';
 
 export enum GameStatus {
   PendingSecondPlayer = 'PendingSecondPlayer',
-  Started = 'Active',
+  Active = 'Active',
   Finished = 'Finished',
 }
 
@@ -15,7 +15,7 @@ interface Questions {
 }
 /**
  * Entity representing a pair game session in the quiz system.
- * 
+ *
  * This entity manages the game state between two players, including:
  * - Game timing (start and finish)
  * - Current game status
@@ -32,14 +32,14 @@ export class PairGames extends BaseWithId {
    * The timestamp when the game started
    * @type {Date | null}
    */
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   public startGameDate: Date | null;
 
   /**
    * The timestamp when the game finished
    * @type {Date | null}
    */
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   public finishGameDate: Date | null;
 
   /**
@@ -90,6 +90,8 @@ export class PairGames extends BaseWithId {
    * Collection of all answers submitted during this game
    * @type {Answers[]}
    */
-  @OneToMany(() => Answers, (answer) => answer.pairGame)
-  public answers: Answers[];
+  @OneToMany(() => Answers, (answer) => answer.pairGame, {
+    nullable: true,
+  })
+  public answers: Answers[] | null;
 }

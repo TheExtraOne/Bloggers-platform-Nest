@@ -29,7 +29,7 @@ export class Questions extends BaseWithId {
    * Array of correct answers for the question.
    * @type {string[]}
    */
-  @Column('text', { array: true, nullable: false })
+  @Column('varchar', { array: true, nullable: false })
   public correctAnswers: string[];
 
   /**

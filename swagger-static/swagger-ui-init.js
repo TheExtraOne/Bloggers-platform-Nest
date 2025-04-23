@@ -2160,7 +2160,7 @@ window.onload = function() {
       },
       "/pair-game-quiz/pairs/connection": {
         "post": {
-          "operationId": "GamePairsController_createQuestion",
+          "operationId": "GamePairsController_connectUser",
           "parameters": [],
           "responses": {
             "200": {

@@ -11,35 +11,25 @@ export class TestingController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteAllDataSwagger()
   async deleteAll() {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // TRUNCATE TABLE - removes all data but keeps the table structure
-      // RESTART IDENTITY - resets auto-incremented IDs (SERIAL primary keys)
-      // CASCADE - removes dependent records in related tables to avoid foreign key constraints
-      await queryRunner.query(`
-        TRUNCATE TABLE
-        public.users_password_recovery,
-        public.users_email_confirmation,
-        public.users,
-        public.sessions,
-        public.blogs,
-        public.posts,
-        public.comments,
-        public.post_likes,
-        public.comment_likes,
-        public.questions
-        RESTART IDENTITY CASCADE;
-      `);
-
-      await queryRunner.commitTransaction();
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
-    }
+    // TRUNCATE TABLE - removes all data but keeps the table structure
+    // RESTART IDENTITY - resets auto-incremented IDs (SERIAL primary keys)
+    // CASCADE - removes dependent records in related tables to avoid foreign key constraints
+    await this.dataSource.query(`
+      TRUNCATE TABLE
+      public.users_password_recovery,
+      public.users_email_confirmation,
+      public.player_progress,
+      public.pair_games,
+      public.answers,
+      public.users,
+      public.sessions,
+      public.blogs,
+      public.posts,
+      public.comments,
+      public.post_likes,
+      public.comment_likes,
+      public.questions
+      RESTART IDENTITY CASCADE;
+    `);
   }
 }

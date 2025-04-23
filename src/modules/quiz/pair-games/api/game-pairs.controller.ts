@@ -1,29 +1,28 @@
 import {
-  // Body,
   Controller,
-  // Get,
   HttpCode,
   HttpStatus,
-  // Param,
   Post,
-  // Query,
   UseGuards,
 } from '@nestjs/common';
 import { PATHS } from '../../../../constants';
-// import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBasicAuth, ApiTags } from '@nestjs/swagger';
-// import { PaginatedViewDto } from 'src/core/dto/base.paginated-view.dto';
 import { JwtAuthGuard } from '../../../user-accounts/guards/jwt/jwt-auth.guard';
 import { PairViewDto } from './view-dto/game-pair.view-dto';
-import { GameStatus } from '../domain/pair-game.entity';
 import { CurrentUserId } from '../../../user-accounts/guards/decorators/current-user-id.decorator';
+import { ConnectUserCommand } from '../app/use-cases/connect-user.use-case';
+import { GetGameByIdQuery } from '../app/queries/get-game-by-id.query';
 
 @ApiTags('Pairs')
 @ApiBasicAuth()
 @UseGuards(JwtAuthGuard)
 @Controller(PATHS.PAIR_GAME_QUIZ)
 export class GamePairsController {
-  constructor() {} // private readonly queryBus: QueryBus, // private readonly commandBus: CommandBus,
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   // TODO: add 2 get endpoints
   // TODO: add swagger
@@ -39,28 +38,11 @@ export class GamePairsController {
   // TODO: add swagger
   @Post('/connection')
   @HttpCode(HttpStatus.OK)
-  async createQuestion(@CurrentUserId() userId: string): Promise<PairViewDto> {
-    console.log('userId', userId);
-    // Check 	if current user is already participating in active pair (403)
-    // Check if there is open pair - connect to it and  select 5 questions
-    // Create new pair
+  async connectUser(@CurrentUserId() userId: string): Promise<PairViewDto> {
+    const { pairGameId } = await this.commandBus.execute(
+      new ConnectUserCommand({ userId }),
+    );
 
-    return {
-      id: 'string',
-      firstPlayerProgress: {
-        answers: null,
-        player: {
-          id: 'string',
-          login: 'string',
-        },
-        score: 0,
-      },
-      secondPlayerProgress: null,
-      questions: null,
-      status: GameStatus.PendingSecondPlayer,
-      pairCreatedDate: new Date(),
-      startGameDate: null,
-      finishGameDate: null,
-    };
+    return this.queryBus.execute(new GetGameByIdQuery(pairGameId));
   }
 }

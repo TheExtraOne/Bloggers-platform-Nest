@@ -13,7 +13,7 @@ import { Answers } from '../../answers/domain/answers.entity';
 
 /**
  * Entity representing a player's progress in quiz games.
- * 
+ *
  * This entity tracks:
  * - Player's score
  * - Games where the player participated (as first or second player)
@@ -42,23 +42,18 @@ export class PlayerProgress extends BaseWithId {
   public user: Users;
 
   /**
-   * Games where this player is the first player
+   * Games where this player is participating
    * @type {PairGames}
    */
-  @OneToOne(() => PairGames, (pg) => pg.firstPlayerProgress)
-  public firstPlayerGame: PairGames;
-
-  /**
-   * Games where this player is the second player
-   * @type {PairGames}
-   */
-  @OneToOne(() => PairGames, (pg) => pg.secondPlayerProgress)
-  public secondPlayerGame: PairGames;
+  @OneToOne(() => PairGames)
+  public playerGame: PairGames;
 
   /**
    * Collection of all answers submitted by this player
    * @type {Answers[] | null}
    */
-  @OneToMany(() => Answers, (answer) => answer.playerProgress)
+  @OneToMany(() => Answers, (answer) => answer.playerProgress, {
+    nullable: true,
+  })
   public answers: Answers[] | null;
 }

@@ -14,6 +14,11 @@ import { GamePairsController } from './pair-games/api/game-pairs.controller';
 import { PlayerProgress } from './player-progress/domain/player-progress.entity';
 import { PairGames } from './pair-games/domain/pair-game.entity';
 import { Answers } from './answers/domain/answers.entity';
+import { ConnectUserUseCase } from './pair-games/app/use-cases/connect-user.use-case';
+import { PairGamesRepository } from './pair-games/infrastructure/pair-games.repository';
+import { UserAccountsModule } from '../user-accounts/user-accounts.module';
+import { PairGamesQueryRepository } from './pair-games/infrastructure/query/pair-games.query-repository';
+import { GetGameByIdQueryHandler } from './pair-games/app/queries/get-game-by-id.query';
 
 const questionUseCases = [
   CreateQuestionUseCase,
@@ -25,17 +30,24 @@ const questionQueries = [
   GetQuestionByIdQueryHandler,
   GetAllQuestionsQueryHandler,
 ];
+const pairGameUseCases = [ConnectUserUseCase];
+const pairGameQueries = [GetGameByIdQueryHandler];
 
 @Module({
   imports: [
+    UserAccountsModule,
     TypeOrmModule.forFeature([Questions, PairGames, PlayerProgress, Answers]),
   ],
   controllers: [QuestionController, GamePairsController],
   providers: [
     ...questionUseCases,
     ...questionQueries,
+    ...pairGameUseCases,
+    ...pairGameQueries,
     PgQuestionsRepository,
     PgQuestionsQueryRepository,
+    PairGamesRepository,
+    PairGamesQueryRepository,
   ],
   exports: [],
 })
