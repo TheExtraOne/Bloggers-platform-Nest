@@ -15,48 +15,45 @@ export class PairGamesQueryRepository extends PgBaseRepository {
     if (!this.isCorrectNumber(id)) {
       throw new NotFoundException(ERRORS.GAME_NOT_FOUND);
     }
-
+    // TODO: check all the rest CTE
+    // TODO: add answers
     const querySQL = `
-      WITH game AS (
-        SELECT pg.id, pg.questions, pg.status, pg.created_at, pg."start_game_date", pg."finish_game_date",
-        fp."user_id" AS "first_player_id", fp."score" AS "first_player_score",
-        u1.login AS "first_player_login", 
-        sp."user_id" AS "second_player_id", sp."score" AS "second_player_score",
-        u2.login AS "second_player_login"
-        FROM pair_games as pg
-        LEFT JOIN player_progress as fp ON pg.first_player_progress_id = fp.id
-        LEFT JOIN users AS u1 ON fp."user_id" = u1.id
-        LEFT JOIN player_progress as sp ON pg.second_player_progress_id = sp.id
-        LEFT JOIN users AS u2 ON sp."user_id" = u2.id
-        WHERE pg.id = $1 AND pg.deleted_at IS NULL
+      WITH selected_game AS (
+        SELECT *
+        FROM pair_games
+        WHERE id = $1 AND deleted_at IS NULL
       )
       SELECT 
-        game.id::text as id,
-        game.questions,
-        game.status,
-        game.created_at AS "pairCreatedDate",
-        game."start_game_date" AS "startGameDate",
-        game."finish_game_date" AS "finishGameDate",
+        sg.id::text as id,
+        sg.questions,
+        sg.status,
+        sg.created_at AS "pairCreatedDate",
+        sg."start_game_date" AS "startGameDate",
+        sg."finish_game_date" AS "finishGameDate",
         json_build_object(
           'player', json_build_object (
-            'userId', game."first_player_id"::text,
-            'login', game."first_player_login"
+            'userId', fp."user_id"::text,
+            'login', u1.login
           ),
-          'score', game."first_player_score"
+          'score', fp."score"
         ) AS "firstPlayerProgress",
         CASE 
-          WHEN game."second_player_id" IS NULL
+          WHEN sp."user_id" IS NULL
             THEN NULL
           ELSE
             json_build_object(
               'player', json_build_object (
-                'userId', game."second_player_id"::text,
-                'login', game."second_player_login"
+                'userId', sp."user_id"::text,
+                'login', u2.login
               ),
-              'score', game."second_player_score"
+              'score', sp."score"
             )
         END AS "secondPlayerProgress"
-      FROM game
+      FROM selected_game sg
+      LEFT JOIN player_progress fp ON sg.first_player_progress_id = fp.id
+      LEFT JOIN users u1 ON fp."user_id" = u1.id
+      LEFT JOIN player_progress sp ON sg.second_player_progress_id = sp.id
+      LEFT JOIN users u2 ON sp."user_id" = u2.id
       `;
     const params = [+id];
     const pairGame: PairViewDto[] = await this.dataSource.query(
