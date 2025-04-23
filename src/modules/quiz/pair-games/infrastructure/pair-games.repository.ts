@@ -81,6 +81,7 @@ export class PairGamesRepository extends PgBaseRepository {
         })
         .andWhere('game.secondPlayerProgress IS NULL')
         .andWhere('firstPlayerUser.id != :userId', { userId: +dto.userId })
+        .andWhere('game.deletedAt IS NULL')
         .setLock('pessimistic_write')
         .getOne();
 

@@ -22,6 +22,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { CoreConfig } from '../../src/core/config/core.config';
 import { QuizModule } from '../../src/modules/quiz/quiz.module';
 import { QuestionsTestManager } from './managers/questions-test-manager';
+import { PairGamesTestManager } from './managers/pair-games-test-manager';
 
 export class TestSettingsInitializer {
   private readonly defaultTtl = 1000;
@@ -85,6 +86,7 @@ export class TestSettingsInitializer {
       testingAppModule.get<EmailServiceMock>(EmailService);
     const sessionsTestManager = new SessionsTestManager(app);
     const questionsTestManager = new QuestionsTestManager(app);
+    const pairGamesTestManager = new PairGamesTestManager(app);
 
     await deleteAllData(app);
 
@@ -99,6 +101,7 @@ export class TestSettingsInitializer {
       emailServiceMock,
       sessionsTestManager,
       questionsTestManager,
+      pairGamesTestManager,
     };
   }
 }

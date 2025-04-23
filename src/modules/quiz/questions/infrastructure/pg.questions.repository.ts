@@ -31,37 +31,16 @@ export class PgQuestionsRepository extends PgBaseRepository {
     amount: number = 5,
   ): Promise<{ id: string; body: string }[]> {
     // On large tables, ORDER BY RANDOM() can be slow because it assigns a random value to each row and then sorts ALL of them!
-    // const randomQuestions = await this.questionsRepository
-    // .createQueryBuilder('question')
-    // .where('question.published = :published', { published: true })
-    // .andWhere('question.deletedAt IS NULL')
-    // .orderBy('RANDOM()')
-    // .limit(amount)
-    // .getMany();
-
-    const ids: { id: number }[] = await this.questionsRepository
-      .createQueryBuilder('questions')
-      .select(['questions.id AS id'])
-      .where('questions.published = :published', { published: true })
-      .andWhere('questions.deletedAt IS NULL')
+    const randomQuestions = await this.questionsRepository
+      .createQueryBuilder('question')
+      .select(['question.id::text AS id', 'question.body AS body'])
+      .where('question.published = :published', { published: true })
+      .andWhere('question.deletedAt IS NULL')
+      .orderBy('RANDOM()')
+      .limit(amount)
       .getRawMany();
 
-    // const pickedIds = ids
-    //   .map((r) => r.id)
-    //   .sort(() => 0.5 - Math.random())
-    //   .slice(0, amount);
-
-    const randomIndices = this.getRandomIndices(ids.length, amount);
-    const pickedIds = randomIndices.map((i) => ids[i].id);
-
-    const randomQuestions: { id: string; body: string }[] =
-      await this.questionsRepository
-        .createQueryBuilder('questions')
-        .select(['questions.id::text AS id', 'questions.body AS body'])
-        .where('questions.id IN (:...ids)', { ids: pickedIds })
-        .getRawMany();
-
-    return randomQuestions;
+    return randomQuestions as unknown as { id: string; body: string }[];
   }
 
   async createQuestion(dto: {
@@ -110,13 +89,5 @@ export class PgQuestionsRepository extends PgBaseRepository {
     if (result.affected === 0) {
       throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
     }
-  }
-
-  private getRandomIndices(arrLength: number, n: number): number[] {
-    const indices = new Set<number>();
-    while (indices.size < Math.min(n, arrLength)) {
-      indices.add(Math.floor(Math.random() * arrLength));
-    }
-    return Array.from(indices);
   }
 }

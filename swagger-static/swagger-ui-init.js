@@ -2160,11 +2160,12 @@ window.onload = function() {
       },
       "/pair-game-quiz/pairs/connection": {
         "post": {
+          "description": "Connect current user to existing random pair or create new pair. Returns active pair.",
           "operationId": "GamePairsController_connectUser",
           "parameters": [],
           "responses": {
             "200": {
-              "description": "",
+              "description": "Returns connected pair game",
               "content": {
                 "application/json": {
                   "schema": {
@@ -2172,13 +2173,23 @@ window.onload = function() {
                   }
                 }
               }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "403": {
+              "description": "User is already participating in active pair"
             }
           },
           "security": [
             {
               "basic": []
+            },
+            {
+              "bearer": []
             }
           ],
+          "summary": "Connect user to pair game quiz",
           "tags": [
             "Pairs"
           ]
@@ -3006,9 +3017,82 @@ window.onload = function() {
             "correctAnswers"
           ]
         },
-        "Questions": {
+        "Answers": {
           "type": "object",
-          "properties": {}
+          "properties": {
+            "questionId": {
+              "type": "string"
+            },
+            "answerStatus": {
+              "enum": [
+                "Correct",
+                "Incorrect"
+              ],
+              "type": "string"
+            },
+            "addedAt": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          "required": [
+            "questionId",
+            "answerStatus",
+            "addedAt"
+          ]
+        },
+        "Player": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "login": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "login"
+          ]
+        },
+        "PlayerProgress": {
+          "type": "object",
+          "properties": {
+            "answers": {
+              "nullable": true,
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Answers"
+              }
+            },
+            "player": {
+              "$ref": "#/components/schemas/Player"
+            },
+            "score": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "answers",
+            "player",
+            "score"
+          ]
+        },
+        "Question": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "body": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "body"
+          ]
         },
         "PairViewDto": {
           "type": "object",
@@ -3017,26 +3101,30 @@ window.onload = function() {
               "type": "string"
             },
             "firstPlayerProgress": {
-              "type": "object"
+              "$ref": "#/components/schemas/PlayerProgress"
             },
             "secondPlayerProgress": {
-              "type": "object",
-              "nullable": true
+              "nullable": true,
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/PlayerProgress"
+                }
+              ]
             },
             "questions": {
               "nullable": true,
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/Questions"
+                "$ref": "#/components/schemas/Question"
               }
             },
             "status": {
-              "type": "string",
               "enum": [
                 "PendingSecondPlayer",
                 "Active",
                 "Finished"
-              ]
+              ],
+              "type": "string"
             },
             "pairCreatedDate": {
               "format": "date-time",

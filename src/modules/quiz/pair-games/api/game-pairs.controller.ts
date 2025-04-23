@@ -13,6 +13,7 @@ import { PairViewDto } from './view-dto/game-pair.view-dto';
 import { CurrentUserId } from '../../../user-accounts/guards/decorators/current-user-id.decorator';
 import { ConnectUserCommand } from '../app/use-cases/connect-user.use-case';
 import { GetGameByIdQuery } from '../app/queries/get-game-by-id.query';
+import { ConnectUserSwagger } from './swagger/connect-user.swagger.decorator';
 
 @ApiTags('Pairs')
 @ApiBasicAuth()
@@ -35,9 +36,9 @@ export class GamePairsController {
   //   return await this.queryBus.execute(new GetAllQuestionsQuery(query));
   // }
 
-  // TODO: add swagger
   @Post('/connection')
   @HttpCode(HttpStatus.OK)
+  @ConnectUserSwagger()
   async connectUser(@CurrentUserId() userId: string): Promise<PairViewDto> {
     const { pairGameId } = await this.commandBus.execute(
       new ConnectUserCommand({ userId }),

@@ -209,16 +209,16 @@ export class QuestionsTestManager {
 
   async getQuestionById(id: string, statusCode: HttpStatus = HttpStatus.OK) {
     const { items } = await this.getAllQuestions();
-    const question = items.find(q => q.id === id);
-    
+    const question = items.find((q) => q.id === id);
+
     if (!question && statusCode === HttpStatus.NOT_FOUND) {
       return;
     }
-    
+
     if (!question) {
       throw new Error(`Question with id ${id} not found`);
     }
-    
+
     return question;
   }
 
