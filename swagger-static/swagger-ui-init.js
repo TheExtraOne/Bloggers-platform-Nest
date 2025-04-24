@@ -2158,6 +2158,53 @@ window.onload = function() {
           ]
         }
       },
+      "/pair-game-quiz/pairs/{id}": {
+        "get": {
+          "description": "Get pair game by id. User should be participant of this game",
+          "operationId": "GamePairsController_getPairGameById",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "description": "Pair game id",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Returns pair game",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PairViewDto"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "403": {
+              "description": "User is not participating in this game"
+            }
+          },
+          "security": [
+            {
+              "basic": []
+            },
+            {
+              "bearer": []
+            }
+          ],
+          "summary": "Get pair game by id",
+          "tags": [
+            "Pairs"
+          ]
+        }
+      },
       "/pair-game-quiz/pairs/connection": {
         "post": {
           "description": "Connect current user to existing random pair or create new pair. Returns active pair.",
@@ -3020,14 +3067,14 @@ window.onload = function() {
         "Answers": {
           "type": "object",
           "properties": {
-            "questionId": {
-              "type": "string"
-            },
             "answerStatus": {
               "enum": [
                 "Correct",
                 "Incorrect"
               ],
+              "type": "string"
+            },
+            "questionId": {
               "type": "string"
             },
             "addedAt": {
@@ -3036,8 +3083,8 @@ window.onload = function() {
             }
           },
           "required": [
-            "questionId",
             "answerStatus",
+            "questionId",
             "addedAt"
           ]
         },
@@ -3097,9 +3144,6 @@ window.onload = function() {
         "PairViewDto": {
           "type": "object",
           "properties": {
-            "id": {
-              "type": "string"
-            },
             "firstPlayerProgress": {
               "$ref": "#/components/schemas/PlayerProgress"
             },
@@ -3126,6 +3170,9 @@ window.onload = function() {
               ],
               "type": "string"
             },
+            "id": {
+              "type": "string"
+            },
             "pairCreatedDate": {
               "format": "date-time",
               "type": "string"
@@ -3142,11 +3189,11 @@ window.onload = function() {
             }
           },
           "required": [
-            "id",
             "firstPlayerProgress",
             "secondPlayerProgress",
             "questions",
             "status",
+            "id",
             "pairCreatedDate",
             "startGameDate",
             "finishGameDate"

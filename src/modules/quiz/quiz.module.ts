@@ -19,6 +19,7 @@ import { PairGamesRepository } from './pair-games/infrastructure/pair-games.repo
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
 import { PairGamesQueryRepository } from './pair-games/infrastructure/query/pair-games.query-repository';
 import { GetGameByIdQueryHandler } from './pair-games/app/queries/get-game-by-id.query';
+import { PairGameService } from './pair-games/app/pair-game.service';
 
 const questionUseCases = [
   CreateQuestionUseCase,
@@ -44,6 +45,7 @@ const pairGameQueries = [GetGameByIdQueryHandler];
     ...questionQueries,
     ...pairGameUseCases,
     ...pairGameQueries,
+    PairGameService,
     PgQuestionsRepository,
     PgQuestionsQueryRepository,
     PairGamesRepository,

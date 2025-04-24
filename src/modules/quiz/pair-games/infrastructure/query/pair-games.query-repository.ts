@@ -16,12 +16,24 @@ export class PairGamesQueryRepository extends PgBaseRepository {
       throw new NotFoundException(ERRORS.GAME_NOT_FOUND);
     }
     // TODO: check all the rest CTE
-    // TODO: add answers
+
     const querySQL = `
       WITH selected_game AS (
         SELECT *
         FROM pair_games
         WHERE id = $1 AND deleted_at IS NULL
+      ),
+      answers_agg AS (
+        SELECT
+          player_progress_id,
+          json_agg(json_build_object(
+            'questionId', a.id::text,
+            'answerStatus', a.answer_status,
+            'addedAt', a.created_at
+          ) ORDER BY a.created_at ASC) AS answers
+        FROM answers a
+        WHERE a.pair_game_id = $1 AND a.deleted_at IS NULL
+        GROUP BY player_progress_id
       )
       SELECT 
         sg.id::text as id,
@@ -32,10 +44,11 @@ export class PairGamesQueryRepository extends PgBaseRepository {
         sg."finish_game_date" AS "finishGameDate",
         json_build_object(
           'player', json_build_object (
-            'userId', fp."user_id"::text,
+            'id', fp."user_id"::text,
             'login', u1.login
           ),
-          'score', fp."score"
+          'score', fp."score",
+          'answers', COALESCE(fa.answers, '[]')
         ) AS "firstPlayerProgress",
         CASE 
           WHEN sp."user_id" IS NULL
@@ -43,17 +56,20 @@ export class PairGamesQueryRepository extends PgBaseRepository {
           ELSE
             json_build_object(
               'player', json_build_object (
-                'userId', sp."user_id"::text,
+                'id', sp."user_id"::text,
                 'login', u2.login
               ),
-              'score', sp."score"
+              'score', sp."score",
+              'answers', COALESCE(sa.answers, '[]')
             )
         END AS "secondPlayerProgress"
       FROM selected_game sg
       LEFT JOIN player_progress fp ON sg.first_player_progress_id = fp.id
       LEFT JOIN users u1 ON fp."user_id" = u1.id
+      LEFT JOIN answers_agg fa ON fa.player_progress_id = fp.id
       LEFT JOIN player_progress sp ON sg.second_player_progress_id = sp.id
       LEFT JOIN users u2 ON sp."user_id" = u2.id
+      LEFT JOIN answers_agg sa ON sa.player_progress_id = sp.id
       `;
     const params = [+id];
     const pairGame: PairViewDto[] = await this.dataSource.query(

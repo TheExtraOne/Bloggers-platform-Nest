@@ -1,7 +1,9 @@
 import {
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -9,11 +11,13 @@ import { PATHS } from '../../../../constants';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBasicAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../user-accounts/guards/jwt/jwt-auth.guard';
-import { PairViewDto } from './view-dto/game-pair.view-dto';
 import { CurrentUserId } from '../../../user-accounts/guards/decorators/current-user-id.decorator';
 import { ConnectUserCommand } from '../app/use-cases/connect-user.use-case';
 import { GetGameByIdQuery } from '../app/queries/get-game-by-id.query';
 import { ConnectUserSwagger } from './swagger/connect-user.swagger.decorator';
+import { GetPairGameByIdSwagger } from './swagger/get-pair-game-by-id.swagger.decorator';
+import { PairGameService } from '../app/pair-game.service';
+import { PairViewDto } from './view-dto/game-pair.view-dto';
 
 @ApiTags('Pairs')
 @ApiBasicAuth()
@@ -23,18 +27,23 @@ export class GamePairsController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
+    private readonly pairGameService: PairGameService,
   ) {}
 
   // TODO: add 2 get endpoints
-  // TODO: add swagger
-  // @Get()
-  // @HttpCode(HttpStatus.OK)
-  // @GetAllQuestionsSwagger()
-  // async getAllQuestions(
-  //   @Query() query: GetQuestionsQueryParams,
-  // ): Promise<PaginatedViewDto<PGQuestionViewDto[]>> {
-  //   return await this.queryBus.execute(new GetAllQuestionsQuery(query));
-  // }
+
+  @Get('/:id')
+  @GetPairGameByIdSwagger()
+  @HttpCode(HttpStatus.OK)
+  async getPairGameById(
+    @Param('id') id: string,
+    @CurrentUserId() userId: string,
+  ): Promise<PairViewDto> {
+    const pairGame = await this.queryBus.execute(new GetGameByIdQuery(id));
+    await this.pairGameService.userIsParticipatingInTheGame(userId, pairGame);
+
+    return pairGame;
+  }
 
   @Post('/connection')
   @HttpCode(HttpStatus.OK)
