@@ -12,10 +12,18 @@ A modern, feature-rich blogging platform built with NestJS, providing a robust b
 
 - **Quiz System**
 
-  - Create, read, update, and delete quiz questions
-  - Question publishing management
-  - Answer validation
-  - Comprehensive question filtering and sorting
+  - Questions Management:
+    - Create, read, update, and delete quiz questions
+    - Question publishing workflow
+    - Answer validation
+    - Comprehensive filtering and sorting
+  - Pair Game Quiz:
+    - Real-time pair matching system
+    - Active game tracking and management
+    - Player progress and scoring
+    - Question randomization
+    - Game state persistence
+    - Participant validation
 
 - **Post System**
 
@@ -72,7 +80,16 @@ A modern, feature-rich blogging platform built with NestJS, providing a robust b
 │   │   ├── user-accounts/
 │   │   ├── bloggers-platform/
 │   │   ├── notifications/
-│   │   └── quiz/       # Quiz questions and answers management
+│   │   └── quiz/       # Quiz functionality
+│   │       ├── questions/    # Question management
+│   │       │   ├── api/     # Question controllers and DTOs
+│   │       │   ├── app/     # Question use cases and queries
+│   │       │   └── domain/  # Question entities
+│   │       └── pair-games/   # Pair game quiz functionality
+│   │           ├── api/      # Game controllers and DTOs
+│   │           ├── app/      # Game logic, commands and queries
+│   │           ├── domain/   # Game entities and types
+│   │           └── infrastructure/  # Game repositories
 │   ├── setup/         # Application setup and configuration
 │   └── testing/       # Testing utilities
 ├── test/              # Test files
@@ -85,13 +102,7 @@ A modern, feature-rich blogging platform built with NestJS, providing a robust b
 
 - **Modular Architecture**: The application is organized into feature modules, each responsible for specific business functionality.
 
-  - Quiz module implements a clean separation of concerns with distinct layers for API, application logic, and infrastructure
-  - Each module maintains its own set of DTOs, entities, and repositories
-
 - **CQRS Pattern**: Implements Command Query Responsibility Segregation for better separation of read and write operations.
-
-  - Commands: CreateQuestion, UpdateQuestion, DeleteQuestion, PublishQuestion
-  - Queries: GetQuestionById, GetAllQuestions with filtering and sorting
 
 - **Repository Pattern**: Used with TypeORM for database operations.
 
@@ -121,6 +132,19 @@ A modern, feature-rich blogging platform built with NestJS, providing a robust b
 - Implements migrations for database version control
 - Supports both synchronous and asynchronous database operations
 - Snake case naming strategy for database columns
+
+### Data Management
+
+```bash
+# Run TypeORM migrations
+yarn typeorm migration:run
+
+# Generate new migration
+yarn typeorm migration:generate
+
+# Revert last migration
+yarn typeorm migration:revert
+```
 
 ## Development Setup
 
@@ -177,7 +201,17 @@ A modern, feature-rich blogging platform built with NestJS, providing a robust b
 
 ### Test Coverage
 
-The application includes comprehensive test coverage across all modules.
+The application includes comprehensive test coverage across all modules:
+
+- **Unit Tests**: Testing individual components and business logic
+- **Integration Tests**: Testing module interactions and database operations
+- **E2E Tests**: Testing complete user flows and API endpoints
+  - Question management workflows
+  - Pair game quiz scenarios:
+    - Game creation and matching
+    - Player connections and validation
+    - Game state transitions
+    - Answer submission and scoring
 
 ### Running Tests
 

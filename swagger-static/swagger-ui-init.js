@@ -2158,6 +2158,43 @@ window.onload = function() {
           ]
         }
       },
+      "/pair-game-quiz/pairs/my-current": {
+        "get": {
+          "description": "Get active or pending pair game for the current user",
+          "operationId": "GamePairsController_getMyCurrentPairGame",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Returns current active or pending pair game",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PairViewDto"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "No active or pending game found"
+            }
+          },
+          "security": [
+            {
+              "basic": []
+            },
+            {
+              "bearer": []
+            }
+          ],
+          "summary": "Get current user pair game",
+          "tags": [
+            "Pairs"
+          ]
+        }
+      },
       "/pair-game-quiz/pairs/{id}": {
         "get": {
           "description": "Get pair game by id. User should be participant of this game",

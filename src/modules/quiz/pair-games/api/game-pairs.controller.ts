@@ -16,8 +16,10 @@ import { ConnectUserCommand } from '../app/use-cases/connect-user.use-case';
 import { GetGameByIdQuery } from '../app/queries/get-game-by-id.query';
 import { ConnectUserSwagger } from './swagger/connect-user.swagger.decorator';
 import { GetPairGameByIdSwagger } from './swagger/get-pair-game-by-id.swagger.decorator';
+import { GetMyCurrentPairGameSwagger } from './swagger/get-my-current-pair-game.swagger.decorator';
 import { PairGameService } from '../app/pair-game.service';
 import { PairViewDto } from './view-dto/game-pair.view-dto';
+import { GetActiveGameByUserIdQuery } from '../app/queries/get-game-by-userid.query';
 
 @ApiTags('Pairs')
 @ApiBasicAuth()
@@ -30,9 +32,16 @@ export class GamePairsController {
     private readonly pairGameService: PairGameService,
   ) {}
 
-  // TODO: add 2 get endpoints
+  @Get('my-current')
+  @GetMyCurrentPairGameSwagger()
+  @HttpCode(HttpStatus.OK)
+  async getMyCurrentPairGame(
+    @CurrentUserId() userId: string,
+  ): Promise<PairViewDto> {
+    return this.queryBus.execute(new GetActiveGameByUserIdQuery(userId));
+  }
 
-  @Get('/:id')
+  @Get(':id')
   @GetPairGameByIdSwagger()
   @HttpCode(HttpStatus.OK)
   async getPairGameById(
@@ -45,7 +54,7 @@ export class GamePairsController {
     return pairGame;
   }
 
-  @Post('/connection')
+  @Post('connection')
   @HttpCode(HttpStatus.OK)
   @ConnectUserSwagger()
   async connectUser(@CurrentUserId() userId: string): Promise<PairViewDto> {

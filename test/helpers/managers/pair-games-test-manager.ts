@@ -36,4 +36,18 @@ export class PairGamesTestManager {
       body: response.body,
     };
   }
+
+  async getMyCurrentPairGame(accessToken: string): Promise<{
+    statusCode: number;
+    body: PairViewDto;
+  }> {
+    const response = await request(this.app.getHttpServer())
+      .get(`/${PATHS.PAIR_GAME_QUIZ}/my-current`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
+    return {
+      statusCode: response.status,
+      body: response.body,
+    };
+  }
 }
