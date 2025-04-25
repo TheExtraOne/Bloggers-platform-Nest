@@ -21,29 +21,16 @@ export class PairGamesRepository extends PgBaseRepository {
     super();
   }
 
-  async createPairGame(dto: {
-    userId: string;
-  }): Promise<{ pairGameId: string }> {
-    const user: Users = await this.pgExternalUsersRepository.findUserOrThrow(
-      dto.userId,
-    );
-
-    const firstPlayerProgress = new PlayerProgress();
-    firstPlayerProgress.user = user;
-
-    const newGame = new PairGames();
-    newGame.firstPlayerProgress = firstPlayerProgress;
-    newGame.secondPlayerProgress = null;
-    newGame.questions = null;
-
-    await this.pairGamesRepository.save(newGame);
-
-    return { pairGameId: newGame.id.toString() };
+  async save(newGame: PairGames): Promise<PairGames> {
+    return await this.pairGamesRepository.save(newGame);
   }
 
-  async findPlayerActiveGameByUserId(dto: {
+  async findPlayerPendingOrActiveGameByUserId(dto: {
     userId: string;
   }): Promise<PairGames | null> {
+    if (!this.isCorrectNumber(dto.userId)) {
+      return null;
+    }
     return this.pairGamesRepository.findOne({
       where: [
         {
@@ -55,10 +42,42 @@ export class PairGamesRepository extends PgBaseRepository {
           status: In([GameStatus.PendingSecondPlayer, GameStatus.Active]),
         },
       ],
-      relations: ['firstPlayerProgress', 'secondPlayerProgress'],
+      relations: [
+        'firstPlayerProgress',
+        'secondPlayerProgress',
+        'firstPlayerProgress.user',
+        'secondPlayerProgress.user',
+      ],
     });
   }
 
+  async findPlayerActiveGameByUserId(dto: {
+    userId: string;
+  }): Promise<PairGames | null> {
+    if (!this.isCorrectNumber(dto.userId)) {
+      return null;
+    }
+    return this.pairGamesRepository.findOne({
+      where: [
+        {
+          firstPlayerProgress: { user: { id: +dto.userId } },
+          status: GameStatus.Active,
+        },
+        {
+          secondPlayerProgress: { user: { id: +dto.userId } },
+          status: GameStatus.Active,
+        },
+      ],
+      relations: [
+        'firstPlayerProgress',
+        'secondPlayerProgress',
+        'firstPlayerProgress.user',
+        'secondPlayerProgress.user',
+      ],
+    });
+  }
+
+  // TODO: refactor, leave only save
   async findAndJoinToOpenGame(dto: {
     userId: string;
   }): Promise<{ pairGameId: string } | null> {
@@ -98,12 +117,18 @@ export class PairGamesRepository extends PgBaseRepository {
       openGame.secondPlayerProgress = secondPlayerProgress;
       openGame.startGameDate = new Date();
       // Pick 5 random questions
-      const questions1 = await this.pgQuestionsRepository.getRandomQuestions(5);
-      openGame.questions = questions1;
+      const questions = await this.pgQuestionsRepository.getRandomQuestions(5);
+      openGame.questions = questions;
+
+      // Set the first question for each player
+      const currentQuestionId = +questions[0].id;
+      secondPlayerProgress.currentQuestionId = currentQuestionId;
+      openGame.firstPlayerProgress.currentQuestionId = currentQuestionId;
 
       await queryRunner.manager.save(PairGames, openGame);
 
       await queryRunner.commitTransaction();
+
       return { pairGameId: openGame.id.toString() };
     } catch (error) {
       await queryRunner.rollbackTransaction();

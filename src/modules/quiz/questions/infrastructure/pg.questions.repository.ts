@@ -43,18 +43,8 @@ export class PgQuestionsRepository extends PgBaseRepository {
     return randomQuestions as unknown as { id: string; body: string }[];
   }
 
-  async createQuestion(dto: {
-    body: string;
-    correctAnswers: string[];
-  }): Promise<{ questionId: string }> {
-    const { body, correctAnswers } = dto;
-
-    const newQuestion = new Questions();
-    newQuestion.body = body;
-    newQuestion.correctAnswers = correctAnswers;
-    await this.questionsRepository.save(newQuestion);
-
-    return { questionId: newQuestion.id.toString() };
+  async save(newQuestion: Questions): Promise<Questions> {
+    return await this.questionsRepository.save(newQuestion);
   }
 
   async updateQuestion(

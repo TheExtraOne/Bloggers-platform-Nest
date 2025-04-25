@@ -21,7 +21,6 @@ export class UpdateQuestionUseCase
 
   async execute(command: UpdateQuestionCommand) {
     const { id, updateQuestionDto } = command.dto;
-    // TODO: do we need to check if question was published?
     await this.pgQuestionsRepository.updateQuestion(id, updateQuestionDto);
   }
 }

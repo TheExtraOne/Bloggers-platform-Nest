@@ -34,6 +34,14 @@ export class PlayerProgress extends BaseWithId {
   public score: number;
 
   /**
+   * The ID of the current question the player is answering
+   * @type {number | null}
+   * @default null
+   */
+  @Column({ type: 'integer', nullable: true, default: null })
+  public currentQuestionId: number | null;
+
+  /**
    * The user account associated with this progress
    * @type {Users}
    */

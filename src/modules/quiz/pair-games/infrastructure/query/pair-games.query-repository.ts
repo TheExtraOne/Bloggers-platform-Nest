@@ -85,6 +85,10 @@ export class PairGamesQueryRepository extends PgBaseRepository {
   async getActivePairGameByUserIdOrThrowError(
     userId: string,
   ): Promise<PairViewDto> {
+    if (!this.isCorrectNumber(userId)) {
+      throw new NotFoundException(ERRORS.USER_NOT_FOUND);
+    }
+
     const querySQL = `
       WITH selected_game AS (
         SELECT *

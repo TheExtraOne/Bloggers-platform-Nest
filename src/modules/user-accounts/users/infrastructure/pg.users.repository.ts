@@ -192,7 +192,8 @@ export class PgUsersRepository extends PgBaseRepository {
     }
 
     const emailConfirmation = await this.emailConfirmationRepository.findOne({
-      where: [{ userId: +userId }],
+      where: [{ user: { id: +userId } }],
+      relations: ['user'],
     });
 
     if (!emailConfirmation) {

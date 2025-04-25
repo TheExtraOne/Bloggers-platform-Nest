@@ -9,6 +9,10 @@ export enum AnswerStatus {
   Incorrect = 'Incorrect',
 }
 
+export const ANSWERS_CONSTRAINTS = {
+  MAX_ANSWER_LENGTH: 500,
+};
+
 /**
  * Entity representing an answer given by a player in a quiz game.
  *
@@ -26,14 +30,22 @@ export class Answers extends BaseWithId {
    * The status of the answer (Correct or Incorrect)
    * @type {AnswerStatus}
    */
-  @Column({ type: 'enum', enum: AnswerStatus })
+  @Column({
+    type: 'enum',
+    enum: AnswerStatus,
+    nullable: false,
+  })
   public answerStatus: AnswerStatus;
 
   /**
    * The actual answer content provided by the player
    * @type {string}
    */
-  @Column({ type: 'varchar' })
+  @Column({
+    type: 'varchar',
+    length: ANSWERS_CONSTRAINTS.MAX_ANSWER_LENGTH,
+    nullable: false,
+  })
   public answerBody: string;
 
   /**

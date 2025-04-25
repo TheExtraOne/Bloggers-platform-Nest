@@ -20,4 +20,5 @@ export const ERRORS = {
   SESSION_NOT_FOUND: 'Session not found',
   QUESTION_NOT_FOUND: 'Question not found',
   GAME_NOT_FOUND: 'Game not found',
+  PLAYER_PROGRESS_NOT_FOUND: 'Player progress not found',
 };

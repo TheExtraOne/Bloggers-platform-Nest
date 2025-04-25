@@ -167,6 +167,13 @@ describe('Auth Controller (e2e)', () => {
         HttpStatus.UNAUTHORIZED,
       );
     });
+
+    it('should not login with empty string login', async () => {
+      await authTestManager.login(
+        { loginOrEmail: '', password: 'password123' },
+        HttpStatus.BAD_REQUEST,
+      );
+    });
   });
 
   describe('POST /auth/refresh-token', () => {

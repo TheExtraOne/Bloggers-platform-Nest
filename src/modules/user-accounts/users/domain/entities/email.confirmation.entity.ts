@@ -1,22 +1,15 @@
-import { BaseTimestampedEntity } from '../../../../../core/base-entities/base.entity';
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { BaseWithId } from '../../../../../core/base-entities/base.entity';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { EmailConfirmationStatus } from '../enums/user.enum';
 import { Users } from './user.entity';
 
 /**
  * Entity representing email confirmation details for a user.
- * Extends BaseTimestampedEntity to inherit timestamp fields.
+ * Extends BaseWithId to inherit id and timestamp fields.
  * Used to manage the email verification process for user accounts.
  */
 @Entity()
-export class UsersEmailConfirmation extends BaseTimestampedEntity {
-  /**
-   * Primary key and foreign key referencing the user.
-   * Links this confirmation record to a specific user.
-   */
-  @PrimaryColumn() // Primary Key + Foreign Key
-  public userId: number;
-
+export class UsersEmailConfirmation extends BaseWithId {
   /**
    * One-to-one relationship with the Users entity.
    * When the user is deleted, this record will also be deleted (CASCADE).
@@ -24,7 +17,7 @@ export class UsersEmailConfirmation extends BaseTimestampedEntity {
   @OneToOne(() => Users, (user) => user.emailConfirmation, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'user_id' }) // Ensures correct FK column name
+  @JoinColumn()
   public user: Users;
 
   /**

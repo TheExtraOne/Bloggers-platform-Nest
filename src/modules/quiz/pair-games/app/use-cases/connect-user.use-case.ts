@@ -2,6 +2,9 @@ import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PairGamesRepository } from '../../infrastructure/pair-games.repository';
 import { ForbiddenException } from '@nestjs/common';
 import { PairGames } from '../../domain/pair-game.entity';
+import { PgExternalUsersRepository } from '../../../../user-accounts/users/infrastructure/pg.external.users.repository';
+import { Users } from '../../../../user-accounts/users/domain/entities/user.entity';
+import { PlayerProgress } from '../../../../quiz/player-progress/domain/player-progress.entity';
 
 export class ConnectUserCommand extends Command<{ pairGameId: string }> {
   constructor(public readonly dto: { userId: string }) {
@@ -11,14 +14,17 @@ export class ConnectUserCommand extends Command<{ pairGameId: string }> {
 
 @CommandHandler(ConnectUserCommand)
 export class ConnectUserUseCase implements ICommandHandler<ConnectUserCommand> {
-  constructor(private readonly pairGamesRepository: PairGamesRepository) {}
+  constructor(
+    private readonly pairGamesRepository: PairGamesRepository,
+    private readonly pgExternalUsersRepository: PgExternalUsersRepository,
+  ) {}
 
   async execute(command: ConnectUserCommand) {
     const { userId } = command.dto;
 
     // Check if current user is already participating in active pair
     const activePair: PairGames | null =
-      await this.pairGamesRepository.findPlayerActiveGameByUserId({
+      await this.pairGamesRepository.findPlayerPendingOrActiveGameByUserId({
         userId,
       });
     if (activePair) {
@@ -36,6 +42,18 @@ export class ConnectUserUseCase implements ICommandHandler<ConnectUserCommand> {
     }
 
     // If no open game found, create a new one
-    return await this.pairGamesRepository.createPairGame({ userId });
+    const user: Users =
+      await this.pgExternalUsersRepository.findUserOrThrow(userId);
+
+    const firstPlayerProgress = new PlayerProgress();
+    firstPlayerProgress.user = user;
+
+    const newGame = new PairGames();
+    newGame.firstPlayerProgress = firstPlayerProgress;
+    newGame.secondPlayerProgress = null;
+    newGame.questions = null;
+
+    const savedGame = await this.pairGamesRepository.save(newGame);
+    return { pairGameId: savedGame.id.toString() };
   }
 }

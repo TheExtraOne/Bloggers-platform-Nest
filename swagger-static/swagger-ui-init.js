@@ -2191,7 +2191,7 @@ window.onload = function() {
           ],
           "summary": "Get current user pair game",
           "tags": [
-            "Pairs"
+            "Pair Game Quiz"
           ]
         }
       },
@@ -2238,7 +2238,7 @@ window.onload = function() {
           ],
           "summary": "Get pair game by id",
           "tags": [
-            "Pairs"
+            "Pair Game Quiz"
           ]
         }
       },
@@ -2275,7 +2275,58 @@ window.onload = function() {
           ],
           "summary": "Connect user to pair game quiz",
           "tags": [
-            "Pairs"
+            "Pair Game Quiz"
+          ]
+        }
+      },
+      "/pair-game-quiz/pairs/my-current/answers": {
+        "post": {
+          "description": "Submit user's answer for the current question in their active pair game. \n        The answer will be validated and evaluated, returning the result with correct/incorrect status.\n        \n        Input validation:\n        - Answer must be a non-empty string\n        - Answer must not exceed 500 characters\n        - Extra fields in the request body will be stripped",
+          "operationId": "GamePairsController_setUserAnswer",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "description": "Answer for the current question",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerInputDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Answer has been successfully submitted and evaluated",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/AnswerViewDto"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Invalid input. Possible reasons:\n        - Answer string is empty\n        - Answer string is longer than 500 characters\n        - Answer is not a string\n        - Request body is malformed or missing required fields"
+            },
+            "401": {
+              "description": "User is not authorized (invalid or missing access token)"
+            },
+            "403": {
+              "description": "Either: 1) User is not participating in any active pair game, or 2) User has already answered all questions in the game"
+            }
+          },
+          "security": [
+            {
+              "basic": []
+            },
+            {
+              "bearer": []
+            }
+          ],
+          "summary": "Submit an answer for the current question in the active pair game",
+          "tags": [
+            "Pair Game Quiz"
           ]
         }
       }
@@ -3234,6 +3285,55 @@ window.onload = function() {
             "pairCreatedDate",
             "startGameDate",
             "finishGameDate"
+          ]
+        },
+        "AnswerInputDto": {
+          "type": "object",
+          "properties": {
+            "answer": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "answer"
+          ]
+        },
+        "AnswerStatus": {
+          "type": "string",
+          "enum": [
+            "Correct",
+            "Incorrect"
+          ]
+        },
+        "AnswerViewDto": {
+          "type": "object",
+          "properties": {
+            "questionId": {
+              "type": "string",
+              "description": "ID of the question that was answered",
+              "example": "1"
+            },
+            "answerStatus": {
+              "description": "Status indicating whether the answer was correct or incorrect",
+              "example": "Correct",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AnswerStatus"
+                }
+              ]
+            },
+            "addedAt": {
+              "format": "date-time",
+              "type": "string",
+              "description": "ISO timestamp when the answer was submitted",
+              "example": "2025-04-25T16:56:08.737Z"
+            }
+          },
+          "required": [
+            "questionId",
+            "answerStatus",
+            "addedAt"
           ]
         }
       }

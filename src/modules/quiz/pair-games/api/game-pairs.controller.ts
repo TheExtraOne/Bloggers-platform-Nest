@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -20,8 +21,13 @@ import { GetMyCurrentPairGameSwagger } from './swagger/get-my-current-pair-game.
 import { PairGameService } from '../app/pair-game.service';
 import { PairViewDto } from './view-dto/game-pair.view-dto';
 import { GetActiveGameByUserIdQuery } from '../app/queries/get-game-by-userid.query';
+import { AnswerViewDto } from '../../answers/api/view-dto/answer.view-dto';
+import { AnswerInputDto } from '../../answers/api/input-dto/answer.input-dto';
+import { SetUserAnswerCommand } from '../../answers/app/use-cases/set-user-answer.use-case';
+import { GetAnswerByIdQuery } from '../../answers/app/queries/get-answer-by-id.query';
+import { SetUserAnswerSwagger } from './swagger/set-user-answer.swagger.decorator';
 
-@ApiTags('Pairs')
+@ApiTags('Pair Game Quiz')
 @ApiBasicAuth()
 @UseGuards(JwtAuthGuard)
 @Controller(PATHS.PAIR_GAME_QUIZ)
@@ -63,5 +69,19 @@ export class GamePairsController {
     );
 
     return this.queryBus.execute(new GetGameByIdQuery(pairGameId));
+  }
+
+  @Post('my-current/answers')
+  @HttpCode(HttpStatus.OK)
+  @SetUserAnswerSwagger()
+  async setUserAnswer(
+    @CurrentUserId() userId: string,
+    @Body() answerDto: AnswerInputDto,
+  ): Promise<AnswerViewDto> {
+    const { answerId } = await this.commandBus.execute(
+      new SetUserAnswerCommand({ userId, answerBody: answerDto.answer }),
+    );
+
+    return this.queryBus.execute(new GetAnswerByIdQuery(answerId));
   }
 }
