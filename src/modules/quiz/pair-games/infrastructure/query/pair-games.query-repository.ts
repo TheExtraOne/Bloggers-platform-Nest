@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { PgBaseRepository } from '../../../../../core/base-classes/pg.base.repository';
@@ -14,7 +18,7 @@ export class PairGamesQueryRepository extends PgBaseRepository {
 
   async getPairGameByIdOrThrowError(id: string): Promise<PairViewDto> {
     if (!this.isCorrectNumber(id)) {
-      throw new NotFoundException(ERRORS.GAME_NOT_FOUND);
+      throw new BadRequestException(ERRORS.GAME_NOT_FOUND);
     }
     // TODO: check all the rest CTE
 
@@ -30,7 +34,7 @@ export class PairGamesQueryRepository extends PgBaseRepository {
           json_agg(json_build_object(
             'questionId', a.id::text,
             'answerStatus', a.answer_status,
-            'addedAt', a.created_at
+            'addedAt', to_char(a.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
           ) ORDER BY a.created_at ASC) AS answers
         FROM answers a
         WHERE a.pair_game_id = $1 AND a.deleted_at IS NULL
@@ -112,7 +116,7 @@ export class PairGamesQueryRepository extends PgBaseRepository {
           json_agg(json_build_object(
             'questionId', a.id::text,
             'answerStatus', a.answer_status,
-            'addedAt', a.created_at
+            'addedAt', to_char(a.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
           ) ORDER BY a.created_at ASC) AS answers
         FROM answers a
         WHERE a.pair_game_id = (SELECT id FROM selected_game) AND a.deleted_at IS NULL

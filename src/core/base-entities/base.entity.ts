@@ -1,8 +1,8 @@
 import {
+  Column,
   CreateDateColumn,
   DeleteDateColumn,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 // Interface segregation
@@ -10,8 +10,8 @@ export abstract class BaseTimestampedEntity {
   @CreateDateColumn({ type: 'timestamptz' })
   public createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
-  public updatedAt: Date;
+  @Column({ type: 'timestamptz', nullable: true, default: null })
+  updatedAt: Date | null;
 
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   public deletedAt: Date | null;

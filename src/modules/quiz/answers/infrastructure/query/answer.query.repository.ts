@@ -22,9 +22,9 @@ export class AnswerQueryRepository extends PgBaseRepository {
     const answer: AnswerViewDto | undefined = await this.answerRepository
       .createQueryBuilder('answer')
       .select([
-        'answer.id::text AS "questionId"', // cast to text, alias as `id`
-        'answer.answerStatus AS "answerStatus"',
-        'answer.createdAt AS "addedAt"',
+        'answer.question_id::text AS "questionId"',
+        'answer.answer_status AS "answerStatus"',
+        'answer.created_at AS "addedAt"',
       ])
       .where('answer.id = :id AND answer.deletedAt IS NULL', { id: +id })
       .getRawOne();

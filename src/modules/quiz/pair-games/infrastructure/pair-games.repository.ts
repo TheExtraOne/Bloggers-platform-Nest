@@ -138,4 +138,21 @@ export class PairGamesRepository extends PgBaseRepository {
       await queryRunner.release();
     }
   }
+
+  async findGameById(id: string): Promise<PairGames | null> {
+    if (!this.isCorrectNumber(id)) {
+      return null;
+    }
+    return this.pairGamesRepository.findOne({
+      where: { id: +id },
+      relations: [
+        'firstPlayerProgress',
+        'secondPlayerProgress',
+        'firstPlayerProgress.user',
+        'secondPlayerProgress.user',
+        'firstPlayerProgress.answers',
+        'secondPlayerProgress.answers',
+      ],
+    });
+  }
 }

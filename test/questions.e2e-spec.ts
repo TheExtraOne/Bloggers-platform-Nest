@@ -46,29 +46,36 @@ describe('Questions Controller (e2e)', () => {
         totalCount: 3,
         pagesCount: 1,
         page: 1,
-        pageSize: 10
+        pageSize: 10,
       });
 
       // Check items array
       expect(response.items).toHaveLength(3);
-      expect(response.items.map(q => q.id)).toEqual([questions[0].id, questions[1].id, questions[2].id]);
+      expect(response.items.map((q) => q.id)).toEqual([
+        questions[0].id,
+        questions[1].id,
+        questions[2].id,
+      ]);
 
       // Check item structure
-      response.items.forEach(item => {
-        expect(item).toEqual(expect.objectContaining({
-          id: expect.any(String),
-          body: expect.any(String),
-          correctAnswers: expect.any(Array),
-          published: expect.any(Boolean),
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String)
-        }));
+      response.items.forEach((item) => {
+        expect(item).toEqual(
+          expect.objectContaining({
+            id: expect.any(String),
+            body: expect.any(String),
+            correctAnswers: expect.any(Array),
+            published: expect.any(Boolean),
+            createdAt: expect.any(String),
+            updatedAt: null,
+          }),
+        );
       });
     });
 
     it('should return questions filtered by bodySearchTerm (exact and partial match)', async () => {
       // Search for Question 1
-      const searchResponse = await questionsTestManager.searchQuestions('Question 1');
+      const searchResponse =
+        await questionsTestManager.searchQuestions('Question 1');
 
       expect(searchResponse.items).toHaveLength(1);
       expect(searchResponse.items[0].id).toBe(questions[0].id);
@@ -78,12 +85,19 @@ describe('Questions Controller (e2e)', () => {
       const allQuestionsResponse = await questionsTestManager.getAllQuestions();
 
       expect(allQuestionsResponse.items).toHaveLength(3);
-      expect(allQuestionsResponse.items.map(q => q.id)).toEqual([questions[0].id, questions[1].id, questions[2].id]);
+      expect(allQuestionsResponse.items.map((q) => q.id)).toEqual([
+        questions[0].id,
+        questions[1].id,
+        questions[2].id,
+      ]);
     });
 
     it('should return questions sorted by createdAt in ascending and descending order', async () => {
       // Get questions sorted by createdAt DESC
-      const descResponse = await questionsTestManager.getSortedQuestions(QuestionsSortBy.CreatedAt, 'desc');
+      const descResponse = await questionsTestManager.getSortedQuestions(
+        QuestionsSortBy.CreatedAt,
+        'desc',
+      );
 
       const descDates = descResponse.items.map((item) =>
         new Date(item.createdAt).getTime(),
@@ -95,7 +109,10 @@ describe('Questions Controller (e2e)', () => {
       expect(descResponse.items[0].id).toBe(questions[2].id); // Last created question first
 
       // Get questions sorted by createdAt ASC
-      const ascResponse = await questionsTestManager.getSortedQuestions(QuestionsSortBy.CreatedAt, 'asc');
+      const ascResponse = await questionsTestManager.getSortedQuestions(
+        QuestionsSortBy.CreatedAt,
+        'asc',
+      );
 
       const ascDates = ascResponse.items.map((item) =>
         new Date(item.createdAt).getTime(),
@@ -109,7 +126,8 @@ describe('Questions Controller (e2e)', () => {
 
     it('should handle custom pagination (pageSize=2) correctly across multiple pages', async () => {
       // Get first page with explicit sorting to ensure consistent order
-      const firstPageResponse = await questionsTestManager.getPaginatedQuestions(1, 2);
+      const firstPageResponse =
+        await questionsTestManager.getPaginatedQuestions(1, 2);
 
       expect(firstPageResponse).toEqual({
         items: expect.arrayContaining([
@@ -124,7 +142,8 @@ describe('Questions Controller (e2e)', () => {
       expect(firstPageResponse.items).toHaveLength(2);
 
       // Get second page
-      const secondPageResponse = await questionsTestManager.getPaginatedQuestions(2, 2);
+      const secondPageResponse =
+        await questionsTestManager.getPaginatedQuestions(2, 2);
 
       expect(secondPageResponse).toEqual({
         items: [expect.objectContaining({ id: questions[2].id })],
@@ -169,7 +188,7 @@ describe('Questions Controller (e2e)', () => {
         correctAnswers: validQuestion.correctAnswers,
         published: false,
         createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        updatedAt: null,
       });
     });
 
@@ -286,23 +305,31 @@ describe('Questions Controller (e2e)', () => {
 
     it('should delete existing question', async () => {
       // Get all questions before delete
-      const { items: beforeItems } = await questionsTestManager.getAllQuestions();
-      expect(beforeItems.map(q => q.id)).toContain(questionId);
+      const { items: beforeItems } =
+        await questionsTestManager.getAllQuestions();
+      expect(beforeItems.map((q) => q.id)).toContain(questionId);
 
       // Delete the question
       await questionsTestManager.deleteQuestion(questionId);
 
       // Verify question returns 404
-      await questionsTestManager.getQuestionById(questionId, HttpStatus.NOT_FOUND);
+      await questionsTestManager.getQuestionById(
+        questionId,
+        HttpStatus.NOT_FOUND,
+      );
 
       // Verify question doesn't appear in the list
-      const { items: afterItems } = await questionsTestManager.getAllQuestions();
-      expect(afterItems.map(q => q.id)).not.toContain(questionId);
+      const { items: afterItems } =
+        await questionsTestManager.getAllQuestions();
+      expect(afterItems.map((q) => q.id)).not.toContain(questionId);
     });
 
     it('should return 404 if question not found', async () => {
       const nonExistentId = '999999';
-      await questionsTestManager.deleteQuestion(nonExistentId, HttpStatus.NOT_FOUND);
+      await questionsTestManager.deleteQuestion(
+        nonExistentId,
+        HttpStatus.NOT_FOUND,
+      );
     });
 
     it('should return 401 if unauthorized', async () => {
@@ -310,7 +337,11 @@ describe('Questions Controller (e2e)', () => {
     });
 
     it('should return 401 if wrong credentials', async () => {
-      await questionsTestManager.deleteQuestionUnauthorized(questionId, 'wrong', 'credentials');
+      await questionsTestManager.deleteQuestionUnauthorized(
+        questionId,
+        'wrong',
+        'credentials',
+      );
     });
   });
 
@@ -327,14 +358,16 @@ describe('Questions Controller (e2e)', () => {
 
     it('should publish question', async () => {
       // Initially question should be unpublished
-      const beforeQuestion = await questionsTestManager.getQuestionById(questionId);
+      const beforeQuestion =
+        await questionsTestManager.getQuestionById(questionId);
       expect(beforeQuestion.published).toBe(false);
 
       // Publish question
       await questionsTestManager.publishQuestion(questionId, true);
 
       // Verify question is published
-      const afterQuestion = await questionsTestManager.getQuestionById(questionId);
+      const afterQuestion =
+        await questionsTestManager.getQuestionById(questionId);
       expect(afterQuestion.published).toBe(true);
     });
 
@@ -355,12 +388,18 @@ describe('Questions Controller (e2e)', () => {
     });
 
     it('should return 400 if published field is not boolean', async () => {
-      await questionsTestManager.publishQuestionInvalid(questionId, { published: 'true' });
+      await questionsTestManager.publishQuestionInvalid(questionId, {
+        published: 'true',
+      });
     });
 
     it('should return 404 if question not found', async () => {
       const nonExistentId = '999999';
-      await questionsTestManager.publishQuestion(nonExistentId, true, HttpStatus.NOT_FOUND);
+      await questionsTestManager.publishQuestion(
+        nonExistentId,
+        true,
+        HttpStatus.NOT_FOUND,
+      );
     });
 
     it('should return 401 if unauthorized', async () => {
@@ -368,7 +407,12 @@ describe('Questions Controller (e2e)', () => {
     });
 
     it('should return 401 if wrong credentials', async () => {
-      await questionsTestManager.publishQuestionUnauthorized(questionId, true, 'wrong', 'credentials');
+      await questionsTestManager.publishQuestionUnauthorized(
+        questionId,
+        true,
+        'wrong',
+        'credentials',
+      );
     });
   });
 
@@ -393,7 +437,7 @@ describe('Questions Controller (e2e)', () => {
 
       // Verify question is updated
       const { items } = await questionsTestManager.getAllQuestions();
-      const updatedQuestion = items.find(q => q.id === questionId);
+      const updatedQuestion = items.find((q) => q.id === questionId);
       expect(updatedQuestion).toBeDefined();
       expect(updatedQuestion.body).toBe(updateDto.body);
       expect(updatedQuestion.correctAnswers).toEqual(updateDto.correctAnswers);

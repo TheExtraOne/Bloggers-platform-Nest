@@ -16,6 +16,7 @@ import { CoreConfig } from './core/config/core.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { QuizModule } from './modules/quiz/quiz.module';
+import { AutoUpdatedAtSubscriber } from './db/universal-subscriber.subscriber';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { QuizModule } from './modules/quiz/quiz.module';
           namingStrategy: new SnakeNamingStrategy(),
           autoLoadEntities: true,
           synchronize: true,
+          subscribers: [AutoUpdatedAtSubscriber],
         };
       },
       inject: [CoreConfig],

@@ -1,6 +1,9 @@
 import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ForbiddenException } from '@nestjs/common';
-import { PairGames } from '../../../pair-games/domain/pair-game.entity';
+import {
+  GameStatus,
+  PairGames,
+} from '../../../pair-games/domain/pair-game.entity';
 import { PairGamesRepository } from '../../../pair-games/infrastructure/pair-games.repository';
 import { PgQuestionsRepository } from '../../../questions/infrastructure/pg.questions.repository';
 import { Questions } from '../../../questions/domain/question.entity';
@@ -26,10 +29,11 @@ export class SetUserAnswerUseCase
     private readonly answerRepository: AnswerRepository,
   ) {}
 
+  // TODO: refactor, wrap with transaction
   async execute(command: SetUserAnswerCommand) {
     const { userId, answerBody } = command.dto;
 
-    const activePair = await this.getActiveGameOrThrow(userId);
+    const activePair = await this.getActiveGameOrThrowByUserId(userId);
     const { isUserFirstPlayer, currentQuestionId } =
       this.validateUserParticipation(activePair, userId);
 
@@ -58,10 +62,46 @@ export class SetUserAnswerUseCase
       currentQuestion,
     });
 
+    // TODO: refactor, split
+    const updatedGame = await this.pairGamesRepository.findGameById(
+      activePair.id.toString(),
+    );
+
+    // Check if the game is finished
+    const isGameFinished =
+      updatedGame!.firstPlayerProgress!.currentQuestionId === null &&
+      updatedGame!.secondPlayerProgress!.currentQuestionId === null;
+    if (isGameFinished) {
+      const lastAnswerIndex =
+        updatedGame!.firstPlayerProgress!.answers!.length - 1;
+
+      const firstFinishedPlayer =
+        updatedGame!.firstPlayerProgress?.answers![lastAnswerIndex].createdAt >
+        (updatedGame?.secondPlayerProgress?.answers?.[lastAnswerIndex]
+          ?.createdAt as unknown as Date)
+          ? 'secondPlayerProgress'
+          : 'firstPlayerProgress';
+      console.log('firstFinishedPlayer', firstFinishedPlayer);
+
+      const shouldAddPoints = updatedGame![firstFinishedPlayer]!.answers!.some(
+        (answer) => answer.answerStatus === AnswerStatus.Correct,
+      );
+
+      updatedGame!.status = GameStatus.Finished;
+      updatedGame!.finishGameDate = new Date();
+
+      if (shouldAddPoints) {
+        updatedGame![firstFinishedPlayer]!.score += 1;
+      }
+      await this.pairGamesRepository.save(updatedGame!);
+    }
+
     return { answerId: savedAnswer.id.toString() };
   }
 
-  private async getActiveGameOrThrow(userId: string): Promise<PairGames> {
+  private async getActiveGameOrThrowByUserId(
+    userId: string,
+  ): Promise<PairGames> {
     const activePair: PairGames | null =
       await this.pairGamesRepository.findPlayerActiveGameByUserId({
         userId,
@@ -112,7 +152,6 @@ export class SetUserAnswerUseCase
         playerProgressId: playerProgressId.toString(),
       });
 
-    // TODO: add additional points if the game is finished
     playerProgress.score += isCorrectAnswer ? 1 : 0;
 
     const nextQuestionId = this.getNextQuestionId(
@@ -121,8 +160,7 @@ export class SetUserAnswerUseCase
     );
     playerProgress.currentQuestionId = nextQuestionId;
 
-    await this.playerProgressRepository.save(playerProgress);
-    return playerProgress;
+    return await this.playerProgressRepository.save(playerProgress);
   }
 
   private getNextQuestionId(
