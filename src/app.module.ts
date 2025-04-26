@@ -37,7 +37,7 @@ import { AutoUpdatedAtSubscriber } from './db/universal-subscriber.subscriber';
           type: 'postgres',
           url:
             coreConfig.postgresUri ||
-            'postgres://postgres:mysupersecretpassword@127.0.0.1:5432/postgres',
+            'postgres://postgres:mysupersecretpassword@127.0.0.1:5433/postgres',
           namingStrategy: new SnakeNamingStrategy(),
           autoLoadEntities: true,
           synchronize: true,
