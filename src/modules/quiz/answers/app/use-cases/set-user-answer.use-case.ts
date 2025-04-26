@@ -7,10 +7,11 @@ import {
 import { PairGamesRepository } from '../../../pair-games/infrastructure/pair-games.repository';
 import { PgQuestionsRepository } from '../../../questions/infrastructure/pg.questions.repository';
 import { Questions } from '../../../questions/domain/question.entity';
+import { PlayerProgress } from '../../../player-progress/domain/player-progress.entity';
 import { PlayerProgressRepository } from '../../../player-progress/infrastructure/player-progress.repository';
 import { Answers, AnswerStatus } from '../../domain/answers.entity';
 import { AnswerRepository } from '../../infrastructure/answer.repository';
-import { PlayerProgress } from '../../../player-progress/domain/player-progress.entity';
+import { DataSource, EntityManager } from 'typeorm';
 
 export class SetUserAnswerCommand extends Command<{ answerId: string }> {
   constructor(public readonly dto: { userId: string; answerBody: string }) {
@@ -18,6 +19,7 @@ export class SetUserAnswerCommand extends Command<{ answerId: string }> {
   }
 }
 
+// TODO: refactor all the rest use cases, wrap with transaction. Create a base abstract class for use cases?
 @CommandHandler(SetUserAnswerCommand)
 export class SetUserAnswerUseCase
   implements ICommandHandler<SetUserAnswerCommand>
@@ -27,91 +29,189 @@ export class SetUserAnswerUseCase
     private readonly questionsRepository: PgQuestionsRepository,
     private readonly playerProgressRepository: PlayerProgressRepository,
     private readonly answerRepository: AnswerRepository,
+    private readonly dataSource: DataSource,
   ) {}
 
-  // TODO: refactor, wrap with transaction
   async execute(command: SetUserAnswerCommand) {
-    const { userId, answerBody } = command.dto;
+    const queryRunner = this.dataSource.createQueryRunner();
 
-    const activePair = await this.getActiveGameOrThrowByUserId(userId);
-    const { isUserFirstPlayer, currentQuestionId } =
-      this.validateUserParticipation(activePair, userId);
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
 
-    const currentQuestion =
-      await this.questionsRepository.findQuestionByIdOrThrow(
-        currentQuestionId.toString(),
+      const { userId, answerBody } = command.dto;
+      const manager = queryRunner.manager;
+
+      // 1. Get active game and validate participation
+      const activePair = await this.findActiveGame(userId, manager);
+      const { isUserFirstPlayer, currentQuestionId } =
+        this.validateUserParticipation(activePair, userId);
+
+      // 2. Get current question and validate answer
+      const currentQuestion = await this.findCurrentQuestion(
+        currentQuestionId,
+        manager,
+      );
+      const isCorrectAnswer = this.validateAnswer(currentQuestion, answerBody);
+
+      // 3. Update player progress
+      const playerProgress = await this.updatePlayerProgress(
+        activePair,
+        isUserFirstPlayer,
+        isCorrectAnswer,
+        currentQuestionId,
+        manager,
       );
 
-    const isCorrectAnswer = this.validateAnswer({
-      currentQuestion,
-      answerBody,
-    });
-
-    const playerProgress = await this.updatePlayerProgress(
-      activePair,
-      isUserFirstPlayer,
-      isCorrectAnswer,
-      currentQuestionId,
-    );
-
-    const savedAnswer = await this.createAnswer({
-      answerBody,
-      isCorrectAnswer,
-      playerProgress,
-      activePair,
-      currentQuestion,
-    });
-
-    // TODO: refactor, split
-    const updatedGame = await this.pairGamesRepository.findGameById(
-      activePair.id.toString(),
-    );
-
-    // Check if the game is finished
-    const isGameFinished =
-      updatedGame!.firstPlayerProgress!.currentQuestionId === null &&
-      updatedGame!.secondPlayerProgress!.currentQuestionId === null;
-    if (isGameFinished) {
-      const lastAnswerIndex =
-        updatedGame!.firstPlayerProgress!.answers!.length - 1;
-
-      const firstFinishedPlayer =
-        updatedGame!.firstPlayerProgress?.answers![lastAnswerIndex].createdAt >
-        (updatedGame?.secondPlayerProgress?.answers?.[lastAnswerIndex]
-          ?.createdAt as unknown as Date)
-          ? 'secondPlayerProgress'
-          : 'firstPlayerProgress';
-      console.log('firstFinishedPlayer', firstFinishedPlayer);
-
-      const shouldAddPoints = updatedGame![firstFinishedPlayer]!.answers!.some(
-        (answer) => answer.answerStatus === AnswerStatus.Correct,
-      );
-
-      updatedGame!.status = GameStatus.Finished;
-      updatedGame!.finishGameDate = new Date();
-
-      if (shouldAddPoints) {
-        updatedGame![firstFinishedPlayer]!.score += 1;
-      }
-      await this.pairGamesRepository.save(updatedGame!);
-    }
-
-    return { answerId: savedAnswer.id.toString() };
-  }
-
-  private async getActiveGameOrThrowByUserId(
-    userId: string,
-  ): Promise<PairGames> {
-    const activePair: PairGames | null =
-      await this.pairGamesRepository.findPlayerActiveGameByUserId({
-        userId,
+      // 4. Save answer
+      const answer = await this.createAnswer({
+        answerBody,
+        isCorrectAnswer,
+        playerProgress,
+        activePair,
+        currentQuestion,
+        manager,
       });
 
+      // 5. Check and handle game finish
+      const game = (await this.pairGamesRepository.findGameById(
+        activePair.id.toString(),
+        manager,
+      )) as PairGames;
+      if (this.isGameFinished(game)) {
+        await this.finishGame(game, manager);
+      }
+
+      await queryRunner.commitTransaction();
+      return { answerId: answer.id.toString() };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+
+      console.log('Failed to process answer', error);
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  private isGameFinished(game: PairGames): boolean {
+    return (
+      game.firstPlayerProgress!.currentQuestionId === null &&
+      game.secondPlayerProgress!.currentQuestionId === null
+    );
+  }
+
+  private async findActiveGame(
+    userId: string,
+    manager: EntityManager,
+  ): Promise<PairGames> {
+    const activePair =
+      await this.pairGamesRepository.findPlayerActiveGameByUserId({
+        userId,
+        manager,
+      });
     if (!activePair) {
       throw new ForbiddenException();
     }
-
     return activePair;
+  }
+
+  private async findCurrentQuestion(
+    questionId: number,
+    manager: EntityManager,
+  ): Promise<Questions> {
+    return await this.questionsRepository.findQuestionByIdOrThrow(
+      questionId.toString(),
+      manager,
+    );
+  }
+
+  private validateAnswer(question: Questions, answerBody: string): boolean {
+    return question.correctAnswers.some(
+      (answer) => answer.toLowerCase() === answerBody.toLowerCase(),
+    );
+  }
+
+  private async updatePlayerProgress(
+    activePair: PairGames,
+    isUserFirstPlayer: boolean,
+    isCorrectAnswer: boolean,
+    currentQuestionId: number,
+    manager: EntityManager,
+  ): Promise<PlayerProgress> {
+    const playerProgressId =
+      activePair[
+        isUserFirstPlayer ? 'firstPlayerProgress' : 'secondPlayerProgress'
+      ]!.id;
+
+    const playerProgress =
+      await this.playerProgressRepository.findPlayerProgressByIdOrThrow({
+        playerProgressId: playerProgressId.toString(),
+        manager,
+      });
+
+    playerProgress.score += isCorrectAnswer ? 1 : 0;
+    playerProgress.currentQuestionId = this.getNextQuestionId(
+      activePair,
+      currentQuestionId,
+    );
+
+    return await this.playerProgressRepository.save(playerProgress, manager);
+  }
+
+  private async createAnswer({
+    answerBody,
+    isCorrectAnswer,
+    playerProgress,
+    activePair,
+    currentQuestion,
+    manager,
+  }: {
+    answerBody: string;
+    isCorrectAnswer: boolean;
+    playerProgress: PlayerProgress;
+    activePair: PairGames;
+    currentQuestion: Questions;
+    manager: EntityManager;
+  }): Promise<Answers> {
+    const newAnswer = new Answers();
+    newAnswer.answerBody = answerBody;
+    newAnswer.answerStatus = isCorrectAnswer
+      ? AnswerStatus.Correct
+      : AnswerStatus.Incorrect;
+    newAnswer.playerProgress = playerProgress;
+    newAnswer.pairGame = activePair;
+    newAnswer.question = currentQuestion;
+
+    return this.answerRepository.save(newAnswer, manager);
+  }
+
+  private async finishGame(
+    game: PairGames,
+    manager: EntityManager,
+  ): Promise<void> {
+    const lastAnswerIndex = game.firstPlayerProgress.answers!.length - 1;
+    const firstFinisher =
+      game.firstPlayerProgress.answers[lastAnswerIndex].createdAt >
+      game.secondPlayerProgress!.answers[lastAnswerIndex].createdAt
+        ? 'secondPlayerProgress'
+        : 'firstPlayerProgress';
+
+    game.status = GameStatus.Finished;
+    game.finishGameDate = new Date();
+
+    if (
+      game[firstFinisher]!.answers.some(
+        (answer) => answer.answerStatus === AnswerStatus.Correct,
+      )
+    ) {
+      game[firstFinisher]!.score += 1;
+    }
+
+    await this.pairGamesRepository.save(game, manager);
   }
 
   private validateUserParticipation(
@@ -136,33 +236,6 @@ export class SetUserAnswerUseCase
     return { isUserFirstPlayer, currentQuestionId };
   }
 
-  private async updatePlayerProgress(
-    activePair: PairGames,
-    isUserFirstPlayer: boolean,
-    isCorrectAnswer: boolean,
-    currentQuestionId: number,
-  ): Promise<PlayerProgress> {
-    const playerProgressId =
-      activePair[
-        isUserFirstPlayer ? 'firstPlayerProgress' : 'secondPlayerProgress'
-      ]!.id;
-
-    const playerProgress =
-      await this.playerProgressRepository.findPlayerProgressByIdOrThrow({
-        playerProgressId: playerProgressId.toString(),
-      });
-
-    playerProgress.score += isCorrectAnswer ? 1 : 0;
-
-    const nextQuestionId = this.getNextQuestionId(
-      activePair,
-      currentQuestionId,
-    );
-    playerProgress.currentQuestionId = nextQuestionId;
-
-    return await this.playerProgressRepository.save(playerProgress);
-  }
-
   private getNextQuestionId(
     activePair: PairGames,
     currentQuestionId: number,
@@ -177,42 +250,5 @@ export class SetUserAnswerUseCase
     }
 
     return +activePair.questions![currentIndex + 1].id;
-  }
-
-  private async createAnswer({
-    answerBody,
-    isCorrectAnswer,
-    playerProgress,
-    activePair,
-    currentQuestion,
-  }: {
-    answerBody: string;
-    isCorrectAnswer: boolean;
-    playerProgress: PlayerProgress;
-    activePair: PairGames;
-    currentQuestion: Questions;
-  }): Promise<Answers> {
-    const newAnswer = new Answers();
-    newAnswer.answerBody = answerBody;
-    newAnswer.answerStatus = isCorrectAnswer
-      ? AnswerStatus.Correct
-      : AnswerStatus.Incorrect;
-    newAnswer.playerProgress = playerProgress;
-    newAnswer.pairGame = activePair;
-    newAnswer.question = currentQuestion;
-
-    return this.answerRepository.save(newAnswer);
-  }
-
-  private validateAnswer({
-    currentQuestion,
-    answerBody,
-  }: {
-    currentQuestion: Questions;
-    answerBody: string;
-  }) {
-    return !!currentQuestion.correctAnswers.find(
-      (ans) => ans.toLowerCase() === answerBody.toLowerCase(),
-    );
   }
 }

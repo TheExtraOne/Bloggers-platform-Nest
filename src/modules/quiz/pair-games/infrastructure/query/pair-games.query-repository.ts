@@ -32,7 +32,7 @@ export class PairGamesQueryRepository extends PgBaseRepository {
         SELECT
           player_progress_id,
           json_agg(json_build_object(
-            'questionId', a.id::text,
+            'questionId', a.question_id::text,
             'answerStatus', a.answer_status,
             'addedAt', to_char(a.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
           ) ORDER BY a.created_at ASC) AS answers
@@ -83,7 +83,8 @@ export class PairGamesQueryRepository extends PgBaseRepository {
     );
     if (!pairGame[0]) throw new NotFoundException(ERRORS.GAME_NOT_FOUND);
 
-    return pairGame[0];
+    const game: PairViewDto = pairGame[0];
+    return game;
   }
 
   async getActivePairGameByUserIdOrThrowError(
@@ -114,7 +115,7 @@ export class PairGamesQueryRepository extends PgBaseRepository {
         SELECT
           player_progress_id,
           json_agg(json_build_object(
-            'questionId', a.id::text,
+            'questionId', a.question_id::text,
             'answerStatus', a.answer_status,
             'addedAt', to_char(a.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
           ) ORDER BY a.created_at ASC) AS answers
@@ -170,6 +171,7 @@ export class PairGamesQueryRepository extends PgBaseRepository {
 
     if (!pairGame[0]) throw new NotFoundException(ERRORS.GAME_NOT_FOUND);
 
-    return pairGame[0];
+    const game: PairViewDto = pairGame[0];
+    return game;
   }
 }

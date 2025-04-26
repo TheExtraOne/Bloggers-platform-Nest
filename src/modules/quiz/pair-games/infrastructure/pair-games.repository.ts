@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
-import { In, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { DataSource } from 'typeorm';
 import { GameStatus, PairGames } from '../domain/pair-game.entity';
 import { PlayerProgress } from '../../player-progress/domain/player-progress.entity';
@@ -21,17 +21,24 @@ export class PairGamesRepository extends PgBaseRepository {
     super();
   }
 
-  async save(newGame: PairGames): Promise<PairGames> {
+  async save(newGame: PairGames, manager?: EntityManager): Promise<PairGames> {
+    if (manager) {
+      return await manager.save(PairGames, newGame);
+    }
     return await this.pairGamesRepository.save(newGame);
   }
 
   async findPlayerPendingOrActiveGameByUserId(dto: {
     userId: string;
+    manager?: EntityManager;
   }): Promise<PairGames | null> {
     if (!this.isCorrectNumber(dto.userId)) {
       return null;
     }
-    return this.pairGamesRepository.findOne({
+
+    const repo =
+      dto.manager?.getRepository(PairGames) || this.pairGamesRepository;
+    return repo.findOne({
       where: [
         {
           firstPlayerProgress: { user: { id: +dto.userId } },
@@ -53,11 +60,15 @@ export class PairGamesRepository extends PgBaseRepository {
 
   async findPlayerActiveGameByUserId(dto: {
     userId: string;
+    manager?: EntityManager;
   }): Promise<PairGames | null> {
     if (!this.isCorrectNumber(dto.userId)) {
       return null;
     }
-    return this.pairGamesRepository.findOne({
+
+    const repo =
+      dto.manager?.getRepository(PairGames) || this.pairGamesRepository;
+    return repo.findOne({
       where: [
         {
           firstPlayerProgress: { user: { id: +dto.userId } },
@@ -80,6 +91,7 @@ export class PairGamesRepository extends PgBaseRepository {
   // TODO: refactor, leave only save
   async findAndJoinToOpenGame(dto: {
     userId: string;
+    manager?: EntityManager;
   }): Promise<{ pairGameId: string } | null> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -139,11 +151,16 @@ export class PairGamesRepository extends PgBaseRepository {
     }
   }
 
-  async findGameById(id: string): Promise<PairGames | null> {
+  async findGameById(
+    id: string,
+    manager?: EntityManager,
+  ): Promise<PairGames | null> {
     if (!this.isCorrectNumber(id)) {
       return null;
     }
-    return this.pairGamesRepository.findOne({
+
+    const repo = manager?.getRepository(PairGames) || this.pairGamesRepository;
+    return repo.findOne({
       where: { id: +id },
       relations: [
         'firstPlayerProgress',

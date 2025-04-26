@@ -58,10 +58,10 @@ export class PlayerProgress extends BaseWithId {
 
   /**
    * Collection of all answers submitted by this player
-   * @type {Answers[] | null}
+   * @type {Answers[] | []}
    */
   @OneToMany(() => Answers, (answer) => answer.playerProgress, {
-    nullable: true,
+    nullable: false,
   })
-  public answers: Answers[] | null;
+  public answers: Answers[];
 }
