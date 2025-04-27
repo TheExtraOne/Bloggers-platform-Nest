@@ -1,4 +1,4 @@
-import { BaseWithId } from '../../../../core/base-entities/base.entity';
+import { BaseWithId } from '../../../../core/base-classes/base.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { Answers } from '../../answers/domain/answers.entity';
 

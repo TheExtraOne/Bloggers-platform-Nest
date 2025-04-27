@@ -57,7 +57,7 @@ export class PgQuestionsRepository extends PgBaseRepository {
     }
     return await this.questionsRepository.save(newQuestion);
   }
-
+  // TODO: add lock, move to use case and transaction
   async updateQuestion(
     id: string,
     dto: {
@@ -75,6 +75,7 @@ export class PgQuestionsRepository extends PgBaseRepository {
     await this.save(question, manager);
   }
 
+  // TODO: add lock, move to use case and transaction
   async publishQuestion(
     id: string,
     isPublished: boolean,

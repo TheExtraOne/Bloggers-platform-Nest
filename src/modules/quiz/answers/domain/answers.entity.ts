@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { PlayerProgress } from '../../player-progress/domain/player-progress.entity';
 import { PairGames } from '../../pair-games/domain/pair-game.entity';
-import { BaseWithId } from '../../../../core/base-entities/base.entity';
+import { BaseWithId } from '../../../../core/base-classes/base.entity';
 import { Questions } from '../../questions/domain/question.entity';
 
 export enum AnswerStatus {

@@ -1,5 +1,5 @@
 import { Users } from '../../../users/domain/entities/user.entity';
-import { BaseTimestampedEntity } from '../../../../../core/base-entities/base.entity';
+import { BaseTimestampedEntity } from '../../../../../core/base-classes/base.entity';
 import {
   Column,
   Entity,

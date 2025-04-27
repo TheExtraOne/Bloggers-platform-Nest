@@ -18,7 +18,7 @@ export class ConnectUserUseCase implements ICommandHandler<ConnectUserCommand> {
     private readonly pairGamesRepository: PairGamesRepository,
     private readonly pgExternalUsersRepository: PgExternalUsersRepository,
   ) {}
-
+  // TODO: refactor
   async execute(command: ConnectUserCommand) {
     const { userId } = command.dto;
 

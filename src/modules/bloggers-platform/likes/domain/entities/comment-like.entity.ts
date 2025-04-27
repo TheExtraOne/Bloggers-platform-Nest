@@ -1,5 +1,5 @@
 import { Users } from '../../../../user-accounts/users/domain/entities/user.entity';
-import { BaseWithId } from '../../../../../core/base-entities/base.entity';
+import { BaseWithId } from '../../../../../core/base-classes/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { LikeStatus } from '../enums/like-status.enum';
 import { Comments } from '../../../comments/domain/entities/comment.entity';

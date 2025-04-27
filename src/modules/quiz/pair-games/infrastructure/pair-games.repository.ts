@@ -89,6 +89,7 @@ export class PairGamesRepository extends PgBaseRepository {
   }
 
   // TODO: refactor, leave only save
+  // TODO: use transaction manager as repository
   async findAndJoinToOpenGame(dto: {
     userId: string;
     manager?: EntityManager;

@@ -1,5 +1,5 @@
 import { Users } from '../../../../user-accounts/users/domain/entities/user.entity';
-import { BaseWithId } from '../../../../../core/base-entities/base.entity';
+import { BaseWithId } from '../../../../../core/base-classes/base.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Posts } from '../../../posts/domain/entities/post.entity';
 import { CommentLikes } from '../../../likes/domain/entities/comment-like.entity';
@@ -19,7 +19,11 @@ export class Comments extends BaseWithId {
    * The content of the comment
    * @type {string}
    */
-  @Column({ type: 'varchar', length: COMMENTS_CONSTRAINTS.MAX_CONTENT_LENGTH, nullable: false })
+  @Column({
+    type: 'varchar',
+    length: COMMENTS_CONSTRAINTS.MAX_CONTENT_LENGTH,
+    nullable: false,
+  })
   public content: string;
 
   /**

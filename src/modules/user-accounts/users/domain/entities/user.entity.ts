@@ -1,4 +1,4 @@
-import { BaseWithId } from '../../../../../core/base-entities/base.entity';
+import { BaseWithId } from '../../../../../core/base-classes/base.entity';
 import { Column, Entity, Index, OneToMany, OneToOne } from 'typeorm';
 import { UsersEmailConfirmation } from './email.confirmation.entity';
 import { UsersPasswordRecovery } from './password.recovery.entity';

@@ -1,4 +1,4 @@
-import { BaseWithId } from '../../../../core/base-entities/base.entity';
+import { BaseWithId } from '../../../../core/base-classes/base.entity';
 import { Users } from '../../../user-accounts/users/domain/entities/user.entity';
 import {
   Column,

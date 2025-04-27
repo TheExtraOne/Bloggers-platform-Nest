@@ -1,5 +1,5 @@
 import { Posts } from '../../../posts/domain/entities/post.entity';
-import { BaseWithId } from '../../../../../core/base-entities/base.entity';
+import { BaseWithId } from '../../../../../core/base-classes/base.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 
 export const BLOGS_CONSTRAINTS = {
@@ -18,21 +18,33 @@ export class Blogs extends BaseWithId {
    * The name of the blog
    * @type {string}
    */
-  @Column({ type: 'varchar', length: BLOGS_CONSTRAINTS.MAX_NAME_LENGTH, nullable: false })
+  @Column({
+    type: 'varchar',
+    length: BLOGS_CONSTRAINTS.MAX_NAME_LENGTH,
+    nullable: false,
+  })
   public name: string;
 
   /**
    * The description of the blog
    * @type {string}
    */
-  @Column({ type: 'varchar', length: BLOGS_CONSTRAINTS.MAX_DESCRIPTION_LENGTH, nullable: false })
+  @Column({
+    type: 'varchar',
+    length: BLOGS_CONSTRAINTS.MAX_DESCRIPTION_LENGTH,
+    nullable: false,
+  })
   public description: string;
 
   /**
    * The URL of the blog's website
    * @type {string}
    */
-  @Column({ type: 'varchar', length: BLOGS_CONSTRAINTS.MAX_WEBSITE_URL_LENGTH, nullable: false })
+  @Column({
+    type: 'varchar',
+    length: BLOGS_CONSTRAINTS.MAX_WEBSITE_URL_LENGTH,
+    nullable: false,
+  })
   public websiteUrl: string;
 
   /**

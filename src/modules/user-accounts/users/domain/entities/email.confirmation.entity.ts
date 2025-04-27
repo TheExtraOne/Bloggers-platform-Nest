@@ -1,4 +1,4 @@
-import { BaseWithId } from '../../../../../core/base-entities/base.entity';
+import { BaseWithId } from '../../../../../core/base-classes/base.entity';
 import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { EmailConfirmationStatus } from '../enums/user.enum';
 import { Users } from './user.entity';
