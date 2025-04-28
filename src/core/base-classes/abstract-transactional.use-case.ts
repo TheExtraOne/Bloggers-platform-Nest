@@ -1,4 +1,3 @@
-import { ForbiddenException } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 
 export abstract class AbstractTransactionalUseCase<CommandT, ResultT> {
@@ -10,9 +9,6 @@ export abstract class AbstractTransactionalUseCase<CommandT, ResultT> {
         return this.executeInTransaction(command, manager);
       });
     } catch (error) {
-      if (error instanceof ForbiddenException) {
-        throw error;
-      }
       console.error('Failed to process transaction', error);
       throw error;
     }

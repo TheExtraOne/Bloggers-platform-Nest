@@ -44,6 +44,6 @@ export class Questions extends BaseWithId {
    * Collection of all answers given to this question across all games
    * @type {Answers[]}
    */
-  @OneToMany(() => Answers, (answer) => answer.pairGame)
+  @OneToMany(() => Answers, (answer) => answer.question)
   public answers: Answers[];
 }

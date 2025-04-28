@@ -2,30 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { EntityManager, In, Repository } from 'typeorm';
-import { DataSource } from 'typeorm';
 import { GameStatus, PairGames } from '../domain/pair-game.entity';
-import { PlayerProgress } from '../../player-progress/domain/player-progress.entity';
-import { PgExternalUsersRepository } from '../../../user-accounts/users/infrastructure/pg.external.users.repository';
-import { Users } from '../../../user-accounts/users/domain/entities/user.entity';
-import { PgQuestionsRepository } from '../../questions/infrastructure/pg.questions.repository';
+import { LOCK_MODES } from '../../../../constants';
 
 @Injectable()
 export class PairGamesRepository extends PgBaseRepository {
   constructor(
     @InjectRepository(PairGames)
     private readonly pairGamesRepository: Repository<PairGames>,
-    private readonly pgExternalUsersRepository: PgExternalUsersRepository,
-    private readonly dataSource: DataSource,
-    private readonly pgQuestionsRepository: PgQuestionsRepository,
   ) {
     super();
-  }
-
-  async save(newGame: PairGames, manager?: EntityManager): Promise<PairGames> {
-    if (manager) {
-      return await manager.save(PairGames, newGame);
-    }
-    return await this.pairGamesRepository.save(newGame);
   }
 
   async findPlayerPendingOrActiveGameByUserId(dto: {
@@ -88,68 +74,24 @@ export class PairGamesRepository extends PgBaseRepository {
     });
   }
 
-  // TODO: refactor, leave only save
-  // TODO: use transaction manager as repository
-  async findAndJoinToOpenGame(dto: {
+  async findOpenGame(dto: {
     userId: string;
-    manager?: EntityManager;
-  }): Promise<{ pairGameId: string } | null> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const user: Users = await this.pgExternalUsersRepository.findUserOrThrow(
-        dto.userId,
-      );
-
-      // Lock and get an open game with no second player (other than yourself)
-      const openGame = await queryRunner.manager
-        .createQueryBuilder(PairGames, 'game')
-        .leftJoinAndSelect('game.firstPlayerProgress', 'firstPlayerProgress')
-        .leftJoinAndSelect('firstPlayerProgress.user', 'firstPlayerUser')
-        .where('game.status = :status', {
-          status: GameStatus.PendingSecondPlayer,
-        })
-        .andWhere('game.secondPlayerProgress IS NULL')
-        .andWhere('firstPlayerUser.id != :userId', { userId: +dto.userId })
-        .andWhere('game.deletedAt IS NULL')
-        .setLock('pessimistic_write')
-        .getOne();
-
-      if (!openGame) {
-        await queryRunner.rollbackTransaction();
-        return null;
-      }
-
-      // Create and save (because of cascade: true) player progress
-      const secondPlayerProgress = new PlayerProgress();
-      secondPlayerProgress.user = user;
-
-      openGame.status = GameStatus.Active;
-      openGame.secondPlayerProgress = secondPlayerProgress;
-      openGame.startGameDate = new Date();
-      // Pick 5 random questions
-      const questions = await this.pgQuestionsRepository.getRandomQuestions(5);
-      openGame.questions = questions;
-
-      // Set the first question for each player
-      const currentQuestionId = +questions[0].id;
-      secondPlayerProgress.currentQuestionId = currentQuestionId;
-      openGame.firstPlayerProgress.currentQuestionId = currentQuestionId;
-
-      await queryRunner.manager.save(PairGames, openGame);
-
-      await queryRunner.commitTransaction();
-
-      return { pairGameId: openGame.id.toString() };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      console.error('Error joining open game:', error);
-      return null;
-    } finally {
-      await queryRunner.release();
-    }
+    manager: EntityManager;
+    lockMode: LOCK_MODES;
+  }): Promise<PairGames | null> {
+    return await dto.manager
+      .getRepository(PairGames)
+      .createQueryBuilder('game')
+      .leftJoinAndSelect('game.firstPlayerProgress', 'firstPlayerProgress')
+      .leftJoinAndSelect('firstPlayerProgress.user', 'firstPlayerUser')
+      .where('game.status = :status', {
+        status: GameStatus.PendingSecondPlayer,
+      })
+      .andWhere('game.secondPlayerProgress IS NULL')
+      .andWhere('firstPlayerUser.id != :userId', { userId: +dto.userId })
+      .andWhere('game.deletedAt IS NULL')
+      .setLock(dto.lockMode)
+      .getOne();
   }
 
   async findGameById(
@@ -172,5 +114,12 @@ export class PairGamesRepository extends PgBaseRepository {
         'secondPlayerProgress.answers',
       ],
     });
+  }
+
+  async save(newGame: PairGames, manager?: EntityManager): Promise<PairGames> {
+    if (manager) {
+      return await manager.save(PairGames, newGame);
+    }
+    return await this.pairGamesRepository.save(newGame);
   }
 }

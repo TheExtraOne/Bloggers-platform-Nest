@@ -63,5 +63,5 @@ export class PlayerProgress extends BaseWithId {
   @OneToMany(() => Answers, (answer) => answer.playerProgress, {
     nullable: false,
   })
-  public answers: Answers[];
+  public answers: Answers[] | [];
 }

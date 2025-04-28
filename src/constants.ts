@@ -22,3 +22,8 @@ export const ERRORS = {
   GAME_NOT_FOUND: 'Game not found',
   PLAYER_PROGRESS_NOT_FOUND: 'Player progress not found',
 };
+
+export enum LOCK_MODES {
+  PESSIMISTIC_WRITE = 'pessimistic_write',
+  PESSIMISTIC_READ = 'pessimistic_read',
+}

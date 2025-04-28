@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PgBaseRepository } from '../../../../core/base-classes/pg.base.repository';
 import { EntityManager, Repository } from 'typeorm';
 import { Questions } from '../domain/question.entity';
-import { ERRORS } from '../../../../constants';
+import { ERRORS, LOCK_MODES } from '../../../../constants';
 
 @Injectable()
 export class PgQuestionsRepository extends PgBaseRepository {
@@ -17,13 +17,22 @@ export class PgQuestionsRepository extends PgBaseRepository {
   async findQuestionByIdOrThrow(
     id: string,
     manager?: EntityManager,
+    lockMode?: LOCK_MODES,
   ): Promise<Questions> {
     if (!this.isCorrectNumber(id)) {
       throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
     }
 
     const repo = manager?.getRepository(Questions) || this.questionsRepository;
-    const question = await repo.findOneBy({ id: +id });
+    let qb = repo
+      .createQueryBuilder('question')
+      .where('question.id = :id', { id: +id });
+
+    if (lockMode) {
+      qb = qb.setLock(lockMode);
+    }
+
+    const question = await qb.getOne();
 
     if (!question) throw new NotFoundException(ERRORS.QUESTION_NOT_FOUND);
     return question;
@@ -36,7 +45,7 @@ export class PgQuestionsRepository extends PgBaseRepository {
     // On large tables, ORDER BY RANDOM() can be slow because it assigns a random value to each row and then sorts ALL of them!
     const repo = manager?.getRepository(Questions) || this.questionsRepository;
 
-    const randomQuestions = await repo
+    const randomQuestions: { id: string; body: string }[] = await repo
       .createQueryBuilder('question')
       .select(['question.id::text AS id', 'question.body AS body'])
       .where('question.published = :published', { published: true })
@@ -45,7 +54,7 @@ export class PgQuestionsRepository extends PgBaseRepository {
       .limit(amount)
       .getRawMany();
 
-    return randomQuestions as unknown as { id: string; body: string }[];
+    return randomQuestions;
   }
 
   async save(
@@ -56,34 +65,6 @@ export class PgQuestionsRepository extends PgBaseRepository {
       return await manager.save(Questions, newQuestion);
     }
     return await this.questionsRepository.save(newQuestion);
-  }
-  // TODO: add lock, move to use case and transaction
-  async updateQuestion(
-    id: string,
-    dto: {
-      body: string;
-      correctAnswers: string[];
-    },
-    manager?: EntityManager,
-  ): Promise<void> {
-    const { body, correctAnswers } = dto;
-
-    const question = await this.findQuestionByIdOrThrow(id, manager);
-
-    question.body = body;
-    question.correctAnswers = correctAnswers;
-    await this.save(question, manager);
-  }
-
-  // TODO: add lock, move to use case and transaction
-  async publishQuestion(
-    id: string,
-    isPublished: boolean,
-    manager?: EntityManager,
-  ): Promise<void> {
-    const question = await this.findQuestionByIdOrThrow(id, manager);
-    question.published = isPublished;
-    await this.save(question, manager);
   }
 
   async deleteQuestion(id: string, manager?: EntityManager): Promise<void> {
