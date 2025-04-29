@@ -101,12 +101,21 @@ export class PairGamesRepository extends PgBaseRepository {
   async findGameById(
     id: string,
     manager?: EntityManager,
+    lockMode?: LOCK_MODES,
   ): Promise<PairGames | null> {
     if (!this.isCorrectNumber(id)) {
       return null;
     }
 
     const repo = manager?.getRepository(PairGames) || this.pairGamesRepository;
+
+    // 1. Lock the root entity record first (without relations!)
+    await repo.findOne({
+      where: { id: +id },
+      ...(lockMode ? { lock: { mode: lockMode } } : {}),
+    });
+
+    // 2. Afterwards, load the relations separately if needed
     return repo.findOne({
       where: { id: +id },
       relations: [

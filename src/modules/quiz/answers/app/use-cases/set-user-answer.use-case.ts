@@ -45,7 +45,7 @@ export class SetUserAnswerUseCase
   ) {
     super(dataSource);
   }
-  // TODO: locks?
+
   protected async executeInTransaction(
     command: SetUserAnswerCommand,
     manager: EntityManager,
@@ -53,11 +53,7 @@ export class SetUserAnswerUseCase
     const { userId, answerBody } = command.dto;
 
     // 1. Get active game and validate participation
-    const activePair = await this.findActiveGame(
-      userId,
-      manager,
-      LOCK_MODES.PESSIMISTIC_WRITE,
-    );
+    const activePair = await this.findActiveGame(userId, manager);
     const { isUserFirstPlayer, currentQuestionId } =
       this.validateUserParticipation(activePair, userId);
 
@@ -91,6 +87,7 @@ export class SetUserAnswerUseCase
     const game = (await this.pairGamesRepository.findGameById(
       activePair.id.toString(),
       manager,
+      LOCK_MODES.PESSIMISTIC_WRITE,
     )) as PairGames;
     if (this.isGameFinished(game)) {
       await this.finishGame(game, manager);
@@ -109,7 +106,7 @@ export class SetUserAnswerUseCase
   private async findActiveGame(
     userId: string,
     manager: EntityManager,
-    lockMode: LOCK_MODES,
+    lockMode?: LOCK_MODES,
   ): Promise<PairGames> {
     const activePair =
       await this.pairGamesRepository.findPlayerActiveGameByUserId({
@@ -148,7 +145,7 @@ export class SetUserAnswerUseCase
   ): Promise<PlayerProgress> {
     const playerProgressId =
       activePair[
-        isUserFirstPlayer ? 'firstPlayerProgress' : 'secondPlayerProgress'
+        isUserFirstPlayer ? PlayerProgressType.First : PlayerProgressType.Second
       ]!.id;
 
     const playerProgress =
