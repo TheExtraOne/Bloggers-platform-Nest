@@ -13,6 +13,7 @@ import { Answers, AnswerStatus } from '../../domain/answers.entity';
 import { AnswerRepository } from '../../infrastructure/answer.repository';
 import { DataSource, EntityManager } from 'typeorm';
 import { AbstractTransactionalUseCase } from '../../../../../core/base-classes/abstract-transactional.use-case';
+import { LOCK_MODES } from '../../../../../constants';
 
 enum PlayerProgressType {
   First = 'firstPlayerProgress',
@@ -52,7 +53,11 @@ export class SetUserAnswerUseCase
     const { userId, answerBody } = command.dto;
 
     // 1. Get active game and validate participation
-    const activePair = await this.findActiveGame(userId, manager);
+    const activePair = await this.findActiveGame(
+      userId,
+      manager,
+      LOCK_MODES.PESSIMISTIC_WRITE,
+    );
     const { isUserFirstPlayer, currentQuestionId } =
       this.validateUserParticipation(activePair, userId);
 
@@ -104,11 +109,13 @@ export class SetUserAnswerUseCase
   private async findActiveGame(
     userId: string,
     manager: EntityManager,
+    lockMode: LOCK_MODES,
   ): Promise<PairGames> {
     const activePair =
       await this.pairGamesRepository.findPlayerActiveGameByUserId({
         userId,
         manager,
+        lockMode,
       });
     if (!activePair) {
       throw new ForbiddenException();
@@ -197,27 +204,30 @@ export class SetUserAnswerUseCase
       relations: ['playerProgress'],
     });
 
-    const firstPlayerAnswers = allAnswers.filter(
-      (a) => a.playerProgress.id === game.firstPlayerProgress.id,
-    );
-    const secondPlayerAnswers = allAnswers.filter(
-      (a) => a.playerProgress.id === game.secondPlayerProgress!.id,
+    const { firstPlayerAnswers, secondPlayerAnswers } = allAnswers.reduce(
+      (acc, answer) => {
+        if (answer.playerProgress.id === game.firstPlayerProgress.id) {
+          acc.firstPlayerAnswers.push(answer);
+        } else if (answer.playerProgress.id === game.secondPlayerProgress!.id) {
+          acc.secondPlayerAnswers.push(answer);
+        }
+        return acc;
+      },
+      {
+        firstPlayerAnswers: [] as Answers[],
+        secondPlayerAnswers: [] as Answers[],
+      },
     );
 
-    const lastFirst = firstPlayerAnswers[firstPlayerAnswers.length - 1];
-    const lastSecond = secondPlayerAnswers[secondPlayerAnswers.length - 1];
+    const lastAnswerOfFirstPlayer =
+      firstPlayerAnswers[firstPlayerAnswers.length - 1];
+    const lastAnswerOfSecondPlayer =
+      secondPlayerAnswers[secondPlayerAnswers.length - 1];
 
-    let firstFinisher: PlayerProgressType;
-    if (!lastFirst) {
-      firstFinisher = PlayerProgressType.Second;
-    } else if (!lastSecond) {
-      firstFinisher = PlayerProgressType.First;
-    } else {
-      firstFinisher =
-        lastFirst.createdAt > lastSecond.createdAt
-          ? PlayerProgressType.Second
-          : PlayerProgressType.First;
-    }
+    const firstFinisher: PlayerProgressType =
+      lastAnswerOfFirstPlayer.createdAt > lastAnswerOfSecondPlayer.createdAt
+        ? PlayerProgressType.Second
+        : PlayerProgressType.First;
 
     game.status = GameStatus.Finished;
     game.finishGameDate = new Date();

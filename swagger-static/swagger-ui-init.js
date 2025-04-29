@@ -3327,7 +3327,7 @@ window.onload = function() {
               "format": "date-time",
               "type": "string",
               "description": "ISO timestamp when the answer was submitted",
-              "example": "2025-04-28T18:21:10.224Z"
+              "example": "2025-04-29T07:15:38.240Z"
             }
           },
           "required": [
