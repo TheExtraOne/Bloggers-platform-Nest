@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { PATHS } from '../../../../constants';
@@ -18,6 +19,7 @@ import { GetGameByIdQuery } from '../app/queries/get-game-by-id.query';
 import { ConnectUserSwagger } from './swagger/connect-user.swagger.decorator';
 import { GetPairGameByIdSwagger } from './swagger/get-pair-game-by-id.swagger.decorator';
 import { GetMyCurrentPairGameSwagger } from './swagger/get-my-current-pair-game.swagger.decorator';
+import { GetMyPairGamesSwagger } from './swagger/get-my-pair-games.swagger.decorator';
 import { PairViewDto } from './view-dto/game-pair.view-dto';
 import { GetActiveGameByUserIdQuery } from '../app/queries/get-game-by-userid.query';
 import { AnswerViewDto } from '../../answers/api/view-dto/answer.view-dto';
@@ -25,6 +27,9 @@ import { AnswerInputDto } from '../../answers/api/input-dto/answer.input-dto';
 import { SetUserAnswerCommand } from '../../answers/app/use-cases/set-user-answer.use-case';
 import { GetAnswerByIdQuery } from '../../answers/app/queries/get-answer-by-id.query';
 import { SetUserAnswerSwagger } from './swagger/set-user-answer.swagger.decorator';
+import { PaginatedViewDto } from '../../../../core/dto/base.paginated-view.dto';
+import { GetAllGamesByUserIdQuery } from '../app/queries/get-all-games-by-userid.query';
+import { GetAllUserGamesQueryParams } from './input-dto/get-all-user-games.input-dto';
 
 @ApiTags('Pair Game Quiz')
 @ApiBasicAuth()
@@ -43,6 +48,19 @@ export class GamePairsController {
     @CurrentUserId() userId: string,
   ): Promise<PairViewDto> {
     return this.queryBus.execute(new GetActiveGameByUserIdQuery(userId));
+  }
+
+  @Get('my')
+  @GetMyPairGamesSwagger()
+  @HttpCode(HttpStatus.OK)
+  async getMyPairGames(
+    @CurrentUserId() userId: string,
+    @Query() query: GetAllUserGamesQueryParams,
+  ): Promise<PaginatedViewDto<PairViewDto[]>> {
+    const pairGames = await this.queryBus.execute(
+      new GetAllGamesByUserIdQuery(userId, query),
+    );
+    return pairGames;
   }
 
   @Get(':id')

@@ -2195,6 +2195,91 @@ window.onload = function() {
           ]
         }
       },
+      "/pair-game-quiz/pairs/my": {
+        "get": {
+          "description": "Returns paginated list of all pair games that current user participated in",
+          "operationId": "GamePairsController_getMyPairGames",
+          "parameters": [
+            {
+              "name": "sortBy",
+              "required": false,
+              "in": "query",
+              "description": "Field to sort by",
+              "schema": {
+                "enum": [
+                  "pairCreatedDate",
+                  "startGameDate",
+                  "finishGameDate",
+                  "status"
+                ],
+                "type": "string"
+              }
+            },
+            {
+              "name": "pageNumber",
+              "required": false,
+              "in": "query",
+              "description": "Page number (1-based)",
+              "schema": {
+                "minimum": 1,
+                "default": 1,
+                "type": "number"
+              }
+            },
+            {
+              "name": "pageSize",
+              "required": false,
+              "in": "query",
+              "description": "Number of items per page",
+              "schema": {
+                "minimum": 1,
+                "default": 10,
+                "type": "number"
+              }
+            },
+            {
+              "name": "sortDirection",
+              "required": false,
+              "in": "query",
+              "description": "Sort direction",
+              "schema": {
+                "enum": [
+                  "asc",
+                  "desc"
+                ],
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Returns paginated list of pair games",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PaginatedPairGamesViewDto"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "security": [
+            {
+              "basic": []
+            },
+            {
+              "bearer": []
+            }
+          ],
+          "summary": "Get all pair games for current user",
+          "tags": [
+            "Pair Game Quiz"
+          ]
+        }
+      },
       "/pair-game-quiz/pairs/{id}": {
         "get": {
           "description": "Get pair game by id. User should be participant of this game",
@@ -3287,6 +3372,36 @@ window.onload = function() {
             "finishGameDate"
           ]
         },
+        "PaginatedPairGamesViewDto": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PairViewDto"
+              }
+            },
+            "totalCount": {
+              "type": "number"
+            },
+            "pagesCount": {
+              "type": "number"
+            },
+            "page": {
+              "type": "number"
+            },
+            "pageSize": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "items",
+            "totalCount",
+            "pagesCount",
+            "page",
+            "pageSize"
+          ]
+        },
         "AnswerInputDto": {
           "type": "object",
           "properties": {
@@ -3327,7 +3442,7 @@ window.onload = function() {
               "format": "date-time",
               "type": "string",
               "description": "ISO timestamp when the answer was submitted",
-              "example": "2025-04-29T16:36:21.887Z"
+              "example": "2025-04-30T12:51:52.309Z"
             }
           },
           "required": [

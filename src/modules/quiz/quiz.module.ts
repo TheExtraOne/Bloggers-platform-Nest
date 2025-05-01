@@ -26,6 +26,7 @@ import { PlayerProgressRepository } from './player-progress/infrastructure/playe
 import { AnswerRepository } from './answers/infrastructure/answer.repository';
 import { AnswerQueryRepository } from './answers/infrastructure/query/answer.query.repository';
 import { GetAnswerByIdQueryHandler } from './answers/app/queries/get-answer-by-id.query';
+import { GetAllGamesByUserIdQueryHandler } from './pair-games/app/queries/get-all-games-by-userid.query';
 
 const questionUseCases = [
   CreateQuestionUseCase,
@@ -41,8 +42,10 @@ const pairGameUseCases = [ConnectUserUseCase];
 const pairGameQueries = [
   GetGameByIdQueryHandler,
   GetActiveGameByUserIdQueryHandler,
+  GetAllGamesByUserIdQueryHandler,
 ];
 const answerUseCases = [SetUserAnswerUseCase];
+const answerQueries = [GetAnswerByIdQueryHandler];
 
 @Module({
   imports: [
@@ -56,6 +59,7 @@ const answerUseCases = [SetUserAnswerUseCase];
     ...pairGameUseCases,
     ...pairGameQueries,
     ...answerUseCases,
+    ...answerQueries,
     PairGameService,
     PgQuestionsRepository,
     PgQuestionsQueryRepository,
@@ -64,7 +68,6 @@ const answerUseCases = [SetUserAnswerUseCase];
     PlayerProgressRepository,
     AnswerRepository,
     AnswerQueryRepository,
-    GetAnswerByIdQueryHandler,
   ],
   exports: [],
 })
