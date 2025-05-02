@@ -10,7 +10,7 @@ import { GetAllQuestionsQueryHandler } from './questions/app/queries/get-all-que
 import { DeleteQuestionUseCase } from './questions/app/use-cases/delete-question.use-case';
 import { PublishQuestionUseCase } from './questions/app/use-cases/publish-question.use-case';
 import { UpdateQuestionUseCase } from './questions/app/use-cases/update-question.use-case';
-import { GamePairsController } from './pair-games/api/game-pairs.controller';
+import { GamePairsController } from './pair-games/api/game-pairs-pairs.controller';
 import { PlayerProgress } from './player-progress/domain/player-progress.entity';
 import { PairGames } from './pair-games/domain/pair-game.entity';
 import { Answers } from './answers/domain/answers.entity';
@@ -27,6 +27,8 @@ import { AnswerRepository } from './answers/infrastructure/answer.repository';
 import { AnswerQueryRepository } from './answers/infrastructure/query/answer.query.repository';
 import { GetAnswerByIdQueryHandler } from './answers/app/queries/get-answer-by-id.query';
 import { GetAllGamesByUserIdQueryHandler } from './pair-games/app/queries/get-all-games-by-userid.query';
+import { GameUsersController } from './pair-games/api/game-pairs-users.controller';
+import { GetUserStatisticQueryHandler } from './pair-games/app/queries/get-user-statistic.query';
 
 const questionUseCases = [
   CreateQuestionUseCase,
@@ -43,6 +45,7 @@ const pairGameQueries = [
   GetGameByIdQueryHandler,
   GetActiveGameByUserIdQueryHandler,
   GetAllGamesByUserIdQueryHandler,
+  GetUserStatisticQueryHandler,
 ];
 const answerUseCases = [SetUserAnswerUseCase];
 const answerQueries = [GetAnswerByIdQueryHandler];
@@ -52,7 +55,7 @@ const answerQueries = [GetAnswerByIdQueryHandler];
     UserAccountsModule,
     TypeOrmModule.forFeature([Questions, PairGames, PlayerProgress, Answers]),
   ],
-  controllers: [QuestionController, GamePairsController],
+  controllers: [QuestionController, GamePairsController, GameUsersController],
   providers: [
     ...questionUseCases,
     ...questionQueries,

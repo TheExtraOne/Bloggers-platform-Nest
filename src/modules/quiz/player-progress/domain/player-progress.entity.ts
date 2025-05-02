@@ -11,6 +11,12 @@ import {
 import { PairGames } from '../../pair-games/domain/pair-game.entity';
 import { Answers } from '../../answers/domain/answers.entity';
 
+export enum PlayerProgressStatus {
+  Win = 'Win',
+  Lose = 'Lose',
+  Draw = 'Draw',
+}
+
 /**
  * Entity representing a player's progress in quiz games.
  *
@@ -40,6 +46,19 @@ export class PlayerProgress extends BaseWithId {
    */
   @Column({ type: 'integer', nullable: true, default: null })
   public currentQuestionId: number | null;
+
+  /**
+   * The status of the game
+   * @type {PlayerProgressStatus}
+   * @default PlayerProgressStatus
+   */
+  @Column({
+    type: 'enum',
+    enum: PlayerProgressStatus,
+    nullable: true,
+    default: null,
+  })
+  public status: PlayerProgressStatus | null;
 
   /**
    * The user account associated with this progress

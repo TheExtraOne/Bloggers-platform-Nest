@@ -34,7 +34,7 @@ import { GetAllUserGamesQueryParams } from './input-dto/get-all-user-games.input
 @ApiTags('Pair Game Quiz')
 @ApiBasicAuth()
 @UseGuards(JwtAuthGuard)
-@Controller(PATHS.PAIR_GAME_QUIZ)
+@Controller(PATHS.PAIR_GAME_QUIZ_PAIRS)
 export class GamePairsController {
   constructor(
     private readonly commandBus: CommandBus,

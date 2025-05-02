@@ -7,7 +7,10 @@ import {
 import { PairGamesRepository } from '../../../pair-games/infrastructure/pair-games.repository';
 import { PgQuestionsRepository } from '../../../questions/infrastructure/pg.questions.repository';
 import { Questions } from '../../../questions/domain/question.entity';
-import { PlayerProgress } from '../../../player-progress/domain/player-progress.entity';
+import {
+  PlayerProgress,
+  PlayerProgressStatus,
+} from '../../../player-progress/domain/player-progress.entity';
 import { PlayerProgressRepository } from '../../../player-progress/infrastructure/player-progress.repository';
 import { Answers, AnswerStatus } from '../../domain/answers.entity';
 import { AnswerRepository } from '../../infrastructure/answer.repository';
@@ -25,8 +28,6 @@ export class SetUserAnswerCommand extends Command<{ answerId: string }> {
     super();
   }
 }
-
-// TODO: add AbstractTransactionalUseCase extending to use cases that need transaction
 
 @CommandHandler(SetUserAnswerCommand)
 export class SetUserAnswerUseCase
@@ -190,10 +191,7 @@ export class SetUserAnswerUseCase
     return this.answerRepository.save(newAnswer, manager);
   }
 
-  private async finishGame(
-    game: PairGames,
-    manager: EntityManager,
-  ): Promise<void> {
+  private async finishGame(game: PairGames, manager: EntityManager) {
     // Fetch latest answers, sorted
     const allAnswers = await manager.getRepository(Answers).find({
       where: { pairGame: { id: game.id } },
@@ -229,6 +227,7 @@ export class SetUserAnswerUseCase
     game.status = GameStatus.Finished;
     game.finishGameDate = new Date();
 
+    // Add bonus point for first finisher if he had at least one correct answer
     const answersToCheck =
       firstFinisher === PlayerProgressType.First
         ? firstPlayerAnswers
@@ -237,7 +236,25 @@ export class SetUserAnswerUseCase
       game[firstFinisher]!.score += 1;
     }
 
+    this.setGameStatuses(game);
+
     await this.pairGamesRepository.save(game, manager);
+  }
+
+  private setGameStatuses(game: PairGames) {
+    const firstPlayerScore = game.firstPlayerProgress.score;
+    const secondPlayerScore = game.secondPlayerProgress!.score;
+
+    if (firstPlayerScore > secondPlayerScore) {
+      game.firstPlayerProgress.status = PlayerProgressStatus.Win;
+      game.secondPlayerProgress!.status = PlayerProgressStatus.Lose;
+    } else if (secondPlayerScore > firstPlayerScore) {
+      game.firstPlayerProgress.status = PlayerProgressStatus.Lose;
+      game.secondPlayerProgress!.status = PlayerProgressStatus.Win;
+    } else {
+      game.firstPlayerProgress.status = PlayerProgressStatus.Draw;
+      game.secondPlayerProgress!.status = PlayerProgressStatus.Draw;
+    }
   }
 
   private validateUserParticipation(

@@ -11,6 +11,8 @@ import { PairViewDto } from '../../api/view-dto/game-pair.view-dto';
 import { GameStatus } from '../../domain/pair-game.entity';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dto';
 import { GetAllUserGamesQueryParams } from '../../api/input-dto/get-all-user-games.input-dto';
+import { UserStatisticViewDto } from '../../api/view-dto/user-statistic.view-dto';
+import { PlayerProgressStatus } from '../../../player-progress/domain/player-progress.entity';
 
 @Injectable()
 export class PairGamesQueryRepository extends PgBaseRepository {
@@ -293,6 +295,34 @@ export class PairGamesQueryRepository extends PgBaseRepository {
       page: pageNumber,
       size: pageSize,
     });
+  }
+
+  async getUserStatistic(userId: string): Promise<UserStatisticViewDto> {
+    const querySQL = `
+    SELECT COALESCE(SUM(p.score), 0)::integer AS "sumScore", 
+      ROUND(COALESCE(AVG(p.score), 0), 2) AS "avgScores", 
+      COUNT(*)::integer AS "gamesCount",
+      COUNT(CASE WHEN p.status = $2 THEN 1 END)::integer AS "winsCount",
+      COUNT(CASE WHEN p.status = $3 THEN 1 END)::integer AS "lossesCount",
+      COUNT(CASE WHEN p.status = $4 THEN 1 END)::integer AS "drawsCount"
+    FROM player_progress p
+    WHERE p.user_id = $1;
+  `;
+
+    const params = [
+      +userId,
+      PlayerProgressStatus.Win,
+      PlayerProgressStatus.Lose,
+      PlayerProgressStatus.Draw,
+    ];
+    const userStatistics: UserStatisticViewDto[] = await this.dataSource.query(
+      querySQL,
+      params,
+    );
+
+    const userStatistic = userStatistics[0];
+
+    return { ...userStatistic, avgScores: +userStatistic.avgScores };
   }
 
   protected getSortColumn(

@@ -2414,6 +2414,40 @@ window.onload = function() {
             "Pair Game Quiz"
           ]
         }
+      },
+      "/pair-game-quiz/users/my-statistic": {
+        "get": {
+          "description": "Returns statistics about user's game performance",
+          "operationId": "GameUsersController_getMyStatistic",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/UserStatisticViewDto"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "security": [
+            {
+              "basic": []
+            },
+            {
+              "bearer": []
+            }
+          ],
+          "summary": "Get user game statistics",
+          "tags": [
+            "Pair Game Quiz"
+          ]
+        }
       }
     },
     "info": {
@@ -3240,24 +3274,29 @@ window.onload = function() {
         "Answers": {
           "type": "object",
           "properties": {
+            "questionId": {
+              "type": "string",
+              "description": "Question ID",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
+            },
             "answerStatus": {
               "enum": [
                 "Correct",
                 "Incorrect"
               ],
-              "type": "string"
-            },
-            "questionId": {
-              "type": "string"
+              "type": "string",
+              "description": "Status of the answer"
             },
             "addedAt": {
               "format": "date-time",
-              "type": "string"
+              "type": "string",
+              "example": "2023-01-01T00:00:00.000Z",
+              "description": "Date when the answer was added"
             }
           },
           "required": [
-            "answerStatus",
             "questionId",
+            "answerStatus",
             "addedAt"
           ]
         },
@@ -3265,10 +3304,14 @@ window.onload = function() {
           "type": "object",
           "properties": {
             "id": {
-              "type": "string"
+              "type": "string",
+              "description": "Player ID",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
             },
             "login": {
-              "type": "string"
+              "type": "string",
+              "description": "Player login",
+              "example": "user123"
             }
           },
           "required": [
@@ -3281,16 +3324,25 @@ window.onload = function() {
           "properties": {
             "answers": {
               "nullable": true,
+              "description": "List of player answers",
               "type": "array",
               "items": {
                 "$ref": "#/components/schemas/Answers"
               }
             },
             "player": {
-              "$ref": "#/components/schemas/Player"
+              "description": "Player information",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Player"
+                }
+              ]
             },
             "score": {
-              "type": "number"
+              "type": "number",
+              "description": "Player score",
+              "example": 5,
+              "minimum": 0
             }
           },
           "required": [
@@ -3303,10 +3355,14 @@ window.onload = function() {
           "type": "object",
           "properties": {
             "id": {
-              "type": "string"
+              "type": "string",
+              "description": "Question ID",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
             },
             "body": {
-              "type": "string"
+              "type": "string",
+              "description": "Question text",
+              "example": "What is the capital of France?"
             }
           },
           "required": [
@@ -3317,11 +3373,22 @@ window.onload = function() {
         "PairViewDto": {
           "type": "object",
           "properties": {
+            "id": {
+              "type": "string",
+              "description": "Game ID",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
+            },
             "firstPlayerProgress": {
-              "$ref": "#/components/schemas/PlayerProgress"
+              "description": "First player progress information",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/PlayerProgress"
+                }
+              ]
             },
             "secondPlayerProgress": {
               "nullable": true,
+              "description": "Second player progress information (null if not joined)",
               "allOf": [
                 {
                   "$ref": "#/components/schemas/PlayerProgress"
@@ -3330,6 +3397,7 @@ window.onload = function() {
             },
             "questions": {
               "nullable": true,
+              "description": "List of game questions (null if game not started)",
               "type": "array",
               "items": {
                 "$ref": "#/components/schemas/Question"
@@ -3341,32 +3409,36 @@ window.onload = function() {
                 "Active",
                 "Finished"
               ],
-              "type": "string"
-            },
-            "id": {
-              "type": "string"
+              "type": "string",
+              "description": "Current game status"
             },
             "pairCreatedDate": {
               "format": "date-time",
-              "type": "string"
+              "type": "string",
+              "example": "2023-01-01T00:00:00.000Z",
+              "description": "Date when the pair game was created"
             },
             "startGameDate": {
               "format": "date-time",
               "type": "string",
-              "nullable": true
+              "nullable": true,
+              "example": "2023-01-01T00:00:00.000Z",
+              "description": "Date when the game started"
             },
             "finishGameDate": {
               "format": "date-time",
               "type": "string",
-              "nullable": true
+              "nullable": true,
+              "example": "2023-01-01T00:00:00.000Z",
+              "description": "Date when the game finished"
             }
           },
           "required": [
+            "id",
             "firstPlayerProgress",
             "secondPlayerProgress",
             "questions",
             "status",
-            "id",
             "pairCreatedDate",
             "startGameDate",
             "finishGameDate"
@@ -3442,13 +3514,50 @@ window.onload = function() {
               "format": "date-time",
               "type": "string",
               "description": "ISO timestamp when the answer was submitted",
-              "example": "2025-05-02T17:01:53.514Z"
+              "example": "2025-05-02T19:26:46.372Z"
             }
           },
           "required": [
             "questionId",
             "answerStatus",
             "addedAt"
+          ]
+        },
+        "UserStatisticViewDto": {
+          "type": "object",
+          "properties": {
+            "sumScore": {
+              "type": "number",
+              "description": "Sum scores of all games"
+            },
+            "avgScores": {
+              "type": "number",
+              "description": "Average score of all games rounded to 2 decimal places"
+            },
+            "gamesCount": {
+              "type": "number",
+              "description": "Number of games"
+            },
+            "winsCount": {
+              "type": "number",
+              "description": "Number of wins"
+            },
+            "lossesCount": {
+              "type": "number",
+              "description": "Number of losses"
+            },
+            "drawsCount": {
+              "type": "number",
+              "description": "Number of draws"
+            }
+          },
+          "required": [
+            "sumScore",
+            "avgScores",
+            "gamesCount",
+            "winsCount",
+            "lossesCount",
+            "drawsCount"
           ]
         }
       }
