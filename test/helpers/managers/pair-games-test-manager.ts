@@ -69,4 +69,29 @@ export class PairGamesTestManager {
       body: response.body,
     };
   }
+
+  async getMyPairGames(
+    token: string,
+    query: {
+      sortBy?: string;
+      sortDirection?: 'asc' | 'desc';
+      pageNumber?: number;
+      pageSize?: number;
+    } = {},
+  ) {
+    const queryString = new URLSearchParams();
+    if (query.sortBy) queryString.append('sortBy', query.sortBy);
+    if (query.sortDirection) queryString.append('sortDirection', query.sortDirection);
+    if (query.pageNumber) queryString.append('pageNumber', query.pageNumber.toString());
+    if (query.pageSize) queryString.append('pageSize', query.pageSize.toString());
+
+    const response = await request(this.app.getHttpServer())
+      .get(`/${PATHS.PAIR_GAME_QUIZ}/my${queryString.toString() ? '?' + queryString.toString() : ''}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    return {
+      statusCode: response.status,
+      body: response.body,
+    };
+  }
 }
