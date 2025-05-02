@@ -1,6 +1,41 @@
 # Bloggers Platform
 
-A modern, feature-rich blogging platform built with NestJS, providing a robust backend for managing blogs, posts, comments, and user interactions.
+[![NestJS](https://img.shields.io/badge/NestJS-v11-red.svg)](https://nestjs.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-v14-blue.svg)](https://www.postgresql.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-v5-blue.svg)](https://www.typescriptlang.org)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+A modern, feature-rich blogging platform built with NestJS, providing a robust backend for managing blogs, posts, comments, and user interactions. The platform includes an advanced Quiz Game system for user engagement and interactive learning.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running the App](#running-the-app)
+- [Project Structure](#project-structure)
+- [Architecture & Patterns](#architecture--patterns)
+- [API Documentation](#api-documentation)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Overview
+
+This platform combines traditional blogging capabilities with interactive features like quiz games and real-time user interactions. Built using modern architecture patterns and best practices, it provides a scalable and maintainable solution for content creation and user engagement.
+
+### Key Highlights
+
+- Clean Architecture with CQRS pattern
+- Advanced Quiz Game system with pair matching
+- Real-time user interactions
+- Comprehensive API documentation
+- Extensive test coverage
+- Transaction management
+- Performance optimized database queries
 
 ## Features
 
@@ -12,12 +47,12 @@ A modern, feature-rich blogging platform built with NestJS, providing a robust b
 
 - **Quiz System**
 
-  - Questions Management:
+  - Questions Management
     - Create, read, update, and delete quiz questions
     - Question publishing workflow
     - Answer validation
     - Comprehensive filtering and sorting
-  - Pair Game Quiz:
+  - Pair Game Quiz
     - Real-time pair matching system
     - Active game tracking and management
     - Player progress and scoring
@@ -38,182 +73,119 @@ A modern, feature-rich blogging platform built with NestJS, providing a robust b
   - User engagement tracking
 
 - **Authentication & Authorization**
-
   - JWT-based authentication
   - Role-based access control
   - Session management
   - Secure password handling
 
-- **API Features**
-  - RESTful API design
-  - Swagger/OpenAPI documentation
-  - Rate limiting
-  - Pagination support
-
 ## Technology Stack
 
 - **Backend Framework**: [NestJS](https://nestjs.com/) (v11)
 - **Database**: PostgreSQL with TypeORM
-- **Authentication**:
-  - Passport.js
-  - JWT
-  - Basic Auth
+- **Authentication**: Passport.js, JWT, Basic Auth
 - **API Documentation**: Swagger/OpenAPI
-- **Testing**:
-  - Jest for unit testing
-  - E2E testing support
-- **Other Tools & Libraries**:
-  - CQRS pattern implementation
-  - Class validators
-  - Date handling with date-fns
-  - Email sending with Nodemailer
+- **Testing**: Jest for unit and E2E testing
+- **Other Tools**: CQRS, Class validators, date-fns, Nodemailer
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18 or higher
+- PostgreSQL 14 or higher
+- Yarn package manager
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/Bloggers-platform-Nest.git
+cd Bloggers-platform-Nest
+```
+
+2. Install dependencies:
+
+```bash
+yarn install
+```
+
+3. Configure environment:
+
+   - Copy `.env.development` to `.env`
+   - Update the variables
+
+4. Setup database:
+
+```bash
+yarn migration:run
+```
+
+### Running the App
+
+```bash
+# Development
+yarn start:dev
+
+# Production
+yarn start:prod
+
+# Debug mode
+yarn start:debug
+```
 
 ## Project Structure
 
 ```
-├── migrations/           # Database migrations
-├── src/
-│   ├── core/            # Core functionality and configurations
-│   ├── db/              # Database related code
-│   ├── env/            # Environment configurations
-│   ├── modules/        # Feature modules
-│   │   ├── user-accounts/
-│   │   ├── bloggers-platform/
-│   │   ├── notifications/
-│   │   └── quiz/       # Quiz functionality
-│   │       ├── questions/    # Question management
-│   │       │   ├── api/     # Question controllers and DTOs
-│   │       │   ├── app/     # Question use cases and queries
-│   │       │   └── domain/  # Question entities
-│   │       └── pair-games/   # Pair game quiz functionality
-│   │           ├── api/      # Game controllers and DTOs
-│   │           ├── app/      # Game logic, commands and queries
-│   │           ├── domain/   # Game entities and types
-│   │           └── infrastructure/  # Game repositories
-│   ├── setup/         # Application setup and configuration
-│   └── testing/       # Testing utilities
-├── test/              # Test files
-│   ├── helpers/       # Test helpers
-│   └── mock/         # Mock data for testing
-└── swagger-static/    # Generated Swagger documentation
+src/
+├── core/            # Core functionality and configurations
+├── db/              # Database related code
+├── modules/
+│   ├── user-accounts/     # User management
+│   ├── bloggers-platform/ # Blogs, posts, comments
+│   ├── notifications/     # Email notifications
+│   └── quiz/             # Quiz functionality
+├── setup/          # Application setup
+└── testing/        # Testing utilities
 ```
 
 ## Architecture & Patterns
 
-- **Modular Architecture**: The application is organized into feature modules, each responsible for specific business functionality.
+The application follows Clean Architecture principles with:
 
-- **CQRS Pattern**: Implements Command Query Responsibility Segregation for better separation of read and write operations.
+- **Domain-Driven Design**
 
-- **Repository Pattern**: Used with TypeORM for database operations.
+  - Rich domain models
+  - Clear bounded contexts
+  - Value objects and entities
 
-  - Implements soft delete for data integrity
-  - Maintains clear separation between query and command repositories
+- **CQRS Pattern**
 
-- **Dependency Injection**: Leverages NestJS's powerful DI container.
+  - Separate command and query responsibilities
+  - Optimized read/write operations
+  - Event-driven architecture
 
-  - Modules register their providers and exports
-  - Services are injected where needed
+- **Repository Pattern**
+  - Data persistence abstraction
+  - Optimized query operations
+  - Transaction management
 
-- **DTO Pattern**: Data Transfer Objects for type-safe data validation.
-  - Input validation using class-validator
-  - Swagger documentation using class-transformer
+## API Documentation
 
-## Security Features
+Access the Swagger documentation at:
 
-- **Rate Limiting**: Protects against brute force attacks
-- **JWT Authentication**: Secure token-based authentication
-- **Password Hashing**: Using bcrypt for secure password storage
-- **Environment Configuration**: Secure configuration management
-- **CORS Protection**: Configured cross-origin resource sharing
-
-## Database Management
-
-- Uses TypeORM with PostgreSQL
-- Implements migrations for database version control
-- Supports both synchronous and asynchronous database operations
-- Snake case naming strategy for database columns
-
-### Data Management
-
-```bash
-# Run TypeORM migrations
-yarn typeorm migration:run
-
-# Generate new migration
-yarn typeorm migration:generate
-
-# Revert last migration
-yarn typeorm migration:revert
+```
+http://localhost:${PORT}/api/swagger
 ```
 
-## Development Setup
+Features:
 
-1. **Prerequisites**:
-
-   - Node.js
-   - PostgreSQL, TypeORM
-   - Yarn
-
-2. **Environment Variables**:
-   - Configure your environment variables in `.env` file
-   - Database connection settings
-   - JWT secrets
-   - API configuration
-
-## Getting Started
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <repository-url>
-   cd bloggers-platform-nest
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   yarn install
-   ```
-
-3. **Environment Setup**
-
-   - Copy `.env.example` to `.env`
-   - Configure your database and other environment variables
-
-4. **Database Setup**
-
-   ```bash
-   # Run TypeORM migrations
-   yarn typeorm migration:run
-   ```
-
-5. **Start the application**
-
-   ```bash
-   # Development
-   yarn start:dev
-
-   # Production
-   yarn start:prod
-   ```
+- Complete endpoint documentation
+- Request/Response examples
+- Authentication details
+- Schema definitions
 
 ## Testing
-
-### Test Coverage
-
-The application includes comprehensive test coverage across all modules:
-
-- **Unit Tests**: Testing individual components and business logic
-- **Integration Tests**: Testing module interactions and database operations
-- **E2E Tests**: Testing complete user flows and API endpoints
-  - Question management workflows
-  - Pair game quiz scenarios:
-    - Game creation and matching
-    - Player connections and validation
-    - Game state transitions
-    - Answer submission and scoring
-
-### Running Tests
 
 ```bash
 # Unit tests
@@ -222,40 +194,14 @@ yarn test
 # E2E tests
 yarn test:e2e
 
-# Test specific module
-yarn test:e2e test/questions.e2e-spec.ts
-
 # Test coverage
 yarn test:cov
 ```
 
-Test helpers are available in the `test/helpers` directory to facilitate testing of specific modules and functionalities.
-
-## API Documentation
-
-- Swagger documentation is automatically generated and available at `/api` endpoint when running in development mode
-- Static documentation is generated in the `swagger-static` directory
-
-Once the application is running locally, you can access the Swagger documentation at:
-
-```
-http://localhost:3000/api/docs
-```
-
-You can also view the API documentation for the deployed version at:
-
-```
-https://bloggers-platform-nest-six.vercel.app/swagger
-```
-
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on my code of conduct, development process, and guidelines.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
