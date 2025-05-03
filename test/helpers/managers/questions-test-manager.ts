@@ -207,43 +207,46 @@ export class QuestionsTestManager {
       .expect(statusCode);
   }
 
-  async getQuestionById(id: string, statusCode: HttpStatus = HttpStatus.OK) {
-    const { items } = await this.getAllQuestions();
-    const question = items.find((q) => q.id === id);
+  // Reusable test data
+  private readonly testQuestions = [
+    {
+      body: 'Question 1?',
+      correctAnswers: ['Answer 1'],
+    },
+    {
+      body: 'Question 2?',
+      correctAnswers: ['Answer 2'],
+    },
+    {
+      body: 'Question 3?',
+      correctAnswers: ['Answer 3'],
+    },
+  ];
 
-    if (!question && statusCode === HttpStatus.NOT_FOUND) {
-      return;
+  async createTestQuestions() {
+    return Promise.all(
+      this.testQuestions.map((question) => this.createQuestion(question)),
+    );
+  }
+
+  // Helper method to create and publish a question in one step
+  async createAndPublishQuestion(
+    createModel: CreateQuestionInputDto,
+    published: boolean = true,
+  ): Promise<PGQuestionViewDto> {
+    const question = await this.createQuestion(createModel);
+    if (published) {
+      await this.publishQuestion(question.id, true);
     }
-
-    if (!question) {
-      throw new Error(`Question with id ${id} not found`);
-    }
-
     return question;
   }
 
-  async createTestQuestions() {
-    const questions = [
-      {
-        body: 'Question 1?',
-        correctAnswers: ['Answer 1'],
-      },
-      {
-        body: 'Question 2?',
-        correctAnswers: ['Answer 2'],
-      },
-      {
-        body: 'Question 3?',
-        correctAnswers: ['Answer 3'],
-      },
-    ];
-
-    const createdQuestions: PGQuestionViewDto[] = [];
-    for (const question of questions) {
-      const response = await this.createQuestion(question);
-      createdQuestions.push(response);
-    }
-
-    return createdQuestions;
+  // Helper method to perform bulk operations
+  async bulkCreateQuestions(count: number): Promise<PGQuestionViewDto[]> {
+    const questions = Array.from({ length: count }, (_, i) => ({
+      body: `Test Question ${i + 1}?`,
+      correctAnswers: [`Answer ${i + 1}`],
+    }));
+    return Promise.all(questions.map((q) => this.createQuestion(q)));
   }
 }
