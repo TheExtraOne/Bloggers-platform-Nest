@@ -2437,13 +2437,78 @@ window.onload = function() {
           },
           "security": [
             {
-              "basic": []
-            },
-            {
               "bearer": []
             }
           ],
           "summary": "Get user game statistics",
+          "tags": [
+            "Pair Game Quiz"
+          ]
+        }
+      },
+      "/pair-game-quiz/users/top": {
+        "get": {
+          "description": "Returns paginated list of users sorted by their game performance",
+          "operationId": "GameUsersController_getTopUsers",
+          "parameters": [
+            {
+              "name": "sort",
+              "required": false,
+              "in": "query",
+              "description": "Sort parameters in format \"field direction\" (e.g., \"avgScores desc\")",
+              "schema": {
+                "default": [
+                  "avgScores desc",
+                  "sumScore desc"
+                ],
+                "example": [
+                  "avgScores desc",
+                  "sumScore desc"
+                ],
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "name": "pageNumber",
+              "required": false,
+              "in": "query",
+              "description": "Page number (starts from 1)",
+              "schema": {
+                "minimum": 1,
+                "default": 1,
+                "example": 1,
+                "type": "number"
+              }
+            },
+            {
+              "name": "pageSize",
+              "required": false,
+              "in": "query",
+              "description": "Number of items per page",
+              "schema": {
+                "minimum": 1,
+                "default": 10,
+                "example": 10,
+                "type": "number"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/TopUsersPaginatedSwagger"
+                  }
+                }
+              }
+            }
+          },
+          "summary": "Get top users by their game statistics",
           "tags": [
             "Pair Game Quiz"
           ]
@@ -3527,28 +3592,22 @@ window.onload = function() {
           "type": "object",
           "properties": {
             "sumScore": {
-              "type": "number",
-              "description": "Sum scores of all games"
+              "type": "number"
             },
             "avgScores": {
-              "type": "number",
-              "description": "Average score of all games rounded to 2 decimal places"
+              "type": "number"
             },
             "gamesCount": {
-              "type": "number",
-              "description": "Number of games"
+              "type": "number"
             },
             "winsCount": {
-              "type": "number",
-              "description": "Number of wins"
+              "type": "number"
             },
             "lossesCount": {
-              "type": "number",
-              "description": "Number of losses"
+              "type": "number"
             },
             "drawsCount": {
-              "type": "number",
-              "description": "Number of draws"
+              "type": "number"
             }
           },
           "required": [
@@ -3558,6 +3617,83 @@ window.onload = function() {
             "winsCount",
             "lossesCount",
             "drawsCount"
+          ]
+        },
+        "TopUserViewDto": {
+          "type": "object",
+          "properties": {
+            "sumScore": {
+              "type": "number"
+            },
+            "avgScores": {
+              "type": "number"
+            },
+            "gamesCount": {
+              "type": "number"
+            },
+            "winsCount": {
+              "type": "number"
+            },
+            "lossesCount": {
+              "type": "number"
+            },
+            "drawsCount": {
+              "type": "number"
+            },
+            "player": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "login": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "login"
+              ]
+            }
+          },
+          "required": [
+            "sumScore",
+            "avgScores",
+            "gamesCount",
+            "winsCount",
+            "lossesCount",
+            "drawsCount",
+            "player"
+          ]
+        },
+        "TopUsersPaginatedSwagger": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TopUserViewDto"
+              }
+            },
+            "totalCount": {
+              "type": "number"
+            },
+            "pagesCount": {
+              "type": "number"
+            },
+            "page": {
+              "type": "number"
+            },
+            "pageSize": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "items",
+            "totalCount",
+            "pagesCount",
+            "page",
+            "pageSize"
           ]
         }
       }

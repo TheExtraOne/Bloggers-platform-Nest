@@ -29,6 +29,7 @@ import { GetAnswerByIdQueryHandler } from './answers/app/queries/get-answer-by-i
 import { GetAllGamesByUserIdQueryHandler } from './pair-games/app/queries/get-all-games-by-userid.query';
 import { GameUsersController } from './pair-games/api/game-pairs-users.controller';
 import { GetUserStatisticQueryHandler } from './pair-games/app/queries/get-user-statistic.query';
+import { GetTopUsersQueryHandler } from './pair-games/app/queries/get-top-users.query';
 
 const questionUseCases = [
   CreateQuestionUseCase,
@@ -46,6 +47,7 @@ const pairGameQueries = [
   GetActiveGameByUserIdQueryHandler,
   GetAllGamesByUserIdQueryHandler,
   GetUserStatisticQueryHandler,
+  GetTopUsersQueryHandler,
 ];
 const answerUseCases = [SetUserAnswerUseCase];
 const answerQueries = [GetAnswerByIdQueryHandler];

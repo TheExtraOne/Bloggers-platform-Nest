@@ -13,6 +13,8 @@ import { PaginatedViewDto } from '../../../../../core/dto/base.paginated-view.dt
 import { GetAllUserGamesQueryParams } from '../../api/input-dto/get-all-user-games.input-dto';
 import { UserStatisticViewDto } from '../../api/view-dto/user-statistic.view-dto';
 import { PlayerProgressStatus } from '../../../player-progress/domain/player-progress.entity';
+import { GetTopUsersQueryParams } from '../../api/input-dto/get-top-users.input-dto';
+import { TopUserViewDto } from '../../api/view-dto/top-user.view-dto';
 
 @Injectable()
 export class PairGamesQueryRepository extends PgBaseRepository {
@@ -30,7 +32,6 @@ export class PairGamesQueryRepository extends PgBaseRepository {
     if (!this.isCorrectNumber(id)) {
       throw new BadRequestException(ERRORS.GAME_NOT_FOUND);
     }
-    // TODO: check all the rest CTE
 
     const querySQL = `
       WITH selected_game AS (
@@ -323,6 +324,49 @@ export class PairGamesQueryRepository extends PgBaseRepository {
     const userStatistic = userStatistics[0];
 
     return { ...userStatistic, avgScores: +userStatistic.avgScores };
+  }
+
+  async getTopUsers(
+    query: GetTopUsersQueryParams,
+  ): Promise<PaginatedViewDto<TopUserViewDto[]>> {
+    const { pageNumber, pageSize, sort } = query;
+    const { offset, limit } = this.getPaginationParams(pageNumber, pageSize);
+
+    const querySQL = `
+    SELECT 
+      COALESCE(SUM(p.score), 0)::integer AS "sumScore", 
+      ROUND(COALESCE(AVG(p.score), 0), 2)::float8 AS "avgScores", 
+      COUNT(*)::integer AS "gamesCount",
+      COUNT(CASE WHEN p.status = 'Win' THEN 1 END)::integer AS "winsCount",
+      COUNT(CASE WHEN p.status = 'Lose' THEN 1 END)::integer AS "lossesCount",
+      COUNT(CASE WHEN p.status = 'Draw' THEN 1 END)::integer AS "drawsCount",
+      json_build_object('id', (p.user_id)::text, 'login', u.login) AS "player"
+    FROM player_progress p
+    LEFT JOIN users u ON u.id = p.user_id
+    GROUP BY p.user_id, u.login
+    ORDER BY ${sort.map((x) => `"${x.split(' ')[0]}" ${x.split(' ')[1]}`).join(', ')}
+    LIMIT $1
+    OFFSET $2;
+    `;
+    const params = [limit, offset];
+    const [topUsers, totalCountResult]: [
+      TopUserViewDto[],
+      [{ count: string }],
+    ] = await Promise.all([
+      this.dataSource.query(querySQL, params),
+      this.dataSource.query(
+        `SELECT COUNT(DISTINCT user_id)::integer FROM player_progress;`,
+      ),
+    ]);
+
+    const totalCount = +totalCountResult[0].count;
+
+    return PaginatedViewDto.mapToView({
+      items: topUsers,
+      totalCount,
+      page: pageNumber,
+      size: pageSize,
+    });
   }
 
   protected getSortColumn(
