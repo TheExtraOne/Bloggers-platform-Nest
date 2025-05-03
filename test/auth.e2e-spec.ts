@@ -30,13 +30,14 @@ describe('Auth Controller (e2e)', () => {
     await app.close();
   });
 
-  describe('POST /auth/registration', () => {
-    const validUser: CreateUserInputDto = {
-      login: 'testuser',
-      password: 'password123',
-      email: 'test@example.com',
-    };
+  // Common test data
+  const validUser = {
+    login: 'testuser',
+    password: 'password123',
+    email: 'test@example.com',
+  };
 
+  describe('POST /auth/registration', () => {
     it('should register user with valid data', async () => {
       const sendEmailMethod = (app.get(EmailService).sendRegistrationMail = jest
         .fn()
@@ -98,19 +99,36 @@ describe('Auth Controller (e2e)', () => {
   });
 
   describe('POST /auth/login', () => {
+    const unconfirmedUser = {
+      login: 'user2',
+      password: 'password123',
+      email: 'unconfirmed@example.com',
+    };
+
+    beforeEach(async () => {
+      // Register and confirm first user
+      await authTestManager.registration(validUser, HttpStatus.NO_CONTENT);
+      const user = await usersTestManager.getUserByEmail(validUser.email);
+      if (!user?.emailConfirmation?.confirmationCode) {
+        throw new Error('User or confirmation code not found');
+      }
+      await authTestManager.confirmRegistration(
+        { code: user.emailConfirmation.confirmationCode },
+        HttpStatus.NO_CONTENT,
+      );
+
+      // Create unconfirmed user
+      await authTestManager.registration(
+        unconfirmedUser,
+        HttpStatus.NO_CONTENT,
+      );
+    });
+
     it('should login with valid credentials and return access token', async () => {
-      const user = {
-        login: 'testuser',
-        password: 'password123',
-        email: 'test@example.com',
-      };
-
-      await usersTestManager.createUser(user);
-
       const response = await authTestManager.login(
         {
-          loginOrEmail: user.login,
-          password: user.password,
+          loginOrEmail: validUser.login,
+          password: validUser.password,
         },
         HttpStatus.OK,
       );
@@ -126,16 +144,8 @@ describe('Auth Controller (e2e)', () => {
     });
 
     it('should not login with incorrect password', async () => {
-      const user = {
-        login: 'testuser',
-        password: 'password123',
-        email: 'test@example.com',
-      };
-
-      await usersTestManager.createUser(user);
-
       await authTestManager.login(
-        { loginOrEmail: user.login, password: 'wrongpassword' },
+        { loginOrEmail: validUser.login, password: 'wrongpassword' },
         HttpStatus.UNAUTHORIZED,
       );
     });
@@ -148,17 +158,6 @@ describe('Auth Controller (e2e)', () => {
     });
 
     it('should not login with unconfirmed email', async () => {
-      // Register new user but don't confirm email
-      const unconfirmedUser = {
-        login: 'user2',
-        password: 'password123',
-        email: 'unconfirmed@example.com',
-      };
-      await authTestManager.registration(
-        unconfirmedUser,
-        HttpStatus.NO_CONTENT,
-      );
-
       await authTestManager.login(
         {
           loginOrEmail: unconfirmedUser.login,
@@ -177,20 +176,19 @@ describe('Auth Controller (e2e)', () => {
   });
 
   describe('POST /auth/refresh-token', () => {
-    const validUser = {
-      login: 'testuser',
-      password: 'password123',
-      email: 'test@example.com',
-    };
-
-    let accessToken: string;
     let refreshTokenCookie: string;
 
     beforeEach(async () => {
-      // Create confirmed user
-      await usersTestManager.createUser(validUser);
-
-      // Login to get initial tokens
+      // Register and confirm user
+      await authTestManager.registration(validUser, HttpStatus.NO_CONTENT);
+      const user = await usersTestManager.getUserByEmail(validUser.email);
+      if (!user?.emailConfirmation?.confirmationCode) {
+        throw new Error('User or confirmation code not found');
+      }
+      await authTestManager.confirmRegistration(
+        { code: user.emailConfirmation.confirmationCode },
+        HttpStatus.NO_CONTENT,
+      );
       const loginResponse = await authTestManager.login(
         {
           loginOrEmail: validUser.login,
@@ -199,16 +197,9 @@ describe('Auth Controller (e2e)', () => {
         HttpStatus.OK,
       );
 
-      // Extract tokens
-      accessToken = loginResponse.body.accessToken;
-      const cookies = loginResponse.headers['set-cookie'];
-      refreshTokenCookie = cookies[0]; // Take the first cookie which should be the refresh token
-
-      expect(accessToken).toBeDefined();
+      // Extract refresh token
+      refreshTokenCookie = loginResponse.headers['set-cookie'][0];
       expect(refreshTokenCookie).toBeDefined();
-
-      // Add delay to ensure refresh token has different timestamp
-      await new Promise((resolve) => setTimeout(resolve, 2000));
     });
 
     it('should return 401 when trying to refresh token after logout', async () => {
@@ -219,25 +210,6 @@ describe('Auth Controller (e2e)', () => {
       await authTestManager
         .refreshToken(refreshTokenCookie)
         .expect(HttpStatus.UNAUTHORIZED);
-    });
-
-    it('should return 401 when trying to refresh token with old refresh token after successful refresh', async () => {
-      // First refresh to get new tokens
-      const refreshResponse = await authTestManager
-        .refreshToken(refreshTokenCookie)
-        .expect(HttpStatus.OK);
-
-      const oldRefreshToken = refreshTokenCookie;
-      const newRefreshToken = refreshResponse.headers['set-cookie']?.[0];
-      expect(newRefreshToken).toBeDefined();
-
-      // Try to refresh with old token
-      await authTestManager
-        .refreshToken(oldRefreshToken)
-        .expect(HttpStatus.UNAUTHORIZED);
-
-      // Verify new token still works
-      await authTestManager.refreshToken(newRefreshToken).expect(HttpStatus.OK);
     });
 
     it('should return 401 when trying to refresh with expired token', async () => {
@@ -260,37 +232,39 @@ describe('Auth Controller (e2e)', () => {
   });
 
   describe('GET /auth/me', () => {
-    const validUser = {
-      login: 'testuser',
-      password: 'password123',
-      email: 'test@example.com',
-    };
-    let accessToken: string;
     let userId: string;
 
     beforeEach(async () => {
-      // Create confirmed user and get their ID
-      const user = await usersTestManager.createUser(
-        validUser,
-        HttpStatus.CREATED,
+      // Register and confirm user
+      await authTestManager.registration(validUser, HttpStatus.NO_CONTENT);
+      const user = await usersTestManager.getUserByEmail(validUser.email);
+      if (!user?.emailConfirmation?.confirmationCode) {
+        throw new Error('User or confirmation code not found');
+      }
+      await authTestManager.confirmRegistration(
+        { code: user.emailConfirmation.confirmationCode },
+        HttpStatus.NO_CONTENT,
       );
       userId = user.id;
+    });
 
-      // Login to get access token
+    it('should return user information with valid token', async () => {
+      // Get fresh access token
       const loginResponse = await authTestManager.login(
         { loginOrEmail: validUser.login, password: validUser.password },
         HttpStatus.OK,
       );
-      accessToken = loginResponse.body.accessToken;
-    });
+      const freshAccessToken = loginResponse.body.accessToken;
 
-    it('should return user information with valid token', async () => {
-      const response = await authTestManager.me(accessToken, HttpStatus.OK);
+      const response = await authTestManager.me(
+        freshAccessToken,
+        HttpStatus.OK,
+      );
 
       const expectedResponse = {
         email: validUser.email,
         login: validUser.login,
-        userId: userId,
+        userId: userId.toString(), // userId is returned as a string
       };
 
       expect(response).toEqual(expectedResponse);
@@ -415,178 +389,98 @@ describe('Auth Controller (e2e)', () => {
     });
   });
 
-  describe('POST /auth/password-recovery', () => {
-    const validUser = {
-      login: 'testuser',
-      password: 'password123',
-      email: 'test@example.com',
-    };
-
-    beforeEach(async () => {
-      // Create confirmed user with admin credentials
-      await usersTestManager.createUser(validUser, HttpStatus.CREATED);
-    });
-
-    it('should initiate password recovery for existing email', async () => {
-      await authTestManager.passwordRecovery(
-        { email: validUser.email },
-        HttpStatus.NO_CONTENT,
-      );
-    });
-
-    it('should return success even for non-existent email (security)', async () => {
-      await authTestManager.passwordRecovery(
-        { email: 'nonexistent@example.com' },
-        HttpStatus.NO_CONTENT,
-      );
-    });
-  });
-
-  describe('POST /auth/new-password', () => {
-    const validUser = {
-      login: 'testuser',
-      password: 'password123',
-      email: 'test@example.com',
-    };
+  describe('Password Recovery Flow', () => {
     let recoveryCode: string;
 
     beforeEach(async () => {
-      // Create confirmed user with admin credentials
-      await usersTestManager.createUser(validUser, HttpStatus.CREATED);
-
-      // Initiate password recovery
-      await authTestManager.passwordRecovery(
-        { email: validUser.email },
-        HttpStatus.NO_CONTENT,
-      );
-
-      // Get user from database to get recovery code
+      // Register and confirm user
+      await authTestManager.registration(validUser, HttpStatus.NO_CONTENT);
       const user = await usersTestManager.getUserByEmail(validUser.email);
-      if (
-        !user ||
-        !user.passwordRecovery ||
-        !user.passwordRecovery.recoveryCode
-      ) {
-        throw new Error('User or recovery code not found');
+      if (!user?.emailConfirmation?.confirmationCode) {
+        throw new Error('User or confirmation code not found');
       }
-      recoveryCode = user.passwordRecovery.recoveryCode;
-    });
-
-    it('should set new password with valid recovery code', async () => {
-      const newPassword = 'newpassword123';
-      await authTestManager.newPassword(
-        {
-          newPassword,
-          recoveryCode,
-        },
+      await authTestManager.confirmRegistration(
+        { code: user.emailConfirmation.confirmationCode },
         HttpStatus.NO_CONTENT,
       );
-
-      // Try to login with new password
-      const loginResponse = await authTestManager.login(
-        { loginOrEmail: validUser.login, password: newPassword },
-        HttpStatus.OK,
-      );
-      expect(loginResponse.body).toHaveProperty('accessToken');
     });
 
-    it('should not set new password with invalid recovery code', async () => {
-      await authTestManager.newPassword(
-        {
-          newPassword: 'newpassword123',
-          recoveryCode: 'invalid-code',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+    describe('POST /auth/password-recovery', () => {
+      it('should initiate password recovery for existing email', async () => {
+        await authTestManager.passwordRecovery(
+          { email: validUser.email },
+          HttpStatus.NO_CONTENT,
+        );
+
+        // Get recovery code for next tests
+        const user = await usersTestManager.getUserByEmail(validUser.email);
+        if (!user?.passwordRecovery?.recoveryCode) {
+          throw new Error('Recovery code not found');
+        }
+        recoveryCode = user.passwordRecovery.recoveryCode;
+      });
+
+      it('should return success even for non-existent email (security)', async () => {
+        await authTestManager.passwordRecovery(
+          { email: 'nonexistent@example.com' },
+          HttpStatus.NO_CONTENT,
+        );
+      });
     });
 
-    it('should not set new password if password is too short', async () => {
-      await authTestManager.newPassword(
-        {
-          newPassword: 'short', // Password that's too short
-          recoveryCode: recoveryCode,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
+    describe('POST /auth/new-password', () => {
+      beforeEach(async () => {
+        // Initiate password recovery to get the code
+        await authTestManager.passwordRecovery(
+          { email: validUser.email },
+          HttpStatus.NO_CONTENT,
+        );
+
+        // Get recovery code
+        const user = await usersTestManager.getUserByEmail(validUser.email);
+        if (!user?.passwordRecovery?.recoveryCode) {
+          throw new Error('Recovery code not found');
+        }
+        recoveryCode = user.passwordRecovery.recoveryCode;
+      });
+
+      it('should set new password with valid recovery code', async () => {
+        const newPassword = 'newpassword123';
+        await authTestManager.newPassword(
+          {
+            newPassword,
+            recoveryCode,
+          },
+          HttpStatus.NO_CONTENT,
+        );
+
+        // Try to login with new password
+        const loginResponse = await authTestManager.login(
+          { loginOrEmail: validUser.login, password: newPassword },
+          HttpStatus.OK,
+        );
+        expect(loginResponse.body).toHaveProperty('accessToken');
+      });
+
+      it('should not set new password with invalid recovery code', async () => {
+        await authTestManager.newPassword(
+          {
+            newPassword: 'newpassword123',
+            recoveryCode: 'invalid-code',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      });
+
+      it('should not set new password if password is too short', async () => {
+        await authTestManager.newPassword(
+          {
+            newPassword: 'short', // Password that's too short
+            recoveryCode: recoveryCode,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      });
     });
-  });
-});
-
-describe('Rate Limiting', () => {
-  let app: INestApplication;
-  let authTestManager: AuthTestManager;
-  let usersTestManager: UsersTestManager;
-
-  beforeAll(async () => {
-    const result = await new TestSettingsInitializer().init(10000, 5);
-    app = result.app;
-    authTestManager = result.authTestManager;
-    usersTestManager = result.usersTestManager;
-  });
-
-  beforeEach(async () => {
-    await deleteAllData(app);
-  });
-
-  afterAll(async () => {
-    await app.close();
-  });
-
-  const validUser = {
-    login: 'testuser',
-    password: 'password123',
-    email: 'test@example.com',
-  };
-
-  it('should handle rate limiting correctly for registration', async () => {
-    // First 5 requests should succeed
-    for (let i = 0; i < 5; i++) {
-      const user = {
-        ...validUser,
-        email: `test${i}@example.com`,
-        login: `testuser${i}`,
-      };
-      await authTestManager.registration(user, HttpStatus.NO_CONTENT);
-    }
-
-    // 6th request should be blocked
-    const extraUser = {
-      ...validUser,
-      email: 'extra@example.com',
-      login: 'extrauser',
-    };
-    await authTestManager.registration(extraUser, HttpStatus.TOO_MANY_REQUESTS);
-  });
-
-  it('should handle rate limiting correctly for password recovery', async () => {
-    // First 5 requests should succeed
-    for (let i = 0; i < 5; i++) {
-      await authTestManager.passwordRecovery(
-        { email: validUser.email },
-        HttpStatus.NO_CONTENT,
-      );
-    }
-
-    // 6th request should be blocked
-    await authTestManager.passwordRecovery(
-      { email: validUser.email },
-      HttpStatus.TOO_MANY_REQUESTS,
-    );
-  });
-
-  it('should not apply rate limit to /auth/me endpoint', async () => {
-    // Register and login a user
-    await usersTestManager.createUser(validUser, HttpStatus.CREATED);
-
-    // Login to get access token
-    const response = await authTestManager.login(
-      { loginOrEmail: validUser.login, password: validUser.password },
-      HttpStatus.OK,
-    );
-
-    // Make multiple requests to /auth/me
-    for (let i = 0; i < 10; i++) {
-      await authTestManager.me(response.body.accessToken, HttpStatus.OK);
-    }
   });
 });

@@ -11,7 +11,8 @@ export class AnswerViewDto {
   questionId: string;
 
   @ApiProperty({
-    description: 'Status indicating whether the answer was correct or incorrect',
+    description:
+      'Status indicating whether the answer was correct or incorrect',
     enum: AnswerStatus,
     example: AnswerStatus.Correct,
     required: true,
@@ -21,7 +22,7 @@ export class AnswerViewDto {
 
   @ApiProperty({
     description: 'ISO timestamp when the answer was submitted',
-    example: new Date().toISOString(),
+    example: '2025-05-03T08:27:14.203Z',
     type: Date,
     required: true,
   })
