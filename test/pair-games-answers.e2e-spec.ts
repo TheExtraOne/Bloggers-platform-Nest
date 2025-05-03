@@ -16,9 +16,36 @@ describe('Pair Games Answers (e2e)', () => {
   let questionsTestManager: QuestionsTestManager;
   let usersTestManager: UsersTestManager;
   let authTestManager: AuthTestManager;
-  let createdQuestions: PGQuestionViewDto[] = [];
+  let createdQuestions: PGQuestionViewDto[];
   let user1Token: string;
   let user2Token: string;
+  let user3Token: string;
+
+  // Helper function to create and login a user
+  const createAndLoginUser = async (userDetails: {
+    login: string;
+    password: string;
+    email: string;
+  }) => {
+    try {
+      await usersTestManager.createUser(
+        userDetails,
+        HttpStatus.CREATED,
+        'admin',
+        'qwerty',
+      );
+    } catch (error) {
+      // If user already exists, that's fine - proceed to login
+      if (error.response?.statusCode !== HttpStatus.BAD_REQUEST) {
+        throw error;
+      }
+    }
+    const loginResponse = await authTestManager.login({
+      loginOrEmail: userDetails.login,
+      password: userDetails.password,
+    });
+    return loginResponse.body.accessToken;
+  };
 
   beforeAll(async () => {
     const result = await new TestSettingsInitializer().init();
@@ -29,56 +56,37 @@ describe('Pair Games Answers (e2e)', () => {
     pairGamesTestManager = result.pairGamesTestManager;
   });
 
+  beforeEach(async () => {
+    await deleteAllData(app);
+
+    // Create test questions using bulk helper method
+    createdQuestions = await questionsTestManager.bulkCreateQuestions(5);
+
+    // Publish all questions
+    await Promise.all(
+      createdQuestions.map((question) =>
+        questionsTestManager.publishQuestion(question.id, true),
+      ),
+    );
+
+    // Create and login test users
+    user1Token = await createAndLoginUser(TEST_USERS.user1);
+    user2Token = await createAndLoginUser(TEST_USERS.user2);
+
+    // Create and start a game
+    await pairGamesTestManager.connectUser(user1Token);
+    await pairGamesTestManager.connectUser(user2Token);
+
+    // Verify game is active
+    const gameResponse =
+      await pairGamesTestManager.getMyCurrentPairGame(user1Token);
+    expect(gameResponse.statusCode).toBe(HttpStatus.OK);
+    expect(gameResponse.body.status).toBe(GameStatus.Active);
+  });
+
   afterAll(async () => {
     await deleteAllData(app);
     await app.close();
-  });
-
-  beforeEach(async () => {
-    // Delete all data
-    await deleteAllData(app);
-
-    // Create test questions
-    createdQuestions = [];
-    for (let i = 1; i <= 5; i++) {
-      const question = await questionsTestManager.createQuestion({
-        body: `Question ${i}`,
-        correctAnswers: [`Answer ${i}`],
-      });
-      createdQuestions.push(question);
-      await questionsTestManager.publishQuestion(question.id, true);
-    }
-
-    // Create test users with proper admin credentials
-    await usersTestManager.createUser(
-      TEST_USERS.user1,
-      HttpStatus.CREATED,
-      'admin',
-      'qwerty',
-    );
-    await usersTestManager.createUser(
-      TEST_USERS.user2,
-      HttpStatus.CREATED,
-      'admin',
-      'qwerty',
-    );
-
-    // Login users and store tokens
-    const loginResponse1 = await authTestManager.login({
-      loginOrEmail: TEST_USERS.user1.login,
-      password: TEST_USERS.user1.password,
-    });
-    user1Token = loginResponse1.body.accessToken;
-
-    const loginResponse2 = await authTestManager.login({
-      loginOrEmail: TEST_USERS.user2.login,
-      password: TEST_USERS.user2.password,
-    });
-    user2Token = loginResponse2.body.accessToken;
-
-    // Create and start a game for answer tests
-    await pairGamesTestManager.connectUser(user1Token);
-    await pairGamesTestManager.connectUser(user2Token);
   });
 
   describe('POST /pair-game-quiz/pairs/my-current/answers', () => {
@@ -91,25 +99,15 @@ describe('Pair Games Answers (e2e)', () => {
     });
 
     it('should return 403 if user is not in active game', async () => {
-      // Create a third user that's not in any game
-      await usersTestManager.createUser(
-        {
-          login: 'user3',
-          email: 'user3@test.com',
-          password: 'qwerty',
-        },
-        HttpStatus.CREATED,
-        'admin',
-        'qwerty',
-      );
-
-      const thirdLoginResponse = await authTestManager.login({
-        loginOrEmail: 'user3',
+      // Create and login a third user that's not in any game
+      user3Token = await createAndLoginUser({
+        login: 'user3',
+        email: 'user3@test.com',
         password: 'qwerty',
       });
 
       const response = await pairGamesTestManager.sendAnswer(
-        thirdLoginResponse.body.accessToken,
+        user3Token,
         'Answer 1',
       );
       expect(response.statusCode).toBe(HttpStatus.FORBIDDEN);
@@ -121,33 +119,23 @@ describe('Pair Games Answers (e2e)', () => {
     });
 
     it('should correctly process correct answer', async () => {
-      // Get current game to verify questions
       const gameResponse =
         await pairGamesTestManager.getMyCurrentPairGame(user1Token);
       expect(gameResponse.statusCode).toBe(HttpStatus.OK);
       expect(gameResponse.body.status).toBe(GameStatus.Active);
 
-      // Get the current question from game questions
-      const gameQuestions = gameResponse.body.questions;
-      expect(gameQuestions).toBeDefined();
-      expect(gameQuestions?.length).toBeGreaterThan(0);
+      const questions = gameResponse.body.questions!;
+      expect(questions.length).toBeGreaterThan(0);
+      const firstQuestion = questions[0];
 
-      const firstQuestion = gameQuestions![0];
-      expect(firstQuestion).toBeDefined();
-
-      // Find the matching created question with correct answers
       const currentQuestion = createdQuestions.find(
         (q) => q.id === firstQuestion.id,
       );
-      if (!currentQuestion) {
-        throw new Error(`Could not find question with ID ${firstQuestion.id}`);
-      }
+      expect(currentQuestion).toBeDefined();
 
-      // Send the first correct answer
-      const correctAnswer = currentQuestion.correctAnswers[0];
       const response = await pairGamesTestManager.sendAnswer(
         user1Token,
-        correctAnswer,
+        currentQuestion!.correctAnswers[0],
       );
 
       expect(response.statusCode).toBe(HttpStatus.OK);
@@ -155,19 +143,10 @@ describe('Pair Games Answers (e2e)', () => {
     });
 
     it('should correctly process incorrect answer', async () => {
-      // Get current game to verify questions
       const gameResponse =
         await pairGamesTestManager.getMyCurrentPairGame(user1Token);
       expect(gameResponse.statusCode).toBe(HttpStatus.OK);
       expect(gameResponse.body.status).toBe(GameStatus.Active);
-
-      // Get the current question
-      const gameQuestions = gameResponse.body.questions;
-      expect(gameQuestions).toBeDefined();
-      expect(gameQuestions?.length).toBeGreaterThan(0);
-
-      const firstQuestion = gameQuestions![0];
-      expect(firstQuestion).toBeDefined();
 
       const response = await pairGamesTestManager.sendAnswer(
         user1Token,
@@ -179,131 +158,81 @@ describe('Pair Games Answers (e2e)', () => {
     });
 
     it('should finish game when both players answer all questions', async () => {
-      // Get current game and questions
+      // Get initial game state
       const gameResponse =
         await pairGamesTestManager.getMyCurrentPairGame(user1Token);
+      const { id: gameId, questions: gameQuestions } = gameResponse.body;
+
       expect(gameResponse.statusCode).toBe(HttpStatus.OK);
       expect(gameResponse.body.status).toBe(GameStatus.Active);
-
-      const gameId = gameResponse.body.id;
-      const gameQuestions = gameResponse.body.questions;
-      expect(gameQuestions).toBeDefined();
       expect(gameQuestions?.length).toBe(5);
 
-      // First player answers all questions
-      for (const question of gameQuestions!) {
-        const currentQuestion = createdQuestions.find(
-          (q) => q.id === question.id,
-        );
-        if (!currentQuestion) {
-          throw new Error(`Could not find question with ID ${question.id}`);
+      // Helper function to answer questions
+      const answerAllQuestions = async (token: string) => {
+        for (const question of gameQuestions!) {
+          const currentQuestion = createdQuestions.find(
+            (q) => q.id === question.id,
+          );
+          expect(currentQuestion).toBeDefined();
+
+          const response = await pairGamesTestManager.sendAnswer(
+            token,
+            currentQuestion!.correctAnswers[0],
+          );
+          expect(response.statusCode).toBe(HttpStatus.OK);
         }
+      };
 
-        const response = await pairGamesTestManager.sendAnswer(
-          user1Token,
-          currentQuestion.correctAnswers[0],
-        );
-        expect(response.statusCode).toBe(HttpStatus.OK);
-      }
+      // Players answer questions sequentially
+      await answerAllQuestions(user1Token);
+      await answerAllQuestions(user2Token);
 
-      // Second player answers all but last question
-      for (let i = 0; i < gameQuestions!.length - 1; i++) {
-        const question = gameQuestions![i];
-        const currentQuestion = createdQuestions.find(
-          (q) => q.id === question.id,
-        );
-        if (!currentQuestion) {
-          throw new Error(`Could not find question with ID ${question.id}`);
-        }
-
-        const response = await pairGamesTestManager.sendAnswer(
-          user2Token,
-          currentQuestion.correctAnswers[0],
-        );
-        expect(response.statusCode).toBe(HttpStatus.OK);
-      }
-
-      // Verify game is still active
-      let currentGameResponse =
-        await pairGamesTestManager.getMyCurrentPairGame(user1Token);
-      expect(currentGameResponse.statusCode).toBe(HttpStatus.OK);
-      expect(currentGameResponse.body.status).toBe(GameStatus.Active);
-
-      // Second player answers last question
-      const lastQuestion = gameQuestions![gameQuestions!.length - 1];
-      const lastCreatedQuestion = createdQuestions.find(
-        (q) => q.id === lastQuestion.id,
-      );
-      if (!lastCreatedQuestion) {
-        throw new Error(`Could not find question with ID ${lastQuestion.id}`);
-      }
-
-      const response = await pairGamesTestManager.sendAnswer(
-        user2Token,
-        lastCreatedQuestion.correctAnswers[0],
-      );
-      expect(response.statusCode).toBe(HttpStatus.OK);
-
-      // Verify game is finished - use getPairGameById since the game is no longer "current"
-      currentGameResponse = await pairGamesTestManager.getPairGameById(
+      // Verify game is finished
+      const finalGameResponse = await pairGamesTestManager.getPairGameById(
         user1Token,
         gameId,
       );
-      expect(currentGameResponse.statusCode).toBe(HttpStatus.OK);
-      expect(currentGameResponse.body.status).toBe(GameStatus.Finished);
+      expect(finalGameResponse.statusCode).toBe(HttpStatus.OK);
+      expect(finalGameResponse.body.status).toBe(GameStatus.Finished);
     });
 
     it('should return 403 when trying to answer after game is finished', async () => {
-      // Get current game and questions
+      // Get initial game state
       const gameResponse =
         await pairGamesTestManager.getMyCurrentPairGame(user1Token);
+      const { id: gameId, questions: gameQuestions } = gameResponse.body;
+
       expect(gameResponse.statusCode).toBe(HttpStatus.OK);
       expect(gameResponse.body.status).toBe(GameStatus.Active);
-
-      const gameId = gameResponse.body.id;
-      const gameQuestions = gameResponse.body.questions;
-      expect(gameQuestions).toBeDefined();
       expect(gameQuestions?.length).toBe(5);
 
-      // First player answers all questions
-      for (const question of gameQuestions!) {
-        const currentQuestion = createdQuestions.find(
-          (q) => q.id === question.id,
-        );
-        if (!currentQuestion) {
-          throw new Error(`Could not find question with ID ${question.id}`);
+      // Helper function to answer questions
+      const answerAllQuestions = async (token: string) => {
+        for (const question of gameQuestions!) {
+          const currentQuestion = createdQuestions.find(
+            (q) => q.id === question.id,
+          );
+          expect(currentQuestion).toBeDefined();
+
+          const response = await pairGamesTestManager.sendAnswer(
+            token,
+            currentQuestion!.correctAnswers[0],
+          );
+          expect(response.statusCode).toBe(HttpStatus.OK);
         }
+      };
 
-        const response = await pairGamesTestManager.sendAnswer(
-          user1Token,
-          currentQuestion.correctAnswers[0],
-        );
-        expect(response.statusCode).toBe(HttpStatus.OK);
-      }
+      // Players answer questions sequentially
+      await answerAllQuestions(user1Token);
+      await answerAllQuestions(user2Token);
 
-      // Second player answers all questions
-      for (const question of gameQuestions!) {
-        const currentQuestion = createdQuestions.find(
-          (q) => q.id === question.id,
-        );
-        if (!currentQuestion) {
-          throw new Error(`Could not find question with ID ${question.id}`);
-        }
-
-        const response = await pairGamesTestManager.sendAnswer(
-          user2Token,
-          currentQuestion.correctAnswers[0],
-        );
-        expect(response.statusCode).toBe(HttpStatus.OK);
-      }
-
-      // Verify game is finished - use getPairGameById since the game is no longer "current"
-      const currentGameResponse = await pairGamesTestManager.getPairGameById(
+      // Verify game is finished
+      const finalGameResponse = await pairGamesTestManager.getPairGameById(
         user1Token,
         gameId,
       );
-      expect(currentGameResponse.statusCode).toBe(HttpStatus.OK);
-      expect(currentGameResponse.body.status).toBe(GameStatus.Finished);
+      expect(finalGameResponse.statusCode).toBe(HttpStatus.OK);
+      expect(finalGameResponse.body.status).toBe(GameStatus.Finished);
 
       // Try to answer again
       const response = await pairGamesTestManager.sendAnswer(

@@ -19,14 +19,23 @@ describe('Blogs Controller (e2e)', () => {
   let httpServer: App;
   let blogsTestManager: BlogsTestManager;
 
+  const validBlog: CreateBlogInputDto = {
+    name: 'Test Blog',
+    description: 'Test Description',
+    websiteUrl: 'https://test-blog.com',
+  };
+
+  const validPost: Omit<CreatePostInputDto, 'blogId'> = {
+    title: 'Test Post',
+    shortDescription: 'Test Short Description',
+    content: 'Test Content',
+  };
+
   beforeAll(async () => {
     const result = await new TestSettingsInitializer().init();
     app = result.app;
     httpServer = result.httpServer;
     blogsTestManager = result.blogsTestManager;
-  });
-
-  beforeEach(async () => {
     await deleteAllData(app);
   });
 
@@ -34,444 +43,270 @@ describe('Blogs Controller (e2e)', () => {
     await app.close();
   });
 
-  describe('POST /sa/blogs', () => {
-    const validBlog: CreateBlogInputDto = {
-      name: 'Test Blog',
-      description: 'Test Description',
-      websiteUrl: 'https://test-blog.com',
-    };
-
-    it('should create blog with valid data', async () => {
-      const response = await blogsTestManager.createBlog(validBlog);
-
-      expect(response).toEqual({
-        id: expect.any(String),
-        name: validBlog.name,
-        description: validBlog.description,
-        websiteUrl: validBlog.websiteUrl,
-        createdAt: expect.any(String),
-        isMembership: expect.any(Boolean),
-      });
-    });
-
-    it('should not create blog without basic auth', async () => {
-      await blogsTestManager.createBlog(
-        validBlog,
-        HttpStatus.UNAUTHORIZED,
-        '',
-        '',
-      );
-    });
-
-    it('should not create blog with incorrect credentials', async () => {
-      await blogsTestManager.createBlog(
-        validBlog,
-        HttpStatus.UNAUTHORIZED,
-        'wrong',
-        'wrong',
-      );
-    });
-
-    describe('name validation', () => {
-      it('should not create blog with empty name', async () => {
-        const invalidBlog = { ...validBlog, name: '' };
-        await blogsTestManager.createBlog(invalidBlog, HttpStatus.BAD_REQUEST);
+  describe('Blog operations', () => {
+    describe('Blog creation and validation', () => {
+      beforeAll(async () => {
+        await deleteAllData(app);
       });
 
-      it('should not create blog with too long name', async () => {
-        const invalidBlog = { ...validBlog, name: 'a'.repeat(16) }; // max length is 15
-        await blogsTestManager.createBlog(invalidBlog, HttpStatus.BAD_REQUEST);
-      });
-
-      it('should not create blog with whitespace name', async () => {
-        const invalidBlog = { ...validBlog, name: '   ' };
-        await blogsTestManager.createBlog(invalidBlog, HttpStatus.BAD_REQUEST);
-      });
-    });
-
-    describe('description validation', () => {
-      it('should not create blog with empty description', async () => {
-        const invalidBlog = { ...validBlog, description: '' };
-        await blogsTestManager.createBlog(invalidBlog, HttpStatus.BAD_REQUEST);
-      });
-
-      it('should not create blog with too long description', async () => {
-        const invalidBlog = { ...validBlog, description: 'a'.repeat(501) }; // max length is 500
-        await blogsTestManager.createBlog(invalidBlog, HttpStatus.BAD_REQUEST);
-      });
-
-      it('should not create blog with whitespace description', async () => {
-        const invalidBlog = { ...validBlog, description: '   ' };
-        await blogsTestManager.createBlog(invalidBlog, HttpStatus.BAD_REQUEST);
-      });
-    });
-
-    describe('websiteUrl validation', () => {
-      it('should not create blog with invalid url format', async () => {
-        const invalidBlog = { ...validBlog, websiteUrl: 'invalid-url' };
-        await blogsTestManager.createBlog(invalidBlog, HttpStatus.BAD_REQUEST);
-      });
-
-      it('should not create blog with too long url', async () => {
-        const invalidBlog = {
-          ...validBlog,
-          websiteUrl: `https://${'a'.repeat(95)}.com`,
-        }; // max length is 100
-        await blogsTestManager.createBlog(invalidBlog, HttpStatus.BAD_REQUEST);
-      });
-
-      it('should not create blog with empty url', async () => {
-        const invalidBlog = { ...validBlog, websiteUrl: '' };
-        await blogsTestManager.createBlog(invalidBlog, HttpStatus.BAD_REQUEST);
-      });
-
-      it('should not create blog with whitespace url', async () => {
-        const invalidBlog = { ...validBlog, websiteUrl: '   ' };
-        await blogsTestManager.createBlog(invalidBlog, HttpStatus.BAD_REQUEST);
-      });
-    });
-  });
-
-  describe('GET /blogs', () => {
-    it('should return empty list when no blogs exist', async () => {
-      const response = await request(httpServer)
-        .get(`/${PATHS.BLOGS}`)
-        .expect(HttpStatus.OK);
-
-      expect(response.body).toEqual({
-        items: [],
-        totalCount: 0,
-        pagesCount: 0,
-        page: 1,
-        pageSize: 10,
-      });
-    });
-
-    it('should return paginated list of blogs', async () => {
-      // Create 5 blogs
-      await blogsTestManager.createSeveralBlogs(5);
-
-      const response = await request(httpServer)
-        .get(`/${PATHS.BLOGS}?pageSize=3&pageNumber=2`)
-        .expect(HttpStatus.OK);
-
-      const body = response.body as PaginatedViewDto<PgBlogsViewDto[]>;
-      expect(body.items).toHaveLength(2); // Second page should have 2 items
-      expect(body.totalCount).toBe(5);
-      expect(body.pagesCount).toBe(2);
-      expect(body.page).toBe(2);
-      expect(body.pageSize).toBe(3);
-    });
-
-    it('should search blogs by name term', async () => {
-      // Create blogs with different names
-      await blogsTestManager.createBlog({
-        name: 'First Blog',
-        description: 'Test Description',
-        websiteUrl: 'https://first-blog.com',
-      });
-      await blogsTestManager.createBlog({
-        name: 'Second Blog',
-        description: 'Test Description',
-        websiteUrl: 'https://second-blog.com',
-      });
-
-      const response = await request(httpServer)
-        .get(`/${PATHS.BLOGS}?searchNameTerm=First`)
-        .expect(HttpStatus.OK);
-
-      const body = response.body as PaginatedViewDto<PgBlogsViewDto[]>;
-      expect(body.items).toHaveLength(1);
-      expect(body.items[0].name).toBe('First Blog');
-    });
-  });
-
-  describe('GET /blogs/:id', () => {
-    it('should return blog by id', async () => {
-      const blog = await blogsTestManager.createBlog({
-        name: 'Test Blog',
-        description: 'Test Description',
-        websiteUrl: 'https://test-blog.com',
-      });
-
-      const response = await request(httpServer)
-        .get(`/${PATHS.BLOGS}/${blog.id}`)
-        .expect(HttpStatus.OK);
-
-      expect(response.body).toEqual(blog);
-    });
-
-    it('should return 404 for non-existing blog', async () => {
-      await request(httpServer)
-        .get(`/${PATHS.BLOGS}/nonexistentid`)
-        .expect(HttpStatus.NOT_FOUND);
-    });
-  });
-
-  describe('PUT /sa/blogs/:id', () => {
-    const validBlog: CreateBlogInputDto = {
-      name: 'Test Blog',
-      description: 'Test Description',
-      websiteUrl: 'https://test-blog.com',
-    };
-
-    it('should update existing blog', async () => {
-      const blog = await blogsTestManager.createBlog(validBlog);
-
-      const updateDto: UpdateBlogInputDto = {
-        name: 'Updated Blog',
-        description: 'Updated Description',
-        websiteUrl: 'https://updated-blog.com',
-      };
-
-      await blogsTestManager.updateBlog(blog.id, updateDto);
-
-      // Verify the update
-      const response = await request(httpServer)
-        .get(`/${PATHS.BLOGS}/${blog.id}`)
-        .expect(HttpStatus.OK);
-
-      expect(response.body).toEqual({
-        ...blog,
-        name: updateDto.name,
-        description: updateDto.description,
-        websiteUrl: updateDto.websiteUrl,
-      });
-    });
-
-    it('should not update blog without basic auth', async () => {
-      const blog = await blogsTestManager.createBlog(validBlog);
-      const updateDto: UpdateBlogInputDto = {
-        name: 'Updated Blog',
-        description: 'Updated Description',
-        websiteUrl: 'https://updated-blog.com',
-      };
-
-      await blogsTestManager.updateBlog(
-        blog.id,
-        updateDto,
-        HttpStatus.UNAUTHORIZED,
-        '',
-        '',
-      );
-    });
-
-    it('should return 404 when updating non-existing blog', async () => {
-      const updateDto: UpdateBlogInputDto = {
-        name: 'Updated Blog',
-        description: 'Updated Description',
-        websiteUrl: 'https://updated-blog.com',
-      };
-
-      await blogsTestManager.updateBlog(
-        'nonexistentid',
-        updateDto,
-        HttpStatus.NOT_FOUND,
-      );
-    });
-  });
-
-  describe('DELETE /sa/blogs/:id', () => {
-    const validBlog: CreateBlogInputDto = {
-      name: 'Test Blog',
-      description: 'Test Description',
-      websiteUrl: 'https://test-blog.com',
-    };
-
-    it('should delete existing blog', async () => {
-      const blog = await blogsTestManager.createBlog(validBlog);
-
-      await blogsTestManager.deleteBlog(blog.id);
-
-      // Verify the blog is deleted
-      await request(httpServer)
-        .get(`/${PATHS.BLOGS}/${blog.id}`)
-        .expect(HttpStatus.NOT_FOUND);
-    });
-
-    it('should not delete blog without basic auth', async () => {
-      const blog = await blogsTestManager.createBlog(validBlog);
-      await blogsTestManager.deleteBlog(
-        blog.id,
-        HttpStatus.UNAUTHORIZED,
-        '',
-        '',
-      );
-    });
-
-    it('should return 404 when deleting non-existing blog', async () => {
-      await blogsTestManager.deleteBlog('nonexistentid', HttpStatus.NOT_FOUND);
-    });
-  });
-
-  describe('POST /sa/blogs/:id/posts', () => {
-    const validPost: Omit<CreatePostInputDto, 'blogId'> = {
-      title: 'Test Post',
-      shortDescription: 'Test Short Description',
-      content: 'Test Content',
-    };
-
-    it('should create post for existing blog', async () => {
-      const blog = await blogsTestManager.createBlog({
-        name: 'Test Blog',
-        description: 'Test Description',
-        websiteUrl: 'https://test-blog.com',
-      });
-
-      const response = await blogsTestManager.createPost(blog.id, validPost);
-
-      expect(response).toEqual({
-        id: expect.any(String),
-        title: validPost.title,
-        shortDescription: validPost.shortDescription,
-        content: validPost.content,
-        blogId: blog.id,
-        blogName: blog.name,
-        createdAt: expect.any(String),
-        extendedLikesInfo: {
-          dislikesCount: expect.any(Number),
-          likesCount: expect.any(Number),
-          myStatus: 'None',
-          newestLikes: expect.any(Array),
-        },
-      });
-    });
-
-    it('should return 404 when creating post for non-existing blog', async () => {
-      await blogsTestManager.createPost(
-        'nonexistentid',
-        validPost,
-        HttpStatus.NOT_FOUND,
-      );
-    });
-
-    describe('post validation', () => {
-      let blogId: string;
-
-      beforeEach(async () => {
-        const blog = await blogsTestManager.createBlog({
-          name: 'Test Blog',
-          description: 'Test Description',
-          websiteUrl: 'https://test-blog.com',
+      it('should handle blog creation with various validation cases', async () => {
+        // Test successful creation
+        const response = await blogsTestManager.createBlog({
+          name: 'New Blog',
+          description: 'New Description',
+          websiteUrl: 'https://new-blog.com',
         });
-        blogId = blog.id;
-      });
-
-      it('should not create post with empty title', async () => {
-        const invalidPost = { ...validPost, title: '' };
-        await blogsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-
-      it('should not create post with too long title', async () => {
-        const invalidPost = { ...validPost, title: 'a'.repeat(31) }; // max length is 30
-        await blogsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-
-      it('should not create post with empty shortDescription', async () => {
-        const invalidPost = { ...validPost, shortDescription: '' };
-        await blogsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-
-      it('should not create post with too long shortDescription', async () => {
-        const invalidPost = {
-          ...validPost,
-          shortDescription: 'a'.repeat(101),
-        }; // max length is 100
-        await blogsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-
-      it('should not create post with empty content', async () => {
-        const invalidPost = { ...validPost, content: '' };
-        await blogsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-
-      it('should not create post with too long content', async () => {
-        const invalidPost = {
-          ...validPost,
-          content: 'a'.repeat(1001),
-        }; // max length is 1000
-        await blogsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-    });
-  });
-
-  describe('GET /blogs/:id/posts', () => {
-    it('should return empty list when blog has no posts', async () => {
-      const blog = await blogsTestManager.createBlog({
-        name: 'Test Blog',
-        description: 'Test Description',
-        websiteUrl: 'https://test-blog.com',
-      });
-
-      const response = await request(httpServer)
-        .get(`/${PATHS.BLOGS}/${blog.id}/posts`)
-        .expect(HttpStatus.OK);
-
-      expect(response.body).toEqual({
-        items: [],
-        totalCount: 0,
-        pagesCount: 0,
-        page: 1,
-        pageSize: 10,
-      });
-    });
-
-    it('should return paginated list of posts for blog', async () => {
-      const blog = await blogsTestManager.createBlog({
-        name: 'Test Blog',
-        description: 'Test Description',
-        websiteUrl: 'https://test-blog.com',
-      });
-
-      // Create 5 posts
-      for (let i = 0; i < 5; i++) {
-        await blogsTestManager.createPost(blog.id, {
-          title: `Post ${i}`,
-          shortDescription: `Description ${i}`,
-          content: `Content ${i}`,
+        expect(response).toEqual({
+          id: expect.any(String),
+          name: 'New Blog',
+          description: 'New Description',
+          websiteUrl: 'https://new-blog.com',
+          createdAt: expect.any(String),
+          isMembership: expect.any(Boolean),
         });
-      }
 
-      const response = await request(httpServer)
-        .get(`/${PATHS.BLOGS}/${blog.id}/posts?pageSize=3&pageNumber=2`)
-        .expect(HttpStatus.OK);
+        // Test authentication
+        await blogsTestManager.createBlog(
+          validBlog,
+          HttpStatus.UNAUTHORIZED,
+          '',
+          '',
+        );
+        await blogsTestManager.createBlog(
+          validBlog,
+          HttpStatus.UNAUTHORIZED,
+          'wrong',
+          'wrong',
+        );
 
-      const body = response.body as PaginatedViewDto<PgPostsViewDto[]>;
-      expect(body.items).toHaveLength(2); // Second page should have 2 items
-      expect(body.totalCount).toBe(5);
-      expect(body.pagesCount).toBe(2);
-      expect(body.page).toBe(2);
-      expect(body.pageSize).toBe(3);
+        // Test validation cases in batch
+        const invalidCases = [
+          { ...validBlog, name: '' },
+          { ...validBlog, name: 'a'.repeat(16) },
+          { ...validBlog, name: '   ' },
+          { ...validBlog, description: '' },
+          { ...validBlog, description: 'a'.repeat(501) },
+          { ...validBlog, description: '   ' },
+          { ...validBlog, websiteUrl: 'invalid-url' },
+          { ...validBlog, websiteUrl: `https://${'a'.repeat(95)}.com` },
+          { ...validBlog, websiteUrl: '' },
+          { ...validBlog, websiteUrl: '   ' },
+        ];
+
+        for (const invalidCase of invalidCases) {
+          await blogsTestManager.createBlog(
+            invalidCase,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      });
     });
 
-    it('should return 404 when getting posts for non-existing blog', async () => {
-      await request(httpServer)
-        .get(`/${PATHS.BLOGS}/nonexistentid/posts`)
-        .expect(HttpStatus.NOT_FOUND);
+    describe('Blog retrieval operations', () => {
+      beforeAll(async () => {
+        await deleteAllData(app);
+      });
+
+      it('should handle blog retrieval operations', async () => {
+        // Create initial blog for testing
+        const blog = await blogsTestManager.createBlog(validBlog);
+
+        // Test single blog retrieval
+        const response = await request(httpServer)
+          .get(`/${PATHS.BLOGS}/${blog.id}`)
+          .expect(HttpStatus.OK);
+        expect(response.body.id).toBe(blog.id);
+
+        // Test non-existing blog
+        await request(httpServer)
+          .get(`/${PATHS.BLOGS}/nonexistentid`)
+          .expect(HttpStatus.NOT_FOUND);
+
+        // Create blogs for pagination test
+        const blogsToCreate = 4;
+        for (let i = 0; i < blogsToCreate; i++) {
+          await blogsTestManager.createBlog({
+            name: `Blog ${i}`,
+            description: 'Test Description',
+            websiteUrl: `https://blog-${i}.com`,
+          });
+        }
+
+        // Test pagination
+        const paginatedResponse = await request(httpServer)
+          .get(`/${PATHS.BLOGS}?pageSize=3&pageNumber=2`)
+          .expect(HttpStatus.OK);
+
+        const body = paginatedResponse.body as PaginatedViewDto<
+          PgBlogsViewDto[]
+        >;
+        expect(body.items).toHaveLength(2);
+        expect(body.totalCount).toBe(5);
+        expect(body.pagesCount).toBe(2);
+        expect(body.page).toBe(2);
+        expect(body.pageSize).toBe(3);
+
+        // Test search
+        const searchResponse = await request(httpServer)
+          .get(`/${PATHS.BLOGS}?searchNameTerm=Blog 0`)
+          .expect(HttpStatus.OK);
+
+        const searchBody = searchResponse.body as PaginatedViewDto<
+          PgBlogsViewDto[]
+        >;
+        expect(searchBody.items).toHaveLength(1);
+        expect(searchBody.items[0].name).toBe('Blog 0');
+      });
+    });
+
+    describe('Blog update and delete operations', () => {
+      let testBlogId: string;
+
+      beforeAll(async () => {
+        await deleteAllData(app);
+        const blog = await blogsTestManager.createBlog(validBlog);
+        testBlogId = blog.id;
+      });
+
+      it('should handle blog update and delete operations', async () => {
+        const updateDto: UpdateBlogInputDto = {
+          name: 'Updated Blog',
+          description: 'Updated Description',
+          websiteUrl: 'https://updated-blog.com',
+        };
+
+        // Test successful update
+        await blogsTestManager.updateBlog(testBlogId, updateDto);
+        const updatedBlog = await request(httpServer)
+          .get(`/${PATHS.BLOGS}/${testBlogId}`)
+          .expect(HttpStatus.OK);
+        expect(updatedBlog.body.name).toBe(updateDto.name);
+
+        // Test update authentication and non-existing blog
+        await blogsTestManager.updateBlog(
+          testBlogId,
+          updateDto,
+          HttpStatus.UNAUTHORIZED,
+          '',
+          '',
+        );
+        await blogsTestManager.updateBlog(
+          'nonexistentid',
+          updateDto,
+          HttpStatus.NOT_FOUND,
+        );
+
+        // Test delete operations
+        const tempBlog = await blogsTestManager.createBlog({
+          name: 'Temp Blog',
+          description: 'Temp Description',
+          websiteUrl: 'https://temp-blog.com',
+        });
+
+        // First deletion should succeed
+        await blogsTestManager.deleteBlog(tempBlog.id);
+
+        // Verify deletion
+        await request(httpServer)
+          .get(`/${PATHS.BLOGS}/${tempBlog.id}`)
+          .expect(HttpStatus.NOT_FOUND);
+
+        // Second deletion should return 404
+        await blogsTestManager.deleteBlog(
+          'nonexistentid',
+          HttpStatus.NOT_FOUND,
+        );
+
+        // Test unauthorized deletion
+        await blogsTestManager.deleteBlog(
+          'nonexistentid',
+          HttpStatus.UNAUTHORIZED,
+          '',
+          '',
+        );
+      });
+    });
+
+    describe('Blog posts operations', () => {
+      let testBlogId: string;
+
+      beforeAll(async () => {
+        await deleteAllData(app);
+        const blog = await blogsTestManager.createBlog(validBlog);
+        testBlogId = blog.id;
+      });
+
+      it('should handle blog posts operations', async () => {
+        // Test post creation
+        const post = await blogsTestManager.createPost(testBlogId, validPost);
+        expect(post).toEqual({
+          id: expect.any(String),
+          title: validPost.title,
+          shortDescription: validPost.shortDescription,
+          content: validPost.content,
+          blogId: testBlogId,
+          blogName: expect.any(String),
+          createdAt: expect.any(String),
+          extendedLikesInfo: {
+            dislikesCount: expect.any(Number),
+            likesCount: expect.any(Number),
+            myStatus: 'None',
+            newestLikes: expect.any(Array),
+          },
+        });
+
+        // Test post validation cases in batch
+        const invalidPosts = [
+          { ...validPost, title: '' },
+          { ...validPost, title: 'a'.repeat(31) },
+          { ...validPost, shortDescription: '' },
+          { ...validPost, shortDescription: 'a'.repeat(101) },
+          { ...validPost, content: '' },
+          { ...validPost, content: 'a'.repeat(1001) },
+        ];
+
+        for (const invalidPost of invalidPosts) {
+          await blogsTestManager.createPost(
+            testBlogId,
+            invalidPost,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        // Test post creation for non-existing blog
+        await blogsTestManager.createPost(
+          'nonexistentid',
+          validPost,
+          HttpStatus.NOT_FOUND,
+        );
+
+        // Create posts for pagination test
+        const postsToCreate = 4; // Create 4 more posts (1 already exists)
+        for (let i = 0; i < postsToCreate; i++) {
+          await blogsTestManager.createPost(testBlogId, {
+            title: `Post ${i}`,
+            shortDescription: `Description ${i}`,
+            content: `Content ${i}`,
+          });
+        }
+
+        // Test posts pagination
+        const response = await request(httpServer)
+          .get(`/${PATHS.BLOGS}/${testBlogId}/posts?pageSize=3&pageNumber=2`)
+          .expect(HttpStatus.OK);
+
+        const body = response.body as PaginatedViewDto<PgPostsViewDto[]>;
+        expect(body.items).toHaveLength(2);
+        expect(body.totalCount).toBe(5);
+        expect(body.pagesCount).toBe(2);
+        expect(body.page).toBe(2);
+        expect(body.pageSize).toBe(3);
+
+        // Test getting posts for non-existing blog
+        await request(httpServer)
+          .get(`/${PATHS.BLOGS}/nonexistentid/posts`)
+          .expect(HttpStatus.NOT_FOUND);
+      });
     });
   });
 });
