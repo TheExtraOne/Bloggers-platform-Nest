@@ -27,18 +27,19 @@ describe('Posts Controller (e2e)', () => {
     httpServer = result.httpServer;
     postsTestManager = result.postsTestManager;
     blogsTestManager = result.blogsTestManager;
-  });
 
-  beforeEach(async () => {
+    // Clean database once before all tests
     await deleteAllData(app);
-    // Create a blog for testing posts
+
+    // Create a single blog to be used across all tests
     const blog = await blogsTestManager.createBlog({
       name: 'Test Blog',
       description: 'Test Description',
       websiteUrl: 'https://test-blog.com',
     });
     blogId = blog.id;
-    // Initialize validPost with the new blogId
+
+    // Initialize validPost with the blogId
     validPost = {
       title: 'Test Post',
       shortDescription: 'Test Short Description',
@@ -47,135 +48,126 @@ describe('Posts Controller (e2e)', () => {
     };
   });
 
+  // Clean up posts before each mutation test
+  beforeEach(async () => {
+    // Get the current test title
+    const testTitle = expect.getState().currentTestName;
+
+    // Only clean data for mutation tests (POST, PUT, DELETE)
+    if (
+      testTitle?.includes('POST') ||
+      testTitle?.includes('PUT') ||
+      testTitle?.includes('DELETE')
+    ) {
+      await deleteAllData(app);
+      // Recreate the blog since it was deleted
+      const blog = await blogsTestManager.createBlog({
+        name: 'Test Blog',
+        description: 'Test Description',
+        websiteUrl: 'https://test-blog.com',
+      });
+      blogId = blog.id;
+      validPost.blogId = blog.id;
+    }
+  });
+
   afterAll(async () => {
     await app.close();
   });
 
   describe('POST /sa/blogs/:blogId/posts', () => {
-    it('should create post with valid data', async () => {
-      const response = await postsTestManager.createPost(blogId, validPost);
+    describe('successful creation', () => {
+      it('should create post with valid data', async () => {
+        const response = await postsTestManager.createPost(blogId, validPost);
 
-      expect(response).toEqual({
-        id: expect.any(String),
-        title: validPost.title,
-        shortDescription: validPost.shortDescription,
-        content: validPost.content,
-        blogId: validPost.blogId,
-        blogName: expect.any(String),
-        createdAt: expect.any(String),
-        extendedLikesInfo: {
-          dislikesCount: expect.any(Number),
-          likesCount: expect.any(Number),
-          myStatus: 'None',
-          newestLikes: expect.any(Array),
+        expect(response).toEqual({
+          id: expect.any(String),
+          title: validPost.title,
+          shortDescription: validPost.shortDescription,
+          content: validPost.content,
+          blogId: validPost.blogId,
+          blogName: expect.any(String),
+          createdAt: expect.any(String),
+          extendedLikesInfo: {
+            dislikesCount: expect.any(Number),
+            likesCount: expect.any(Number),
+            myStatus: 'None',
+            newestLikes: expect.any(Array),
+          },
+        });
+      });
+    });
+
+    describe('authentication checks', () => {
+      const authTests = [
+        {
+          name: 'without basic auth',
+          login: '',
+          password: '',
         },
-      });
-    });
+        {
+          name: 'with incorrect credentials',
+          login: 'wrong',
+          password: 'wrong',
+        },
+      ];
 
-    it('should not create post without basic auth', async () => {
-      await postsTestManager.createPost(
-        blogId,
-        validPost,
-        HttpStatus.UNAUTHORIZED,
-        '',
-        '',
+      test.each(authTests)(
+        'should not create post $name',
+        async ({ login, password }) => {
+          await postsTestManager.createPost(
+            blogId,
+            validPost,
+            HttpStatus.UNAUTHORIZED,
+            login,
+            password,
+          );
+        },
       );
     });
 
-    it('should not create post with incorrect credentials', async () => {
-      await postsTestManager.createPost(
-        blogId,
-        validPost,
-        HttpStatus.UNAUTHORIZED,
-        'wrong',
-        'wrong',
-      );
-    });
+    describe('validation checks', () => {
+      const validationTests = [
+        {
+          field: 'title',
+          cases: [
+            { value: '', description: 'empty' },
+            { value: 'a'.repeat(31), description: 'too long' },
+            { value: '   ', description: 'whitespace' },
+          ],
+        },
+        {
+          field: 'shortDescription',
+          cases: [
+            { value: '', description: 'empty' },
+            { value: 'a'.repeat(101), description: 'too long' },
+            { value: '   ', description: 'whitespace' },
+          ],
+        },
+        {
+          field: 'content',
+          cases: [
+            { value: '', description: 'empty' },
+            { value: 'a'.repeat(1001), description: 'too long' },
+            { value: '   ', description: 'whitespace' },
+          ],
+        },
+      ];
 
-    describe('title validation', () => {
-      it('should not create post with empty title', async () => {
-        const invalidPost = { ...validPost, title: '' };
-        await postsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-
-      it('should not create post with too long title', async () => {
-        const invalidPost = { ...validPost, title: 'a'.repeat(31) }; // max length is 30
-        await postsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-
-      it('should not create post with whitespace title', async () => {
-        const invalidPost = { ...validPost, title: '   ' };
-        await postsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-    });
-
-    describe('shortDescription validation', () => {
-      it('should not create post with empty shortDescription', async () => {
-        const invalidPost = { ...validPost, shortDescription: '' };
-        await postsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-
-      it('should not create post with too long shortDescription', async () => {
-        const invalidPost = { ...validPost, shortDescription: 'a'.repeat(101) }; // max length is 100
-        await postsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-
-      it('should not create post with whitespace shortDescription', async () => {
-        const invalidPost = { ...validPost, shortDescription: '   ' };
-        await postsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-    });
-
-    describe('content validation', () => {
-      it('should not create post with empty content', async () => {
-        const invalidPost = { ...validPost, content: '' };
-        await postsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-
-      it('should not create post with too long content', async () => {
-        const invalidPost = { ...validPost, content: 'a'.repeat(1001) }; // max length is 1000
-        await postsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
-      });
-
-      it('should not create post with whitespace content', async () => {
-        const invalidPost = { ...validPost, content: '   ' };
-        await postsTestManager.createPost(
-          blogId,
-          invalidPost,
-          HttpStatus.BAD_REQUEST,
-        );
+      validationTests.forEach(({ field, cases }) => {
+        describe(`${field} validation`, () => {
+          test.each(cases)(
+            `should not create post with $description ${field}`,
+            async ({ value }) => {
+              const invalidPost = { ...validPost, [field]: value };
+              await postsTestManager.createPost(
+                blogId,
+                invalidPost,
+                HttpStatus.BAD_REQUEST,
+              );
+            },
+          );
+        });
       });
     });
 
@@ -246,96 +238,168 @@ describe('Posts Controller (e2e)', () => {
   });
 
   describe('PUT /sa/blogs/:blogId/posts/:id', () => {
-    let updateDto: UpdatePostInputDto;
+    const updateDto: UpdatePostInputDto = {
+      title: 'Updated Post',
+      shortDescription: 'Updated Short Description',
+      content: 'Updated Content',
+    };
 
-    beforeEach(() => {
-      updateDto = {
-        title: 'Updated Post',
-        shortDescription: 'Updated Short Description',
-        content: 'Updated Content',
-      };
-    });
+    describe('successful update', () => {
+      it('should update post with valid data', async () => {
+        const post = await postsTestManager.createPost(blogId, validPost);
+        await postsTestManager.updatePost(blogId, post.id, updateDto);
 
-    it('should update post with valid data', async () => {
-      const post = await postsTestManager.createPost(blogId, validPost);
-      await postsTestManager.updatePost(blogId, post.id, updateDto);
+        const response = await request(httpServer)
+          .get(`/${PATHS.POSTS}/${post.id}`)
+          .expect(HttpStatus.OK);
 
-      // Verify the post was updated
-      const response = await request(httpServer)
-        .get(`/${PATHS.POSTS}/${post.id}`)
-        .expect(HttpStatus.OK);
-
-      expect(response.body).toEqual({
-        id: post.id,
-        title: updateDto.title,
-        shortDescription: updateDto.shortDescription,
-        content: updateDto.content,
-        blogId: post.blogId,
-        blogName: expect.any(String),
-        createdAt: expect.any(String),
-        extendedLikesInfo: {
-          dislikesCount: expect.any(Number),
-          likesCount: expect.any(Number),
-          myStatus: 'None',
-          newestLikes: expect.any(Array),
-        },
+        expect(response.body).toEqual({
+          id: post.id,
+          title: updateDto.title,
+          shortDescription: updateDto.shortDescription,
+          content: updateDto.content,
+          blogId: post.blogId,
+          blogName: expect.any(String),
+          createdAt: expect.any(String),
+          extendedLikesInfo: {
+            dislikesCount: expect.any(Number),
+            likesCount: expect.any(Number),
+            myStatus: 'None',
+            newestLikes: expect.any(Array),
+          },
+        });
       });
     });
 
-    it('should not update post without basic auth', async () => {
-      const post = await postsTestManager.createPost(blogId, validPost);
+    describe('authentication checks', () => {
+      const authTests = [
+        {
+          name: 'without basic auth',
+          login: '',
+          password: '',
+        },
+        {
+          name: 'with incorrect credentials',
+          login: 'wrong',
+          password: 'wrong',
+        },
+      ];
 
-      await postsTestManager.updatePost(
-        blogId,
-        post.id,
-        updateDto,
-        HttpStatus.UNAUTHORIZED,
-        '',
-        '',
+      test.each(authTests)(
+        'should not update post $name',
+        async ({ login, password }) => {
+          const post = await postsTestManager.createPost(blogId, validPost);
+          await postsTestManager.updatePost(
+            blogId,
+            post.id,
+            updateDto,
+            HttpStatus.UNAUTHORIZED,
+            login,
+            password,
+          );
+        },
       );
     });
 
-    it('should not update post with incorrect credentials', async () => {
-      const post = await postsTestManager.createPost(blogId, validPost);
+    describe('validation checks', () => {
+      const validationTests = [
+        {
+          field: 'title',
+          cases: [
+            { value: '', description: 'empty' },
+            { value: 'a'.repeat(31), description: 'too long' },
+            { value: '   ', description: 'whitespace' },
+          ],
+        },
+        {
+          field: 'shortDescription',
+          cases: [
+            { value: '', description: 'empty' },
+            { value: 'a'.repeat(101), description: 'too long' },
+            { value: '   ', description: 'whitespace' },
+          ],
+        },
+        {
+          field: 'content',
+          cases: [
+            { value: '', description: 'empty' },
+            { value: 'a'.repeat(1001), description: 'too long' },
+            { value: '   ', description: 'whitespace' },
+          ],
+        },
+      ];
 
-      await postsTestManager.updatePost(
-        blogId,
-        post.id,
-        updateDto,
-        HttpStatus.UNAUTHORIZED,
-        'wrong',
-        'wrong',
-      );
+      validationTests.forEach(({ field, cases }) => {
+        describe(`${field} validation`, () => {
+          test.each(cases)(
+            `should not update post with $description ${field}`,
+            async ({ value }) => {
+              const post = await postsTestManager.createPost(blogId, validPost);
+              const invalidUpdate = { ...updateDto, [field]: value };
+              await postsTestManager.updatePost(
+                blogId,
+                post.id,
+                invalidUpdate,
+                HttpStatus.BAD_REQUEST,
+              );
+            },
+          );
+        });
+      });
     });
 
-    // Add similar validation tests as in POST /posts
+    it('should not update non-existent post', async () => {
+      await postsTestManager.updatePost(
+        blogId,
+        'non-existent-id',
+        updateDto,
+        HttpStatus.NOT_FOUND,
+      );
+    });
   });
 
   describe('DELETE /sa/blogs/:blogId/posts/:id', () => {
-    it('should delete post with valid id', async () => {
-      const post = await postsTestManager.createPost(blogId, validPost);
-      await postsTestManager.deletePost(blogId, post.id);
+    describe('successful deletion', () => {
+      it('should delete post with valid id', async () => {
+        const post = await postsTestManager.createPost(blogId, validPost);
+        await postsTestManager.deletePost(blogId, post.id);
+      });
     });
 
-    it('should not delete post without basic auth', async () => {
-      const post = await postsTestManager.createPost(blogId, validPost);
-      await postsTestManager.deletePost(
-        blogId,
-        post.id,
-        HttpStatus.UNAUTHORIZED,
-        '',
-        '',
+    describe('authentication checks', () => {
+      const authTests = [
+        {
+          name: 'without basic auth',
+          login: '',
+          password: '',
+        },
+        {
+          name: 'with incorrect credentials',
+          login: 'wrong',
+          password: 'wrong',
+        },
+      ];
+
+      test.each(authTests)(
+        'should not delete post $name',
+        async ({ login, password }) => {
+          const post = await postsTestManager.createPost(blogId, validPost);
+          await postsTestManager.deletePost(
+            blogId,
+            post.id,
+            HttpStatus.UNAUTHORIZED,
+            login,
+            password,
+          );
+        },
       );
     });
 
-    it('should not delete post with incorrect credentials', async () => {
-      const post = await postsTestManager.createPost(blogId, validPost);
+    it('should not delete non-existent post', async () => {
       await postsTestManager.deletePost(
         blogId,
-        post.id,
-        HttpStatus.UNAUTHORIZED,
-        'wrong',
-        'wrong',
+        'non-existent-id',
+        HttpStatus.NOT_FOUND,
       );
     });
   });

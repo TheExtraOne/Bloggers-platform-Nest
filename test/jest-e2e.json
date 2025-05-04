@@ -1,6 +1,6 @@
 {
   "cache": true,
-  "testTimeout": 10000,
+  "testTimeout": 30000,
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": ".",
   "testEnvironment": "node",

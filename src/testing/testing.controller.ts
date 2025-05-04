@@ -32,4 +32,17 @@ export class TestingController {
       RESTART IDENTITY CASCADE;
     `);
   }
+
+  @Delete('game-data')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteGameData() {
+    // Only clear game-related tables
+    await this.dataSource.query(`
+      TRUNCATE TABLE
+      public.player_progress,
+      public.pair_games,
+      public.answers
+      RESTART IDENTITY CASCADE;
+    `);
+  }
 }

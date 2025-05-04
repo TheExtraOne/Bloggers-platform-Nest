@@ -25,8 +25,8 @@ import { QuestionsTestManager } from './managers/questions-test-manager';
 import { PairGamesTestManager } from './managers/pair-games-test-manager';
 
 export class TestSettingsInitializer {
-  private readonly defaultTtl = 1000;
-  private readonly defaultLimit = 50;
+  private readonly defaultTtl = 0;
+  private readonly defaultLimit = 1000;
 
   async init(
     ttl: number = this.defaultTtl,

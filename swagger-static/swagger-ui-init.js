@@ -669,6 +669,20 @@ window.onload = function() {
           ]
         }
       },
+      "/testing/game-data": {
+        "delete": {
+          "operationId": "TestingController_deleteGameData",
+          "parameters": [],
+          "responses": {
+            "204": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "Testing"
+          ]
+        }
+      },
       "/sa/blogs": {
         "get": {
           "description": "Returns a paginated list of all blogs. Can be filtered by name and sorted.",

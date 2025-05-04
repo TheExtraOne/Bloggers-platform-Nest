@@ -1,4 +1,5 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
+import request from 'supertest';
 import { TestSettingsInitializer } from './helpers/init-settings';
 import { deleteAllData } from './helpers/delete-all-data';
 import { PairGamesTestManager } from './helpers/managers/pair-games-test-manager';
@@ -19,9 +20,6 @@ describe('Pair Games Connection and Queries (e2e)', () => {
   let user1Token: string;
   let user2Token: string;
 
-  // Increase timeout for setup
-  jest.setTimeout(30000);
-
   beforeAll(async () => {
     const result = await new TestSettingsInitializer().init();
     app = result.app;
@@ -29,31 +27,23 @@ describe('Pair Games Connection and Queries (e2e)', () => {
     usersTestManager = result.usersTestManager;
     authTestManager = result.authTestManager;
     pairGamesTestManager = result.pairGamesTestManager;
-  });
 
-  afterAll(async () => {
+    // Clear all data once at the start
     await deleteAllData(app);
-    await app.close();
-  });
-
-  beforeEach(async () => {
-    // Delete all data
-    await deleteAllData(app);
-
-    // Create test questions
-    createdQuestions = [];
-    for (let i = 1; i <= 5; i++) {
-      const question = await questionsTestManager.createQuestion({
-        body: `Question ${i}`,
-        correctAnswers: [`Answer ${i}`],
-      });
-      createdQuestions.push(question);
-      await questionsTestManager.publishQuestion(question.id, true);
-    }
 
     // Create test users with proper admin credentials
-    await usersTestManager.createUser(TEST_USERS.user1, HttpStatus.CREATED, 'admin', 'qwerty');
-    await usersTestManager.createUser(TEST_USERS.user2, HttpStatus.CREATED, 'admin', 'qwerty');
+    await usersTestManager.createUser(
+      TEST_USERS.user1,
+      HttpStatus.CREATED,
+      'admin',
+      'qwerty',
+    );
+    await usersTestManager.createUser(
+      TEST_USERS.user2,
+      HttpStatus.CREATED,
+      'admin',
+      'qwerty',
+    );
 
     // Login users and store tokens
     const loginResponse1 = await authTestManager.login({
@@ -67,12 +57,33 @@ describe('Pair Games Connection and Queries (e2e)', () => {
       password: TEST_USERS.user2.password,
     });
     user2Token = loginResponse2.body.accessToken;
+
+    // Create and publish test questions in bulk
+    createdQuestions = await questionsTestManager.bulkCreateQuestions(5);
+    await Promise.all(
+      createdQuestions.map((question) =>
+        questionsTestManager.publishQuestion(question.id, true),
+      ),
+    );
+  });
+
+  afterAll(async () => {
+    await deleteAllData(app);
+    await app.close();
+  });
+
+  beforeEach(async () => {
+    // Only clear game-related data between tests
+    await request(app.getHttpServer())
+      .delete('/testing/game-data')
+      .expect(HttpStatus.NO_CONTENT);
   });
 
   describe('POST /pair-game-quiz/pairs/connection', () => {
     it('should create new pair game when first user connects', async () => {
       // Connect first user
-      const { statusCode, body } = await pairGamesTestManager.connectUser(user1Token);
+      const { statusCode, body } =
+        await pairGamesTestManager.connectUser(user1Token);
 
       expect(statusCode).toBe(HttpStatus.OK);
       expect(body).toEqual({
@@ -99,7 +110,8 @@ describe('Pair Games Connection and Queries (e2e)', () => {
       await pairGamesTestManager.connectUser(user1Token);
 
       // Second user joins the game
-      const { statusCode, body } = await pairGamesTestManager.connectUser(user2Token);
+      const { statusCode, body } =
+        await pairGamesTestManager.connectUser(user2Token);
 
       expect(statusCode).toBe(HttpStatus.OK);
       expect(body).toEqual({
@@ -135,7 +147,8 @@ describe('Pair Games Connection and Queries (e2e)', () => {
     });
 
     it('should return 401 if user is not authenticated', async () => {
-      const { statusCode } = await pairGamesTestManager.connectUser('invalid-token');
+      const { statusCode } =
+        await pairGamesTestManager.connectUser('invalid-token');
       expect(statusCode).toBe(HttpStatus.UNAUTHORIZED);
     });
 
@@ -155,12 +168,16 @@ describe('Pair Games Connection and Queries (e2e)', () => {
     beforeEach(async () => {
       // Create an active game for these tests
       await pairGamesTestManager.connectUser(user1Token);
-      const joinGameResponse = await pairGamesTestManager.connectUser(user2Token);
+      const joinGameResponse =
+        await pairGamesTestManager.connectUser(user2Token);
       activeGameId = joinGameResponse.body.id;
     });
 
     it('should return pair game by id for participating user', async () => {
-      const { statusCode, body } = await pairGamesTestManager.getPairGameById(user1Token, activeGameId);
+      const { statusCode, body } = await pairGamesTestManager.getPairGameById(
+        user1Token,
+        activeGameId,
+      );
 
       expect(statusCode).toBe(HttpStatus.OK);
       expect(body).toEqual({
@@ -195,17 +212,25 @@ describe('Pair Games Connection and Queries (e2e)', () => {
     });
 
     it('should return 401 if user is not authenticated', async () => {
-      const { statusCode } = await pairGamesTestManager.getPairGameById('invalid-token', activeGameId);
+      const { statusCode } = await pairGamesTestManager.getPairGameById(
+        'invalid-token',
+        activeGameId,
+      );
       expect(statusCode).toBe(HttpStatus.UNAUTHORIZED);
     });
 
     it('should return 403 if user is not participating in the game', async () => {
       // Create a third user that's not in the game
-      await usersTestManager.createUser({
-        login: 'user3',
-        email: 'user3@test.com',
-        password: 'qwerty',
-      }, HttpStatus.CREATED, 'admin', 'qwerty');
+      await usersTestManager.createUser(
+        {
+          login: 'user3',
+          email: 'user3@test.com',
+          password: 'qwerty',
+        },
+        HttpStatus.CREATED,
+        'admin',
+        'qwerty',
+      );
 
       const thirdLoginResponse = await authTestManager.login({
         loginOrEmail: 'user3',
@@ -227,7 +252,8 @@ describe('Pair Games Connection and Queries (e2e)', () => {
       await pairGamesTestManager.connectUser(user2Token);
 
       // First user gets their current game
-      const { statusCode, body } = await pairGamesTestManager.getMyCurrentPairGame(user1Token);
+      const { statusCode, body } =
+        await pairGamesTestManager.getMyCurrentPairGame(user1Token);
 
       expect(statusCode).toBe(HttpStatus.OK);
       expect(body).toEqual({
@@ -262,13 +288,15 @@ describe('Pair Games Connection and Queries (e2e)', () => {
     });
 
     it('should return 401 if user is not authenticated', async () => {
-      const { statusCode } = await pairGamesTestManager.getMyCurrentPairGame('invalid-token');
+      const { statusCode } =
+        await pairGamesTestManager.getMyCurrentPairGame('invalid-token');
       expect(statusCode).toBe(HttpStatus.UNAUTHORIZED);
     });
 
     it('should return 404 if user has no active game', async () => {
       // No game created, should return 404
-      const { statusCode } = await pairGamesTestManager.getMyCurrentPairGame(user1Token);
+      const { statusCode } =
+        await pairGamesTestManager.getMyCurrentPairGame(user1Token);
       expect(statusCode).toBe(HttpStatus.NOT_FOUND);
     });
   });

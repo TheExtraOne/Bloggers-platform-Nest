@@ -20,9 +20,6 @@ describe('Pair Games History (e2e)', () => {
   let user1Token: string;
   let user2Token: string;
 
-  // Increase timeout for all tests in this suite
-  jest.setTimeout(30000);
-
   beforeAll(async () => {
     const result = await new TestSettingsInitializer().init();
     app = result.app;
@@ -37,58 +34,65 @@ describe('Pair Games History (e2e)', () => {
     await app.close();
   });
 
-  beforeEach(async () => {
-    // Delete all data
-    await deleteAllData(app);
+  // Helper functions moved outside beforeEach for reusability
+  async function setupTestData() {
+    // Create and publish test questions in bulk
+    createdQuestions = await questionsTestManager.bulkCreateQuestions(5);
 
-    // Create test questions
-    createdQuestions = [];
-    for (let i = 1; i <= 5; i++) {
-      const question = await questionsTestManager.createQuestion({
-        body: `Question ${i}`,
-        correctAnswers: [`Answer ${i}`],
-      });
-      createdQuestions.push(question);
-      await questionsTestManager.publishQuestion(question.id, true);
-    }
+    // Create users and publish questions in parallel
+    await Promise.all([
+      ...createdQuestions.map((question) =>
+        questionsTestManager.publishQuestion(question.id, true),
+      ),
+      usersTestManager.createUser(
+        TEST_USERS.user1,
+        HttpStatus.CREATED,
+        'admin',
+        'qwerty',
+      ),
+      usersTestManager.createUser(
+        TEST_USERS.user2,
+        HttpStatus.CREATED,
+        'admin',
+        'qwerty',
+      ),
+    ]);
 
-    // Create test users with proper admin credentials
-    await usersTestManager.createUser(
-      TEST_USERS.user1,
-      HttpStatus.CREATED,
-      'admin',
-      'qwerty',
-    );
-    await usersTestManager.createUser(
-      TEST_USERS.user2,
-      HttpStatus.CREATED,
-      'admin',
-      'qwerty',
-    );
+    // Login users in parallel
+    const [loginResponse1, loginResponse2] = await Promise.all([
+      authTestManager.login({
+        loginOrEmail: TEST_USERS.user1.login,
+        password: TEST_USERS.user1.password,
+      }),
+      authTestManager.login({
+        loginOrEmail: TEST_USERS.user2.login,
+        password: TEST_USERS.user2.password,
+      }),
+    ]);
 
-    // Login users and store tokens
-    const loginResponse1 = await authTestManager.login({
-      loginOrEmail: TEST_USERS.user1.login,
-      password: TEST_USERS.user1.password,
-    });
-    user1Token = loginResponse1.body.accessToken;
+    return {
+      user1Token: loginResponse1.body.accessToken,
+      user2Token: loginResponse2.body.accessToken,
+    };
+  }
 
-    const loginResponse2 = await authTestManager.login({
-      loginOrEmail: TEST_USERS.user2.login,
-      password: TEST_USERS.user2.password,
-    });
-    user2Token = loginResponse2.body.accessToken;
-
-    // Create and play a couple of games for testing history
-    // Game 1: Complete game with mixed answers
+  async function setupGame(
+    firstPlayerAnswers: number,
+    secondPlayerAnswers: number,
+    alternateSecondPlayer = true,
+  ) {
     await pairGamesTestManager.connectUser(user1Token);
-    const game1 = await pairGamesTestManager.connectUser(user2Token);
-    const gameQuestions = game1.body.questions;
+    const game = await pairGamesTestManager.connectUser(user2Token);
+    const gameQuestions = game.body.questions;
     expect(gameQuestions).toBeDefined();
     expect(gameQuestions?.length).toBe(5);
 
-    // Both players answer all questions
-    for (let i = 0; i < gameQuestions!.length; i++) {
+    // Send answers sequentially to avoid deadlocks
+    for (
+      let i = 0;
+      i < Math.max(firstPlayerAnswers, secondPlayerAnswers);
+      i++
+    ) {
       const question = gameQuestions![i];
       const correctQuestion = createdQuestions.find(
         (q) => q.id === question.id,
@@ -97,41 +101,37 @@ describe('Pair Games History (e2e)', () => {
         throw new Error(`Could not find question with ID ${question.id}`);
       }
 
-      // First player gives correct answers
-      await pairGamesTestManager.sendAnswer(
-        user1Token,
-        correctQuestion.correctAnswers[0],
-      );
-
-      // Second player alternates between correct and wrong answers
-      await pairGamesTestManager.sendAnswer(
-        user2Token,
-        i % 2 === 0 ? correctQuestion.correctAnswers[0] : 'Wrong answer',
-      );
-    }
-
-    // Game 2: Active game with partial answers
-    await pairGamesTestManager.connectUser(user1Token);
-    const game2 = await pairGamesTestManager.connectUser(user2Token);
-    const game2Questions = game2.body.questions;
-    expect(game2Questions).toBeDefined();
-    expect(game2Questions?.length).toBe(5);
-
-    // Only first player answers some questions
-    for (let i = 0; i < 2; i++) {
-      const question = game2Questions![i];
-      const correctQuestion = createdQuestions.find(
-        (q) => q.id === question.id,
-      );
-      if (!correctQuestion) {
-        throw new Error(`Could not find question with ID ${question.id}`);
+      // First player answers first, then second player answers - sequential execution prevents race conditions
+      if (i < firstPlayerAnswers) {
+        await pairGamesTestManager.sendAnswer(
+          user1Token,
+          correctQuestion.correctAnswers[0],
+        );
       }
 
-      await pairGamesTestManager.sendAnswer(
-        user1Token,
-        correctQuestion.correctAnswers[0],
-      );
+      if (i < secondPlayerAnswers) {
+        await pairGamesTestManager.sendAnswer(
+          user2Token,
+          alternateSecondPlayer && i % 2 === 0
+            ? correctQuestion.correctAnswers[0]
+            : 'Wrong answer',
+        );
+      }
     }
+    return game;
+  }
+
+  beforeEach(async () => {
+    await deleteAllData(app);
+
+    // Setup test data and get tokens
+    const tokens = await setupTestData();
+    user1Token = tokens.user1Token;
+    user2Token = tokens.user2Token;
+
+    // Setup games sequentially to ensure proper transaction handling
+    await setupGame(5, 5, true); // Game 1: Complete game with mixed answers
+    await setupGame(2, 0); // Game 2: Active game with partial answers
   });
 
   describe('GET /pair-game-quiz/pairs/my', () => {
