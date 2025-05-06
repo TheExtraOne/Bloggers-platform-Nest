@@ -53,7 +53,7 @@ export class ConnectUserUseCase
 
   private async checkIfUserIsAlreadyParticipatingAndThrowIfYes(
     userId: string,
-  ): Promise<null> {
+  ): Promise<void> {
     // Check if current user is already participating in active pair
     const activePair: PairGames | null =
       await this.pairGamesRepository.findPlayerPendingOrActiveGameByUserId({
@@ -62,8 +62,6 @@ export class ConnectUserUseCase
     if (activePair) {
       throw new ForbiddenException();
     }
-
-    return activePair;
   }
 
   private async joinToOpenGameIfItExists(
@@ -77,8 +75,7 @@ export class ConnectUserUseCase
       return null;
     }
 
-    const user = await this.pgExternalUsersRepository.findUserOrThrow(userId);
-    const secondPlayerProgress = await this.setupSecondPlayer(openGame, user);
+    const secondPlayerProgress = await this.setupSecondPlayer(openGame, userId);
     await this.configureGameSettings(openGame);
     await this.setupGameQuestions(openGame, secondPlayerProgress);
 
@@ -102,8 +99,10 @@ export class ConnectUserUseCase
 
   private async setupSecondPlayer(
     openGame: PairGames,
-    user: Users,
+    userId: string,
   ): Promise<PlayerProgress> {
+    const user = await this.pgExternalUsersRepository.findUserOrThrow(userId);
+
     const secondPlayerProgress = new PlayerProgress();
     secondPlayerProgress.user = user;
     openGame.secondPlayerProgress = secondPlayerProgress;

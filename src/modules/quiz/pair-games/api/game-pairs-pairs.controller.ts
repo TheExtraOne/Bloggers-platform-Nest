@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { PATHS } from '../../../../constants';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBasicAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../user-accounts/guards/jwt/jwt-auth.guard';
 import { CurrentUserId } from '../../../user-accounts/guards/decorators/current-user-id.decorator';
 import { ConnectUserCommand } from '../app/use-cases/connect-user.use-case';
@@ -32,7 +32,6 @@ import { GetAllGamesByUserIdQuery } from '../app/queries/get-all-games-by-userid
 import { GetAllUserGamesQueryParams } from './input-dto/get-all-user-games.input-dto';
 
 @ApiTags('Pair Game Quiz')
-@ApiBasicAuth()
 @UseGuards(JwtAuthGuard)
 @Controller(PATHS.PAIR_GAME_QUIZ_PAIRS)
 export class GamePairsController {

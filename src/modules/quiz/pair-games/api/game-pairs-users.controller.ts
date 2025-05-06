@@ -35,7 +35,6 @@ export class GameUsersController {
     return await this.queryBus.execute(new GetUserStatisticQuery(userId));
   }
 
-  // TODO: add tests
   @Get('top')
   @HttpCode(HttpStatus.OK)
   @GetTopUsersSwagger()

@@ -2197,9 +2197,6 @@ window.onload = function() {
           },
           "security": [
             {
-              "basic": []
-            },
-            {
               "bearer": []
             }
           ],
@@ -2282,9 +2279,6 @@ window.onload = function() {
           },
           "security": [
             {
-              "basic": []
-            },
-            {
               "bearer": []
             }
           ],
@@ -2329,9 +2323,6 @@ window.onload = function() {
           },
           "security": [
             {
-              "basic": []
-            },
-            {
               "bearer": []
             }
           ],
@@ -2365,9 +2356,6 @@ window.onload = function() {
             }
           },
           "security": [
-            {
-              "basic": []
-            },
             {
               "bearer": []
             }
@@ -2416,9 +2404,6 @@ window.onload = function() {
             }
           },
           "security": [
-            {
-              "basic": []
-            },
             {
               "bearer": []
             }
