@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { QuestionController } from './questions/api/questions.controller';
 import { CreateQuestionUseCase } from './questions/app/use-cases/create-question.use-case';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -30,6 +31,8 @@ import { GetAllGamesByUserIdQueryHandler } from './pair-games/app/queries/get-al
 import { GameUsersController } from './pair-games/api/game-pairs-users.controller';
 import { GetUserStatisticQueryHandler } from './pair-games/app/queries/get-user-statistic.query';
 import { GetTopUsersQueryHandler } from './pair-games/app/queries/get-top-users.query';
+import { PlayerCompletedGameHandler } from './answers/app/events/player-completed-game.handler';
+import { CompleteGameUseCase } from './pair-games/app/use-cases/complete-game.use-case';
 
 const questionUseCases = [
   CreateQuestionUseCase,
@@ -41,7 +44,7 @@ const questionQueries = [
   GetQuestionByIdQueryHandler,
   GetAllQuestionsQueryHandler,
 ];
-const pairGameUseCases = [ConnectUserUseCase];
+const pairGameUseCases = [ConnectUserUseCase, CompleteGameUseCase];
 const pairGameQueries = [
   GetGameByIdQueryHandler,
   GetActiveGameByUserIdQueryHandler,
@@ -54,8 +57,9 @@ const answerQueries = [GetAnswerByIdQueryHandler];
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Questions, PlayerProgress, PairGames, Answers]),
     UserAccountsModule,
-    TypeOrmModule.forFeature([Questions, PairGames, PlayerProgress, Answers]),
+    EventEmitterModule.forRoot(),
   ],
   controllers: [QuestionController, GamePairsController, GameUsersController],
   providers: [
@@ -73,6 +77,7 @@ const answerQueries = [GetAnswerByIdQueryHandler];
     PlayerProgressRepository,
     AnswerRepository,
     AnswerQueryRepository,
+    PlayerCompletedGameHandler,
   ],
   exports: [],
 })

@@ -1,22 +1,24 @@
-import { Command, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ForbiddenException } from '@nestjs/common';
 import {
-  GameStatus,
-  PairGames,
-} from '../../../pair-games/domain/pair-game.entity';
+  Command,
+  CommandHandler,
+  ICommandHandler,
+  CommandBus,
+} from '@nestjs/cqrs';
+import { ForbiddenException } from '@nestjs/common';
+import { PairGames } from '../../../pair-games/domain/pair-game.entity';
 import { PairGamesRepository } from '../../../pair-games/infrastructure/pair-games.repository';
 import { PgQuestionsRepository } from '../../../questions/infrastructure/pg.questions.repository';
 import { Questions } from '../../../questions/domain/question.entity';
-import {
-  PlayerProgress,
-  PlayerProgressStatus,
-} from '../../../player-progress/domain/player-progress.entity';
+import { PlayerProgress } from '../../../player-progress/domain/player-progress.entity';
 import { PlayerProgressRepository } from '../../../player-progress/infrastructure/player-progress.repository';
 import { Answers, AnswerStatus } from '../../domain/answers.entity';
 import { AnswerRepository } from '../../infrastructure/answer.repository';
 import { DataSource, EntityManager } from 'typeorm';
 import { AbstractTransactionalUseCase } from '../../../../../core/base-classes/abstract-transactional.use-case';
 import { LOCK_MODES } from '../../../../../constants';
+import { PlayerCompletedGameEvent } from '../events/player-completed-game.event';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CompleteGameCommand } from '../../../pair-games/app/use-cases/complete-game.use-case';
 
 enum PlayerProgressType {
   First = 'firstPlayerProgress',
@@ -42,9 +44,11 @@ export class SetUserAnswerUseCase
     private readonly questionsRepository: PgQuestionsRepository,
     private readonly playerProgressRepository: PlayerProgressRepository,
     private readonly answerRepository: AnswerRepository,
+    private readonly commandBus: CommandBus,
     protected readonly dataSource: DataSource,
+    protected readonly eventEmitter: EventEmitter2,
   ) {
-    super(dataSource);
+    super(dataSource, eventEmitter);
   }
 
   protected async executeInTransaction(
@@ -90,14 +94,30 @@ export class SetUserAnswerUseCase
       manager,
       LOCK_MODES.PESSIMISTIC_WRITE,
     )) as PairGames;
-    if (this.isGameFinished(game)) {
-      await this.finishGame(game, manager);
-    }
+
+    await this.handleGameCompletion(
+      game,
+      playerProgress,
+      isUserFirstPlayer,
+      manager,
+    );
 
     return { answerId: answer.id.toString() };
   }
 
-  private isGameFinished(game: PairGames): boolean {
+  private getPlayerProgressType(
+    isUserFirstPlayer: boolean,
+  ): PlayerProgressType {
+    return isUserFirstPlayer
+      ? PlayerProgressType.First
+      : PlayerProgressType.Second;
+  }
+
+  private hasOnePlayerJustFinished(playerProgress: PlayerProgress): boolean {
+    return playerProgress.currentQuestionId === null;
+  }
+
+  private hasBothPlayersFinished(game: PairGames): boolean {
     return (
       game.firstPlayerProgress!.currentQuestionId === null &&
       game.secondPlayerProgress!.currentQuestionId === null
@@ -144,10 +164,8 @@ export class SetUserAnswerUseCase
     currentQuestionId: number,
     manager: EntityManager,
   ): Promise<PlayerProgress> {
-    const playerProgressId =
-      activePair[
-        isUserFirstPlayer ? PlayerProgressType.First : PlayerProgressType.Second
-      ]!.id;
+    const playerProgressType = this.getPlayerProgressType(isUserFirstPlayer);
+    const playerProgressId = activePair[playerProgressType]!.id;
 
     const playerProgress =
       await this.playerProgressRepository.findPlayerProgressByIdOrThrow({
@@ -191,70 +209,68 @@ export class SetUserAnswerUseCase
     return this.answerRepository.save(newAnswer, manager);
   }
 
-  private async finishGame(game: PairGames, manager: EntityManager) {
-    // Fetch latest answers, sorted
-    const allAnswers = await manager.getRepository(Answers).find({
-      where: { pairGame: { id: game.id } },
-      order: { createdAt: 'ASC' },
-      relations: ['playerProgress'],
-    });
+  private async handleGameCompletion(
+    game: PairGames,
+    playerProgress: PlayerProgress,
+    isUserFirstPlayer: boolean,
+    manager: EntityManager,
+  ): Promise<void> {
+    if (this.hasOnePlayerJustFinished(playerProgress)) {
+      await this.addBonusPointToFirstFinishedPlayer(
+        game,
+        manager,
+        playerProgress.id.toString(),
+        isUserFirstPlayer,
+      );
 
-    const { firstPlayerAnswers, secondPlayerAnswers } = allAnswers.reduce(
-      (acc, answer) => {
-        if (answer.playerProgress.id === game.firstPlayerProgress.id) {
-          acc.firstPlayerAnswers.push(answer);
-        } else if (answer.playerProgress.id === game.secondPlayerProgress!.id) {
-          acc.secondPlayerAnswers.push(answer);
-        }
-        return acc;
-      },
-      {
-        firstPlayerAnswers: [] as Answers[],
-        secondPlayerAnswers: [] as Answers[],
-      },
-    );
-
-    const lastAnswerOfFirstPlayer =
-      firstPlayerAnswers[firstPlayerAnswers.length - 1];
-    const lastAnswerOfSecondPlayer =
-      secondPlayerAnswers[secondPlayerAnswers.length - 1];
-
-    const firstFinisher: PlayerProgressType =
-      lastAnswerOfFirstPlayer.createdAt > lastAnswerOfSecondPlayer.createdAt
-        ? PlayerProgressType.Second
-        : PlayerProgressType.First;
-
-    game.status = GameStatus.Finished;
-    game.finishGameDate = new Date();
-
-    // Add bonus point for first finisher if he had at least one correct answer
-    const answersToCheck =
-      firstFinisher === PlayerProgressType.First
-        ? firstPlayerAnswers
-        : secondPlayerAnswers;
-    if (answersToCheck.some((a) => a.answerStatus === AnswerStatus.Correct)) {
-      game[firstFinisher]!.score += 1;
+      // Add pending event with 10 seconds delay
+      this.addPendingEvent(
+        new PlayerCompletedGameEvent(game.id.toString()),
+        10000,
+      );
     }
 
-    this.setGameStatuses(game);
-
-    await this.pairGamesRepository.save(game, manager);
+    if (this.hasBothPlayersFinished(game)) {
+      await this.finishGame(game, manager);
+    }
   }
 
-  private setGameStatuses(game: PairGames) {
-    const firstPlayerScore = game.firstPlayerProgress.score;
-    const secondPlayerScore = game.secondPlayerProgress!.score;
+  private async addBonusPointToFirstFinishedPlayer(
+    game: PairGames,
+    manager: EntityManager,
+    playerProgressId: string,
+    isUserFirstPlayer: boolean,
+  ): Promise<void> {
+    const answers = await this.answerRepository.findPlayerAnswersInGame(
+      game.id.toString(),
+      playerProgressId,
+      manager,
+    );
 
-    if (firstPlayerScore > secondPlayerScore) {
-      game.firstPlayerProgress.status = PlayerProgressStatus.Win;
-      game.secondPlayerProgress!.status = PlayerProgressStatus.Lose;
-    } else if (secondPlayerScore > firstPlayerScore) {
-      game.firstPlayerProgress.status = PlayerProgressStatus.Lose;
-      game.secondPlayerProgress!.status = PlayerProgressStatus.Win;
-    } else {
-      game.firstPlayerProgress.status = PlayerProgressStatus.Draw;
-      game.secondPlayerProgress!.status = PlayerProgressStatus.Draw;
+    if (this.hasAtLeastOneCorrectAnswer(answers)) {
+      await this.incrementPlayerScore(game, isUserFirstPlayer, manager);
     }
+  }
+
+  private hasAtLeastOneCorrectAnswer(answers: Answers[]): boolean {
+    return answers.some(
+      (answer) => answer.answerStatus === AnswerStatus.Correct,
+    );
+  }
+
+  private async incrementPlayerScore(
+    game: PairGames,
+    isUserFirstPlayer: boolean,
+    manager: EntityManager,
+  ): Promise<void> {
+    const playerProgressType = this.getPlayerProgressType(isUserFirstPlayer);
+    const playerProgress = game[playerProgressType]!;
+    playerProgress.score += 1;
+    await this.playerProgressRepository.save(playerProgress, manager);
+  }
+
+  private async finishGame(game: PairGames, manager: EntityManager) {
+    await this.commandBus.execute(new CompleteGameCommand(game, manager));
   }
 
   private validateUserParticipation(
@@ -266,10 +282,8 @@ export class SetUserAnswerUseCase
   } {
     const isUserFirstPlayer =
       activePair.firstPlayerProgress.user.id === +userId;
-    const currentQuestionId =
-      activePair[
-        isUserFirstPlayer ? PlayerProgressType.First : PlayerProgressType.Second
-      ]?.currentQuestionId;
+    const playerProgressType = this.getPlayerProgressType(isUserFirstPlayer);
+    const currentQuestionId = activePair[playerProgressType]?.currentQuestionId;
 
     // If currentQuestionId is null, then it was the last question in the game for current user
     if (!currentQuestionId) {

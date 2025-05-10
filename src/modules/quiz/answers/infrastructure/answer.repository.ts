@@ -15,8 +15,25 @@ export class AnswerRepository extends PgBaseRepository {
 
   async save(answer: Answers, manager?: EntityManager): Promise<Answers> {
     if (manager) {
-      return await manager.save(Answers, answer);
+      return manager.save(answer);
     }
-    return await this.answerRepository.save(answer);
+    return this.answerRepository.save(answer);
+  }
+
+  async findPlayerAnswersInGame(
+    gameId: string,
+    playerProgressId: string,
+    manager?: EntityManager,
+  ): Promise<Answers[]> {
+    const repository = manager
+      ? manager.getRepository(Answers)
+      : this.answerRepository;
+    return repository.find({
+      where: {
+        pairGame: { id: +gameId },
+        playerProgress: { id: +playerProgressId },
+      },
+      order: { createdAt: 'ASC' },
+    });
   }
 }
