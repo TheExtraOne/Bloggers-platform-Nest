@@ -129,6 +129,25 @@ export class PairGamesRepository extends PgBaseRepository {
     });
   }
 
+  async findActiveGameById(dto: {
+    gameId: number;
+    manager?: EntityManager;
+  }): Promise<PairGames | null> {
+    if (!this.isCorrectNumber(dto.gameId.toString())) {
+      return null;
+    }
+
+    const repo =
+      dto.manager?.getRepository(PairGames) || this.pairGamesRepository;
+    return repo.findOne({
+      where: {
+        id: dto.gameId,
+        status: GameStatus.Active,
+      },
+      relations: ['firstPlayerProgress', 'secondPlayerProgress'],
+    });
+  }
+
   async save(newGame: PairGames, manager?: EntityManager): Promise<PairGames> {
     if (manager) {
       return await manager.save(PairGames, newGame);
