@@ -28,37 +28,40 @@ describe('Pair Games Connection and Queries (e2e)', () => {
     authTestManager = result.authTestManager;
     pairGamesTestManager = result.pairGamesTestManager;
 
-    // Clear all data once at the start
+    // Clear all data and set up test data in parallel where possible
     await deleteAllData(app);
 
-    // Create test users with proper admin credentials
-    await usersTestManager.createUser(
-      TEST_USERS.user1,
-      HttpStatus.CREATED,
-      'admin',
-      'qwerty',
-    );
-    await usersTestManager.createUser(
-      TEST_USERS.user2,
-      HttpStatus.CREATED,
-      'admin',
-      'qwerty',
-    );
+    // Create users and get tokens in parallel
+    await Promise.all([
+      usersTestManager.createUser(
+        TEST_USERS.user1,
+        HttpStatus.CREATED,
+        'admin',
+        'qwerty',
+      ),
+      usersTestManager.createUser(
+        TEST_USERS.user2,
+        HttpStatus.CREATED,
+        'admin',
+        'qwerty',
+      ),
+    ]);
 
-    // Login users and store tokens
-    const loginResponse1 = await authTestManager.login({
-      loginOrEmail: TEST_USERS.user1.login,
-      password: TEST_USERS.user1.password,
-    });
+    const [loginResponse1, loginResponse2] = await Promise.all([
+      authTestManager.login({
+        loginOrEmail: TEST_USERS.user1.login,
+        password: TEST_USERS.user1.password,
+      }),
+      authTestManager.login({
+        loginOrEmail: TEST_USERS.user2.login,
+        password: TEST_USERS.user2.password,
+      }),
+    ]);
+
     user1Token = loginResponse1.body.accessToken;
-
-    const loginResponse2 = await authTestManager.login({
-      loginOrEmail: TEST_USERS.user2.login,
-      password: TEST_USERS.user2.password,
-    });
     user2Token = loginResponse2.body.accessToken;
 
-    // Create and publish test questions in bulk
+    // Batch create and publish questions in one operation
     createdQuestions = await questionsTestManager.bulkCreateQuestions(5);
     await Promise.all(
       createdQuestions.map((question) =>
@@ -73,10 +76,20 @@ describe('Pair Games Connection and Queries (e2e)', () => {
   });
 
   beforeEach(async () => {
-    // Only clear game-related data between tests
-    await request(app.getHttpServer())
-      .delete('/testing/game-data')
-      .expect(HttpStatus.NO_CONTENT);
+    // Clear game data only for tests that need a clean state
+    const testName = expect.getState().currentTestName;
+    if (
+      testName?.includes('should create new pair game') ||
+      testName?.includes('should join existing pair game') ||
+      testName?.includes(
+        'should return 403 if user is already in an active game',
+      ) ||
+      testName?.includes('should return current active game')
+    ) {
+      await request(app.getHttpServer())
+        .delete('/testing/game-data')
+        .expect(HttpStatus.NO_CONTENT);
+    }
   });
 
   describe('POST /pair-game-quiz/pairs/connection', () => {
@@ -221,27 +234,43 @@ describe('Pair Games Connection and Queries (e2e)', () => {
 
     it('should return 403 if user is not participating in the game', async () => {
       // Create a third user that's not in the game
+      const user3 = {
+        login: 'user3',
+        email: 'user3@test.com',
+        password: 'qwerty',
+      };
+
       await usersTestManager.createUser(
-        {
-          login: 'user3',
-          email: 'user3@test.com',
-          password: 'qwerty',
-        },
+        user3,
         HttpStatus.CREATED,
         'admin',
         'qwerty',
       );
 
       const thirdLoginResponse = await authTestManager.login({
-        loginOrEmail: 'user3',
-        password: 'qwerty',
+        loginOrEmail: user3.login,
+        password: user3.password,
       });
 
-      const { statusCode } = await pairGamesTestManager.getPairGameById(
+      // First verify the game exists and get its ID
+      const gameResponse =
+        await pairGamesTestManager.getMyCurrentPairGame(user1Token);
+      expect(gameResponse.statusCode).toBe(HttpStatus.OK);
+      const gameId = gameResponse.body.id;
+
+      // Then try to access with unauthorized user
+      const response = await pairGamesTestManager.getPairGameById(
         thirdLoginResponse.body.accessToken,
-        activeGameId,
+        gameId,
       );
-      expect(statusCode).toBe(HttpStatus.FORBIDDEN);
+      expect(response.statusCode).toBe(HttpStatus.FORBIDDEN);
+
+      // Verify game is still accessible by original user
+      const originalUserResponse = await pairGamesTestManager.getPairGameById(
+        user1Token,
+        gameId,
+      );
+      expect(originalUserResponse.statusCode).toBe(HttpStatus.OK);
     });
   });
 
@@ -294,7 +323,12 @@ describe('Pair Games Connection and Queries (e2e)', () => {
     });
 
     it('should return 404 if user has no active game', async () => {
-      // No game created, should return 404
+      // Clear any existing games
+      await request(app.getHttpServer())
+        .delete('/testing/game-data')
+        .expect(HttpStatus.NO_CONTENT);
+
+      // Try to get current game when none exists
       const { statusCode } =
         await pairGamesTestManager.getMyCurrentPairGame(user1Token);
       expect(statusCode).toBe(HttpStatus.NOT_FOUND);

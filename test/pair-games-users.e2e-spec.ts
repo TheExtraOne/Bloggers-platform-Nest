@@ -28,37 +28,40 @@ describe('Pair Games Users (e2e)', () => {
     authTestManager = result.authTestManager;
     pairGamesTestManager = result.pairGamesTestManager;
 
-    // Clear all data once at the start
+    // Clear all data and set up test data in parallel where possible
     await deleteAllData(app);
 
-    // Create test users with proper admin credentials
-    await usersTestManager.createUser(
-      TEST_USERS.user1,
-      HttpStatus.CREATED,
-      'admin',
-      'qwerty',
-    );
-    await usersTestManager.createUser(
-      TEST_USERS.user2,
-      HttpStatus.CREATED,
-      'admin',
-      'qwerty',
-    );
+    // Create users and get tokens in parallel
+    await Promise.all([
+      usersTestManager.createUser(
+        TEST_USERS.user1,
+        HttpStatus.CREATED,
+        'admin',
+        'qwerty',
+      ),
+      usersTestManager.createUser(
+        TEST_USERS.user2,
+        HttpStatus.CREATED,
+        'admin',
+        'qwerty',
+      ),
+    ]);
 
-    // Login users and store tokens
-    const loginResponse1 = await authTestManager.login({
-      loginOrEmail: TEST_USERS.user1.login,
-      password: TEST_USERS.user1.password,
-    });
+    const [loginResponse1, loginResponse2] = await Promise.all([
+      authTestManager.login({
+        loginOrEmail: TEST_USERS.user1.login,
+        password: TEST_USERS.user1.password,
+      }),
+      authTestManager.login({
+        loginOrEmail: TEST_USERS.user2.login,
+        password: TEST_USERS.user2.password,
+      }),
+    ]);
+
     user1Token = loginResponse1.body.accessToken;
-
-    const loginResponse2 = await authTestManager.login({
-      loginOrEmail: TEST_USERS.user2.login,
-      password: TEST_USERS.user2.password,
-    });
     user2Token = loginResponse2.body.accessToken;
 
-    // Create and publish test questions in bulk
+    // Batch create and publish questions in one operation
     createdQuestions = await questionsTestManager.bulkCreateQuestions(5);
     await Promise.all(
       createdQuestions.map((question) =>
@@ -73,10 +76,14 @@ describe('Pair Games Users (e2e)', () => {
   });
 
   beforeEach(async () => {
-    // Clear game-related data between tests
-    await request(app.getHttpServer())
-      .delete('/testing/game-data')
-      .expect(HttpStatus.NO_CONTENT);
+    // Only clear game data for tests that need it
+    if (
+      expect.getState().currentTestName?.includes('should return top users')
+    ) {
+      await request(app.getHttpServer())
+        .delete('/testing/game-data')
+        .expect(HttpStatus.NO_CONTENT);
+    }
   });
 
   describe('GET /pair-game-quiz/users/top', () => {

@@ -11,38 +11,45 @@ export class TestingController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteAllDataSwagger()
   async deleteAll() {
-    // TRUNCATE TABLE - removes all data but keeps the table structure
-    // RESTART IDENTITY - resets auto-incremented IDs (SERIAL primary keys)
-    // CASCADE - removes dependent records in related tables to avoid foreign key constraints
-    await this.dataSource.query(`
-      TRUNCATE TABLE
-      public.users_password_recovery,
-      public.users_email_confirmation,
-      public.player_progress,
-      public.pair_games,
-      public.answers,
-      public.users,
-      public.sessions,
-      public.blogs,
-      public.posts,
-      public.comments,
-      public.post_likes,
-      public.comment_likes,
-      public.questions
-      RESTART IDENTITY CASCADE;
-    `);
+    // Use transaction for faster cleanup
+    await this.dataSource.transaction(async (manager) => {
+      // Disable foreign key checks, truncate all tables, then re-enable checks
+      await manager.query('SET CONSTRAINTS ALL DEFERRED');
+      await manager.query(`
+        TRUNCATE TABLE
+        public.users_password_recovery,
+        public.users_email_confirmation,
+        public.player_progress,
+        public.pair_games,
+        public.answers,
+        public.users,
+        public.sessions,
+        public.blogs,
+        public.posts,
+        public.comments,
+        public.post_likes,
+        public.comment_likes,
+        public.questions
+        RESTART IDENTITY CASCADE;
+      `);
+      await manager.query('SET CONSTRAINTS ALL IMMEDIATE');
+    });
   }
 
   @Delete('game-data')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteGameData() {
-    // Only clear game-related tables
-    await this.dataSource.query(`
-      TRUNCATE TABLE
-      public.player_progress,
-      public.pair_games,
-      public.answers
-      RESTART IDENTITY CASCADE;
-    `);
+    // Use transaction for faster cleanup
+    await this.dataSource.transaction(async (manager) => {
+      await manager.query('SET CONSTRAINTS ALL DEFERRED');
+      await manager.query(`
+        TRUNCATE TABLE
+        public.player_progress,
+        public.pair_games,
+        public.answers
+        RESTART IDENTITY CASCADE;
+      `);
+      await manager.query('SET CONSTRAINTS ALL IMMEDIATE');
+    });
   }
 }

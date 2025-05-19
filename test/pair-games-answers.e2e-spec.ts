@@ -175,11 +175,19 @@ describe('Pair Games Answers (e2e)', () => {
           );
           expect(currentQuestion).toBeDefined();
 
+          // Only expect OK status for answers before game is finished
+          const currentGameResponse =
+            await pairGamesTestManager.getMyCurrentPairGame(token);
           const response = await pairGamesTestManager.sendAnswer(
             token,
             currentQuestion!.correctAnswers[0],
           );
-          expect(response.statusCode).toBe(HttpStatus.OK);
+
+          if (currentGameResponse.body.status === GameStatus.Finished) {
+            expect(response.statusCode).toBe(HttpStatus.FORBIDDEN);
+          } else {
+            expect(response.statusCode).toBe(HttpStatus.OK);
+          }
         }
       };
 
@@ -206,25 +214,53 @@ describe('Pair Games Answers (e2e)', () => {
       expect(gameResponse.body.status).toBe(GameStatus.Active);
       expect(gameQuestions?.length).toBe(5);
 
-      // Helper function to answer questions
-      const answerAllQuestions = async (token: string) => {
-        for (const question of gameQuestions!) {
-          const currentQuestion = createdQuestions.find(
-            (q) => q.id === question.id,
-          );
-          expect(currentQuestion).toBeDefined();
+      // First player answers all questions
+      for (const question of gameQuestions!) {
+        const currentQuestion = createdQuestions.find(
+          (q) => q.id === question.id,
+        );
+        expect(currentQuestion).toBeDefined();
 
-          const response = await pairGamesTestManager.sendAnswer(
-            token,
-            currentQuestion!.correctAnswers[0],
-          );
+        // Check game status before answering
+        const gameStatusResponse =
+          await pairGamesTestManager.getMyCurrentPairGame(user1Token);
+
+        const response = await pairGamesTestManager.sendAnswer(
+          user1Token,
+          currentQuestion!.correctAnswers[0],
+        );
+
+        if (gameStatusResponse.body.status === GameStatus.Active) {
           expect(response.statusCode).toBe(HttpStatus.OK);
+        } else {
+          expect(response.statusCode).toBe(HttpStatus.FORBIDDEN);
+          break;
         }
-      };
+      }
 
-      // Players answer questions sequentially
-      await answerAllQuestions(user1Token);
-      await answerAllQuestions(user2Token);
+      // Second player answers all questions
+      for (const question of gameQuestions!) {
+        const currentQuestion = createdQuestions.find(
+          (q) => q.id === question.id,
+        );
+        expect(currentQuestion).toBeDefined();
+
+        // Check game status before answering
+        const gameStatusResponse =
+          await pairGamesTestManager.getMyCurrentPairGame(user2Token);
+
+        const response = await pairGamesTestManager.sendAnswer(
+          user2Token,
+          currentQuestion!.correctAnswers[0],
+        );
+
+        if (gameStatusResponse.body.status === GameStatus.Active) {
+          expect(response.statusCode).toBe(HttpStatus.OK);
+        } else {
+          expect(response.statusCode).toBe(HttpStatus.FORBIDDEN);
+          break;
+        }
+      }
 
       // Verify game is finished
       const finalGameResponse = await pairGamesTestManager.getPairGameById(
@@ -234,7 +270,7 @@ describe('Pair Games Answers (e2e)', () => {
       expect(finalGameResponse.statusCode).toBe(HttpStatus.OK);
       expect(finalGameResponse.body.status).toBe(GameStatus.Finished);
 
-      // Try to answer again
+      // Try to answer again after game is finished
       const response = await pairGamesTestManager.sendAnswer(
         user1Token,
         'Any answer',
